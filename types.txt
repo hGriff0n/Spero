@@ -1,0 +1,91 @@
+## Syntax for defining algebraic data types
+	## Context needed because ADTs are a collection of constructors, not types
+data Option[T] = Some(val: T) | None		## Can i add type members ???
+data Option[T] = Some(val: T) | None { ... }	## But how would that work
+
+## Syntax for defining custom structures
+type Animal = { ... }		|    let Animal = { ... }
+type Cat = Animal{ ... }	|    let Cat = Animal{ ... }
+
+## Syntax for defining parametric structures
+type Vec[T](n: Size) = {
+	## T must be a type (: Type) filled in by default
+}
+
+## Same but the size is now part of the type
+type Vec[T, n: Size] = { ... }		## Values can be part of the parameter system
+					## Does this enable dependent typing ???
+
+
+## Local type alias (local types also allowed)
+using Reducable: Numeric | Traversable
+
+
+## Other Parametric stuff
+[T: ^Numeric]			## T can't be Numeric
+[T: Numeric | Traversable]	## T must be Numeric or Traversable
+[T: Reducable]			## Same as above
+
+
+## Create a type with a constructor that takes a String
+type Person (name: String) = {
+	static count mut = 0				## Mutable static field
+
+	def this(clone: Person) = this(clone.name)	## Copy constructor
+	def hello = println "Hello! I'm {name}!"	## Method'
+}
+
+
+## Type programming ??? (It looks right, if I'm going to take this path)
+type Fibbonaci (n: Size) = Fibbonacci (n - 1) + Fibbonacci (n - 2)
+Fibbonacci 0 = 1
+Fibbonacci 1 = 1
+
+## Standard Types
+Size		## unsigned
+Int		## signed
+Float		## double
+
+#!
+How to add interfaces (inherit from multiple traits) ???
+	Add them to the contract
+	Add after the fact (with etc)
+	impl context (change the type ad-hoc)
+!#
+
+
+## Spero Design Sheet: Caeser
+
+## Define Cipher trait (a type with unimplemented members)
+type Cipher[T] = {			|	let Cipher[T] = {
+	type Enc = T{}			|		let Enc = T{}
+	def encode (msg: T*) => Enc*	|		let encode (msg: T*): Enc*
+	def decode (msg: Enc*) => T*	|		let decode (msg: Enc*): T*
+}					|	}
+
+## Should subtypes have to specify types of inherited functions ??
+let Caeser (shft: Char) = Cipher[Char] {
+	let encode (msg) = map msg (+ shft)
+	def decode(msg) = map msg (- shft)
+}
+
+## Creating Caeser Cipher
+type Caeser (shft: Char) = Cipher[Char]{ ... }
+let Caeser (shft: Char) = Cipher[Char]{ ... }
+
+## Creating lambda type
+let caeser = Cipher[Char]{ ... }	## caeser is actually an instance of Cipher
+
+
+## Variable
+def foo = "Hello"
+
+let str = foo			## str is assigned the result of foo
+let str :String = foo()		## no parens = empty parens
+let str = 'foo			## str is assigned the function (' acts like lisp ???)
+let str :Function = foo		## str is assigned the function (unless foo => Function?)
+
+## Subtyping/Type restrictions
+def foo (x) = { ... }		## args must support all methods called on x
+def foo (x: Numeric) = { ... }	## args must inherit from Numeric (+ method support)
+				## unless this isn't how inferrence works

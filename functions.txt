@@ -1,0 +1,71 @@
+## Testing out simple function def syntax 
+def add(x, y) = {		## Your basic function declaration
+	x + y
+}
+
+let add(x, y) = x + y		## Same as above but without "{}" block
+let add(x y) = x + y		## Can I remove the need for the comma (pattern matching)
+let add(x: Int y: Int)		## How would it work with argument contexts/contracts
+
+def add x y = x + y		## What's the meaning of "x","y" in terms of contracts
+add 0 y = y			## This has to take a value and assign to x ???
+add x 0 = x
+
+let add = (x, y) => x + y	## This is going to be allowed regardless
+				## The question is if this is all that's needed
+
+
+## Testing out contracts
+factorial (< 0) = 1
+factorial n = n * factorial(n - 1)
+
+
+## Testing out parametric stuff
+
+
+## Testing out infix function def syntax (match/generic syntax is uncertain at this point)
+data Option[T] = Some(val: T) | None
+## Keyword is necessary because Some and None aren't types, but constructors
+	## How to add implementations ???
+
+## An function that doesn't follow variable rules is automatically infix
+## Rust style definitions
+def >>=(opt: Option, f: Function) = {
+	opt .match {		## `.<name>` turns the function/etc into infix
+		Some(val) => Some(f(val))
+		None => None
+	}
+}
+
+## Scala style definitions
+def >>=(opt f) = match opt {
+	Some(val) => Some(f(val))
+	None => None
+}
+
+## Haskell style definitions
+let >>= (Some(val), f) = Some(f val)
+let >>= (None, _) = None
+
+## No def context and function contract syntax, only lambda literals
+let >>= = (opt f) => match opt {	## what if opt becomes a context
+	Some(val) => Some(f val)	## this would turn f into an optional arg
+	None => None
+}
+
+Some(3) >>= add(5)			## operators are infix by default (no '.' needed)
+>>=(None, add(4))			## what if .>>= allowed this instead ???
+Some(3) add(5) ..>>=			## what if '..' turned a function into postfix
+
+
+## Argument context and contract
+def foo(mut x: Int) = {
+	x = x + 1
+}
+
+## Function casing (demonstrate with take, factorial, 
+def take[T](n: Size, ts: T*) = match (n, ts) {
+	(0, _) = Nil
+	(_, Nil) = Nil
+	(n, x:xs) = x : take(n - 1, xs)
+}

@@ -1,0 +1,74 @@
+## This is a single line comment
+
+#!
+This is a multiline comment
+!#
+
+## Assignment syntax
+<context> <name> <contracts> = <expression>
+	## I'm not sure about how multiple contracts will be handled
+
+#!
+Context is always a keyword that describes how the rest of the expression gets treated
+	Current Valid Context Keywords:
+	let <- introduce a new name binding to the current scope
+	static <- indicate a static name binding to the current scope
+	using <- create a new alias in the current scope
+	data <- create a new ADT in the scope (constructors are in the expression)
+
+	Considered Context Keywords:
+	def <- special syntax for functions, context gained through contracts
+	type <- special syntax for types, context gained through name
+
+Name indicates the scoped binding that the statement will exist under
+Some additional information about the binding can also be derived here
+	variable  = [a-z].*		<- first letter must be lowercase
+	type      = [A-Z].*		<- first letter must be uppercase
+	operator  = ^[variable|type]	<- anything else, automatic infix syntax
+
+Contracts refine the binding information with additional rules for static matching
+	Current Contracts: (Come up with defaults once I've settled on the list)
+	function bindings   =   (var: T) => T
+	type bindings	    =   :T
+	parametrics	    =   [T]
+	return types	    =   => T	<- Not sure if this isn't part of function bindings
+
+Operators
+	Assignment '='		<- can't write "let =(x) = ..."
+	Subtyping  ':'		<- can't write "let :(x) = ..."
+	Equality   '=='
+
+The expression can be any valid construct in the language
+Scopes (multiple expressions) can possibly be encapsulated by surrounding with '{}'
+	I'm not sure about whether whitespace should format scopes or not
+!#
+
+## Some examples of assignment
+let m = 3
+m = 4			## Error since variables are immutable by default
+let t :String = 3	## Error (type contract not maintained)
+
+
+## Interaction with functions
+let t = (x, y) => x + y	## Assigning a lambda to t
+let t (x y) = x + y	## Declaring t as a function
+def t(x, y) = x + y	## This is why 'def' may be tossed away
+
+
+## Enabling mutability
+let n = mut 3		## Special 'mut' function
+n = 4			
+
+mut n = 3		## I could move 'mut' into the context
+let n mut = 3		## Or put it into the contract
+
+let T = mut { ... }	## Now what does this mean or is it invalid?
+			## Searching "mutable types" gives "type members can be changed"
+			## I think the better meaning is methods/etc can be added ad-hoc
+let T mut = { ... }	## This could still work with the contract
+			## But context has no sensible meaning
+
+## Other variable stuff
+mut n = 3		## Variables can be "shadowed" by latter declarations
+let n = 4		## This would override the mutability (regardless of impl)
+
