@@ -4,6 +4,3 @@
 [submodule "vs-spero"]
 	path = vs-spero
 	url = https://github.com/hGriff0n/vs-spero
-[submodule "Spark"]
-	path = Spark
-	url = https://github.com/hGriff0n/Spark
