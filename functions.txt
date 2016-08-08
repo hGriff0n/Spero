@@ -14,6 +14,9 @@ add x 0 = x
 let add = (x, y) => x + y	## This is going to be allowed regardless
 				## The question is if this is all that's needed
 
+let add = \x, y => x + y	## Lambda-calculus/Dust inspired syntax
+let add \x, y = x + y		## Not sure how well it works here
+
 
 ## Testing out contracts
 factorial (< 0) = 1
