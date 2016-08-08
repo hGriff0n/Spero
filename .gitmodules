@@ -7,6 +7,6 @@
 [submodule "Spark"]
 	path = Spark
 	url = https://github.com/hGriff0n/Spark
-[submodule "spero-www"]
-	path = spero-www
-	url = https://github.com/hGriff0n/spero-www
+[submodule "spero-lang"]
+	path = spero-lang
+	url = https://github.com/hGriff0n/spero-lang
