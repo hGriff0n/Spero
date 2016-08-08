@@ -1,0 +1,1 @@
+This folder is for spero source files and programs developed to test the compiler and build manager
