@@ -1,0 +1,51 @@
+## This program snippet is for testing whether to put the arg list to the left (the contracts) or the right (the expression) of the assignment
+## TODO: My thoughts on both syntaxes
+
+## Starting with the current syntax
+module Calculator
+
+## Currently I'm using * to represent an array/array_view/multiple arguments as a shorthand
+## Everything to do with collections hasn't been considered yet
+def main(args: String*) = while true {
+	let line = std.io.getln
+	let res = parse(line) .eval		## Normally this would be "eval(parse(line))". However, if you generalize the '.' rules for ucs, you can get a very haskell-esque syntax
+	std.io.println("= {res}")
+}
+
+type Tree[T] = Leaf(T) | Branch(Tree, Tree)
+
+def parse(cmd: String) = {
+	cmd.groupWhile(isDigit)			## Right now I'm just assuming that you can pass in the function without specifying how arguments are handled
+	   .filter(isInt)			## Scala uses a _ to specify the "whatever" case, which would turn these functions into _.isDigit or Leaf(_)
+	   .map(Leaf)				## I don't know if I'll need to enforce creating a lambda to use a function in these std functions though
+	   .reduce(Branch)
+}
+
+def eval(ast: Tree[Int]) = match ast {
+	Leaf(val) => val
+	Branch(l, r) => eval(l) + eval(r)	## Due to my hastiness, our calculator only supports addition
+}
+
+
+## Now with the new syntax. In order to make this work I have made it so that the argument list is a value
+## Inside of the function body (specificaly a tuple). I need to find a better explanation of this (You could almost do this without variables)
+def main = loop {				## Look into whether having a loop construct (ala Rust) would work well with this language
+	let line = std.io.getln			## Cmd-line args would be gotten through std.env.getargs (ala Rust/Haskell)
+	let res = parse(line) .eval
+	std.io.println("= {res}")
+}
+
+def parse = (String).groupWhile(isDigit)	## The "args as value" paradigm still needs a bit of work
+		    .filter(isInt)		## One of the areas is in singleton tuples
+		    .map(Leaf)			## It's much nicer to be able to work on the value without dereferencing
+		    .reduce(Branch)		## But how will this extend to tup2/tup3/etc
+
+def eval = (Tree[Int]) .match {			## You don't have to provide arg names in this syntax
+	Leaf(val) => val			## Note that match is a keyword, not a function
+	Branch(l, r) => eval(l) + eval(r)	## However, there's no reason I can't enable the '.' syntax on it
+}
+
+
+## I really like the new syntax, especially with it's possibility for functional programming
+## However, I really need to nail down tuple dereferencing rules before I can accept it
+## I should also look into whether I can allow both, though I want the language to have one way to do basics

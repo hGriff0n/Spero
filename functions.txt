@@ -17,6 +17,8 @@ let add = (x, y) => x + y	## This is going to be allowed regardless
 let add = \x, y => x + y	## Lambda-calculus/Dust inspired syntax
 let add \x, y = x + y		## Not sure how well it works here
 
+let add = (x, y) { x + y }	## New function syntax
+let add = (Int, Int) { + }	## Functional support (very experimental)
 
 ## Testing out contracts
 factorial (< 0) = 1
@@ -27,9 +29,8 @@ factorial n = n * factorial(n - 1)
 
 
 ## Testing out infix function def syntax (match/generic syntax is uncertain at this point)
-data Option[T] = Some(val: T) | None
+data Option[T] = Some(T) | None
 ## Keyword is necessary because Some and None aren't types, but constructors
-	## How to add implementations ???
 
 ## An function that doesn't follow variable rules is automatically infix
 ## Rust style definitions
@@ -72,3 +73,16 @@ def take[T](n: Size, ts: T*) = match (n, ts) {
 	(_, Nil) = Nil
 	(n, x:xs) = x : take(n - 1, xs)
 }
+
+#!
+Dot flipping ('.' operator)
+Non-operator functions can be used in an infix manner by appending their name with a '.'
+If a function only takes one argument, dot flipping allows postfix calling (similar to Haskell ./$ operator)
+Class methods are implemented through dot-flipping ("3.abs" => (Int.abs)(3))
+	Class (non-static) methods implicitly get a "self" member when defining
+
+TODO: Consider what '.+' means
+TODO: Determine how to call operators in a prefix manner
+TODO: Determine if i should add a syntax to call postfix
+TODO: Determine what dot-flipping does on functions with >2 arguments (though this is what class methods do anyway)
+!#
