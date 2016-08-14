@@ -1,0 +1,35 @@
+#!
+ ! A little test program to help work out the feasibility of the new argument syntax
+ !  Key changes:
+ !   match allows complete tuple decomposition (was restricted to tup_1)
+ !   special arg tuple type to help with syntax (and metaprogramming)
+ ! Also provides an introductory test bed for modules
+ !
+ ! The test program is a basic RPN calculator that supports (+,-,*,/,~)
+ !#
+
+mod RPN			## Declare a module
+use std:io:*		## Import everything from std:io
+use std:str		## Import the std:str namespace (can access with str:*)
+			## Do I want to include scala import style (ie "use std:{io, str}:*" to import everything from std:io and std:str)
+
+def main(:String*) = getln .parse .eval .println("= {}")			## Dot-flipping is really nice
+
+type Stack[T] = Empty | Cons(Stack, T)						## Define a stack as an ADT because I haven't gotten collections settled yet (plus pattern matching)
+
+let parse(cmd:String) = cmd.groupWhile(str:isDigit)				## parse is not exported from the module (let-bound, ie. protected)
+			   .removeIf(str:isSpace)
+			   .reduce(Empty, (s:Stack[Int], c:String) => match (s, c) {
+				Cons(Cons(s_, l), r), "+" => Cons(s_, l + r)	## Decompose the stack into the top two elements to perform arithmetic
+				Cons(Cons(s_, l), r), "-" => Cons(s_, l - r)
+				Cons(Cons(s_, l), r), "/" => Cons(s_, l / r)
+				Cons(Cons(s_, l), r), "*" => Cons(s_, l * r)
+				Cons(s_, i), "~" => Cons(s_, -l)		## Use ~ as the unary negation
+				s, _ => Cons(s, _.toInt)			## Push the number on the stack
+			   })
+
+let eval(s: Stack[Int]) = match s {
+	Empty => "nil"
+	Cons(Empty, i) => i.toStr
+	_ => "incomplete"
+}

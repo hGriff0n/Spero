@@ -17,15 +17,15 @@ def main = getln .parse .eval .println("= {}")					## Dot-flipping is really nic
 
 type Stack[T] = Empty | Cons(Stack, T)						## Define a stack as an ADT because I haven't gotten collections settled yet (plus pattern matching)
 
-let parse = (:String) .groupWhile(str.isDigit)					## parse is not exported from the module (let-bound, ie. protected)
-		      .removeIf(str.isSpace)
+let parse = (:String) .groupWhile(str:isDigit)					## parse is not exported from the module (let-bound, ie. protected)
+		      .removeIf(str:isSpace)
 		      .reduce(Empty, (:Stack[Int], :String) .match {
 				Cons(Cons(s_, l), r), "+" => Cons(s_, l + r)	## Decompose the stack into the top two elements to perform arithmetic
 				Cons(Cons(s_, l), r), "-" => Cons(s_, l - r)
 				Cons(Cons(s_, l), r), "/" => Cons(s_, l / r)
 				Cons(Cons(s_, l), r), "*" => Cons(s_, l * r)
 				Cons(s_, i), "~" => Cons(s_, -l)		## Use ~ as the unary negation
-				s, _ => Cons(s, _.toInt)
+				s, _ => Cons(s, _.toInt)			## Push the number on the stack
 		      })
 
 	##  V This is the current idea for arguments, the argument tuple, the arg-name is optional if the arg is not directly referenced
@@ -39,10 +39,15 @@ let eval = (:Stack[Int]) .match {
 #!
 Thoughts:
   The new syntax still needs some refinements to completely work, though I do think the switch-over should occur
+    I completely forgot about type creation, I don't know how that'll be affected by the new syntax
+      Generally it works, I just have to figure out how inheritance would be handled
     Need to make some examples that include the argument name, even if it's unnecessary (see if that's throwing me off)
       Also look into having a distinct argument syntax instead of duplicating the tuple syntax (ie. \ or something similar)
     The argument tuple distinction is a quick fix to mitigate collisions with type tuple metaprogramming
       Don't know how well those fears are founded however, need to wait until metaprogramming doodles
+    I also have some doubts about functions with no arguments
+      The are indistinguishable from variables (from all perspectives)
+      This exists in the old syntax as well however
 
   Tuple decomposition matching works rather well
     I need to find a case where tuples and non-tuples are valid options to be in the same match

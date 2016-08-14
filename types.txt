@@ -1,6 +1,6 @@
 ## Syntax for defining algebraic data types
 	## Context needed because ADTs are a collection of constructors, not types
-type Option[T] = Some(val: T) | None {
+type Option[T] = Some(T) | None {
 	def get = self .match {
 		Some(v) => v
 		None => error
@@ -18,7 +18,7 @@ let Cat = Animal{ ... }
 
 ## Syntax for defining parametric structures
 let Vec[T](n: Size) = {
-	## T must be a type (: Type) filled in by default
+	## T must be a type (ie. "T: Type", the ": Type" is filled in by default)
 }
 
 ## Same but the size is now part of the type
@@ -98,3 +98,16 @@ let str :Function = foo		## str is assigned the function (unless foo => Function
 def foo (x) = { ... }		## args must support all methods called on x
 def foo (x: Numeric) = { ... }	## args must inherit from Numeric (+ method support)
 				## unless this isn't how inferrence works
+
+## Ideas for allowing interfaces
+impl Caeser = Cipher
+impl Cat = Animal
+
+def Caeser = (shft: Char) {
+	impl Cipher[Char]
+}
+
+def Caeser = (shft: Char) { ... } + Cipher[Char]
+def Caeser = (shft: Char) { ... } with Cipher[Char]
+
+with impl Cipher
