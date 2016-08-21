@@ -52,7 +52,8 @@ let t :String = 3	## Error (type contract not maintained)
 ## Interaction with functions
 let t = (x, y) => x + y	## Assigning a lambda to t
 let t (x y) = x + y	## Declaring t as a function
-def t(x, y) = x + y	## This is why 'def' may be tossed away
+def t(x, y) = x + y	## Declare as exportable
+def t[x, y] = x + y	# New function syntax
 
 
 ## Enabling mutability
@@ -74,3 +75,4 @@ let n = 4		## This would override the mutability (regardless of impl)
 
 ## Keywords
 match			## Allow '.' flipping with match (match should like like a function, but it might need compile-time support)
+if

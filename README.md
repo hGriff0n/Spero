@@ -29,3 +29,5 @@ The Spero project also contains three sub-projects: speroc, Spark, and vs-spero
         - What are the possibilities in parametrics?
         - Parametrics as implicit first argument?
     8) Make some quick metaprogramming doodles
+
+## Icon at https://www.iconfinder.com/icons/606025/ancient_antique_historic_roman_rome_helmet_vintage_warrior_icon
