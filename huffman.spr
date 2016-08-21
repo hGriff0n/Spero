@@ -1,7 +1,7 @@
 mod huffman
 use std.{io, iter}.*
 
-def Huffman[probs: Float*] = {
+def Huffman = (probs: Float*) {
     # The tree gets constructed automatically since it accepts a Float*
     let decoder = HuffmanHelper(probs) {
         type Reducer = Unk(String, String) | Knw(String) {
@@ -11,8 +11,8 @@ def Huffman[probs: Float*] = {
 			_ => Error{ "Could not decode the message" }
 		}
 
-        def help[: String] =
-            .reduce(Collect(""), (char, collector) => {
+        def help = (:String)
+            .reduce(Collect(""), (char, collector) {
                 let msg = collector .match {
                     Unk(s, t) => (s, t + char)
                     Knw(s) => (s, char)
@@ -29,22 +29,25 @@ def Huffman[probs: Float*] = {
         let help[: String] = .fmap(tree.getCodeFor)            # Doesn't consider the 127 thing
     }
 
-    static writeTo[f: File, data: String] = f.writeAll(data)
-    static readFrom[: File] = .readAll
+    # Can you drop the `{}` ??? (I was using them to unpack the tuple, make the variables "visible")
+    static writeTo = (f: File, d: String) f.writeAll(data)
+    static readFrom = (:File).readAll
 
-    def encode[in: File, out: File] =
+    def encode = (in: File, out: File) {
         out .writeTo(encoder.help(in .readFrom))
+    }
 
-    def decode[in: File, out: File] =
+    def decode = (in: File, out: file) {
         out .writeTo(decoder.help(in .readFrom))
+    }
 }
 
-let HuffmanHelper[tree: HuffmanTree] = {
-    def help[msg: String] => String
-    def setTree[...] = { ... }
+let HuffmanHelper = (tree: HuffmanTree) {
+    def help = (String) => String
+    def setTree = (...) { ... }
 }
 
-let HuffmanTree[probs: Float*] = {
+let HuffmanTree = (probs: Float*) {
     let HuffmanNode = {						# Needs more work on interfaces and type implementations
 
     }

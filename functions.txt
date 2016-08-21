@@ -1,80 +1,59 @@
-## Testing out simple function def syntax 
-def add(x, y) = {		## Your basic function declaration
-	x + y
-}
+# Testing out simple function def syntax 
+let add = (x, y) { x + y }	# New function syntax
+let add = '+			# Functional support (very experimental)
 
-let add(x, y) = x + y		## Same as above but without "{}" block
-let add(x y) = x + y		## Can I remove the need for the comma (pattern matching)
-let add(x: Int y: Int)		## How would it work with argument contexts/contracts
 
-def add x y = x + y		## What's the meaning of "x","y" in terms of contracts
-add 0 y = y			## This has to take a value and assign to x ???
-add x 0 = x
-
-let add = (x, y) => x + y	## This is going to be allowed regardless
-				## The question is if this is all that's needed
-
-let add = \x, y => x + y	## Lambda-calculus/Dust inspired syntax
-let add \x, y = x + y		## Not sure how well it works here
-
-let add = (x, y) { x + y }	## New function syntax
-let add = (Int, Int) { + }	## Functional support (very experimental)
-
-## Testing out contracts
+# Testing out contracts (old syntax)
 factorial (< 0) = 1
 factorial n = n * factorial(n - 1)
 
 
-## Testing out parametric stuff
+# Testing out parametric stuff
 
 
-## Testing out infix function def syntax (match/generic syntax is uncertain at this point)
+# Testing out infix function def syntax (match/generic syntax is uncertain at this point)
 data Option[T] = Some(T) | None
-## Keyword is necessary because Some and None aren't types, but constructors
+# Keyword is necessary because Some and None aren't types, but constructors
 
-## An function that doesn't follow variable rules is automatically infix
-## Rust style definitions
+# An function that doesn't follow variable rules is automatically infix
+# Rust style definitions
 def >>=(opt: Option, f: Function) = {
-	opt .match {		## `.<name>` turns the function/etc into infix
+	opt .match {		# `.<name>` turns the function/etc into infix
 		Some(val) => Some(f(val))
 		None => None
 	}
 }
 
-## Scala style definitions
-def >>=(opt f) = match opt {
+# Scala style definitions (no ',' to separate args)
+def >>= = (opt f) match opt {
 	Some(val) => Some(f(val))
 	None => None
 }
 
-## Haskell style definitions
-let >>= (Some(val), f) = Some(f val)
-let >>= (None, _) = None
-
-## No def context and function contract syntax, only lambda literals
-let >>= = (opt f) => match opt {	## what if opt becomes a context
-	Some(val) => Some(f val)	## this would turn f into an optional arg
+# Current syntax
+let >>= = (opt, f) => match opt {	# what if opt becomes a context
+	Some(val) => Some(f val)	# this would turn f into an optional arg
 	None => None
 }
 
-Some(3) >>= add(5)			## operators are infix by default (no '.' needed)
->>=(None, add(4))			## what if .>>= allowed this instead ???
-Some(3) add(5) ..>>=			## what if '..' turned a function into postfix
+Some(3) >>= add(5)			# operators are infix by default (no '.' needed)
+>>=(None, add(4))			# what if .>>= allowed this instead ???
+Some(3) add(5) ..>>=			# what if '..' turned a function into postfix
 
 
-## Argument context and contract
-def foo(mut x: Int) = {
+# Argument context and contract
+def foo = (mut x: Int) {
 	x = x + 1
 }
 
-## Function casing (demonstrate with take, factorial, 
-def take[T](n: Size, ts: T*) = match (n, ts) {
+# Function casing (demonstrate with take, factorial, 
+def take[T] = (:Size, :T*) .match {
 	(0, _) = Nil
 	(_, Nil) = Nil
 	(n, x:xs) = x : take(n - 1, xs)
 }
 
-#!
+##
 Dot flipping ('.' operator)
 Non-operator functions can be used in an infix manner by appending their name with a '.'
 If a function only takes one argument, dot flipping allows postfix calling (similar to Haskell ./$ operator)
@@ -85,4 +64,4 @@ TODO: Consider what '.+' means
 TODO: Determine how to call operators in a prefix manner
 TODO: Determine if i should add a syntax to call postfix
 TODO: Determine what dot-flipping does on functions with >2 arguments (though this is what class methods do anyway)
-!#
+##

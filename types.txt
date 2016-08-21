@@ -1,105 +1,105 @@
-## Syntax for defining algebraic data types
-	## Context needed because ADTs are a collection of constructors, not types
+# Syntax for defining algebraic data types
+	# Context needed because ADTs are a collection of constructors, not types
 type Option[T] = Some(T) | None {
 	def get = self .match {
 		Some(v) => v
 		None => error
 	}
 
-	def or_else(e: T) = self .match {
+	def or_else = (e: T) self .match {
 		Some(v) => v
 		None => e
 	}
 }
 
-## Syntax for defining custom structures
+# Syntax for defining custom structures
 let Animal = { ... }
 let Cat = Animal{ ... }
 
-## Syntax for defining parametric structures
-let Vec[T](n: Size) = {
-	## T must be a type (ie. "T: Type", the ": Type" is filled in by default)
+# Syntax for defining parametric structures
+let Vec[T] = (n: Size) {
+	# T must be a type (ie. "T: Type", the ": Type" is filled in by default)
 }
 
-## Same but the size is now part of the type
-let Vec[T, n: Size] = { ... }		## Values can be part of the parameter system
-					## Does this enable dependent typing ???
+# Same but the size is now part of the type
+let Vec[T, n: Size] = { ... }		# Values can be part of the parameter system
+					# Does this enable dependent typing ???
 
 
-## Local type alias (local types also allowed)
+# Local type alias (local types also allowed)
 using Reducable: Numeric | Traversable
 
 
-## Other Parametric stuff
-[T: ^Numeric]			## T can't be Numeric
-[T: Numeric | Traversable]	## T must be Numeric or Traversable
-[T: Reducable]			## Same as above
+# Other Parametric stuff
+[T: ^Numeric]			# T can't be Numeric
+[T: Numeric | Traversable]	# T must be Numeric or Traversable
+[T: Reducable]			# Same as above
 
 
-## Create a type with a constructor that takes a String
-let Person (name: String) = {
-	static count mut = 0				## Mutable static field
+# Create a type with a constructor that takes a String
+let Person = (name: String) {
+	static count mut = 0				# Mutable static field
 
-	def this(clone: Person) = this(clone.name)	## Copy constructor
-	def hello = println "Hello! I'm {name}!"	## Method'
+	def this = (clone: Person) this(clone.name)	# Copy constructor
+	def hello = println "Hello! I'm {name}!"	# Method? With interpolation
 }
 
 
-## Type programming ??? (It looks right, if I'm going to take this path)
+# Type programming ??? (It looks right, if I'm going to take this path)
 let Fibbonaci (n: Size) = Fibbonacci (n - 1) + Fibbonacci (n - 2)
 Fibbonacci 0 = 1
 Fibbonacci 1 = 1
 
-## Standard Types
-Size		## unsigned
-Int		## signed
-Float		## double
+# Standard Types
+Size		# unsigned
+Int		# signed
+Float		# double
 
-## Could def be used for "public" in class definitions ???
-## let would represent "protected"
+# Could def be used for "public" in class definitions ???
+# let would represent "protected"
 
-#!
+##
 How to add interfaces (inherit from multiple traits) ???
 	Add them to the contract
 	Add after the fact (with etc)
 	impl context (change the type ad-hoc)
-!#
+##
 
 
-## Spero Design Sheet: Caeser
+# Spero Design Sheet: Caeser
 
-## Define Cipher trait (a type with unimplemented members)
+# Define Cipher trait (a type with unimplemented members)
 let Cipher[T] = {
 	let Enc = T{}
-	def encode (msg: T*) = Enc*	## The current syntax I'm experimenting on
-	let decode (msg: Enc*): T*	## def specifies function signatures without require implementation
+	def encode = (T*) => Enc*	# The current syntax I'm experimenting on
+	let decode = (Enc*) => T*	# def specifies function signatures without require implementation
 }
 
-## Should subtypes have to specify types of inherited functions ??
-let Caeser (shft: Char) = Cipher[Char] {
-	let encode (msg) = map msg (+ shft)
-	def decode(msg) = map msg (- shft)
+# Should subtypes have to specify types of inherited functions ??
+let Caeser = (shft: Char) Cipher[Char] {
+	let encode = .map (+ shft)
+	def decode = .map (- shft)
 }
 
 
-## Creating lambda type
-let caeser = Cipher[Char]{ ... }	## caeser is actually an instance of Cipher
+# Creating lambda type
+let caeser = Cipher[Char]{ ... }	# caeser is actually an instance of Cipher
 
 
-## Variable
+# Variable
 def foo = "Hello"
 
-let str = foo			## str is assigned the result of foo
-let str :String = foo()		## no parens = empty parens
-let str = 'foo			## str is assigned the function (' acts like lisp ???)
-let str :Function = foo		## str is assigned the function (unless foo => Function?)
+let str = foo			# str is assigned the result of foo
+let str :String = foo()		# no parens = empty parens
+let str = 'foo			# str is assigned the function (' acts like lisp ???)
+let str :Function = foo		# str is assigned the function (unless foo => Function?)
 
-## Subtyping/Type restrictions
-def foo (x) = { ... }		## args must support all methods called on x
-def foo (x: Numeric) = { ... }	## args must inherit from Numeric (+ method support)
-				## unless this isn't how inferrence works
+# Subtyping/Type restrictions
+def foo = (x) { ... }		# args must support all methods called on x (but what differentiates this from a tuple with the value of x ???)
+def foo = (x: Numeric) { ... }	# args must inherit from Numeric (+ method support)
+				# unless this isn't how inferrence works
 
-## Ideas for allowing interfaces
+# Ideas for allowing interfaces
 impl Caeser = Cipher
 impl Cat = Animal
 

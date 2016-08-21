@@ -1,14 +1,14 @@
-## This is a single line comment
+# This is a single line comment
 
-#!
+##
 This is a multiline comment
-!#
+##
 
-## Assignment syntax
+# Assignment syntax
 <context> <name> <contracts> = <expression>
-	## I'm not sure about how multiple contracts will be handled
+	# I'm not sure about how multiple contracts will be handled
 
-#!
+##
 Context is always a keyword that describes how the rest of the expression gets treated
 	Current Valid Context Keywords:
 	let <- introduce a new name binding to the current scope
@@ -41,38 +41,36 @@ Operators
 The expression can be any valid construct in the language
 Scopes (multiple expressions) can possibly be encapsulated by surrounding with '{}'
 	I'm not sure about whether whitespace should format scopes or not
-!#
+##
 
-## Some examples of assignment
+# Some examples of assignment
 let m = 3
-m = 4			## Error since variables are immutable by default
-let t :String = 3	## Error (type contract not maintained)
+m = 4			# Error since variables are immutable by default
+let t :String = 3	# Error (type contract not maintained)
 
 
-## Interaction with functions
-let t = (x, y) => x + y	## Assigning a lambda to t
-let t (x y) = x + y	## Declaring t as a function
-def t(x, y) = x + y	## Declare as exportable
-def t[x, y] = x + y	# New function syntax
+# Interaction with functions
+let t = (x, y) { x + y } # Assigning a function/lambda to t
+def t = (x, y) { x + y } # Declaring t as publicly visible
 
 
-## Enabling mutability
-let n = mut 3		## Special 'mut' function
+# Enabling mutability
+let n = mut 3		# Special 'mut' function
 n = 4			
 
-mut n = 3		## I could move 'mut' into the context
-let n mut = 3		## Or put it into the contract
+mut n = 3		# I could move 'mut' into the context
+let n mut = 3		# Or put it into the contract
 
-let T = mut { ... }	## Now what does this mean or is it invalid?
-			## Searching "mutable types" gives "type members can be changed"
-			## I think the better meaning is methods/etc can be added ad-hoc
-let T mut = { ... }	## This could still work with the contract
-			## But context has no sensible meaning
+let T = mut { ... }	# Now what does this mean or is it invalid?
+			# Searching "mutable types" gives "type members can be changed"
+			# I think the better meaning is methods/etc can be added ad-hoc
+let T mut = { ... }	# This could still work with the contract
+			# But context has no sensible meaning
 
-## Other variable stuff
-mut n = 3		## Variables can be "shadowed" by latter declarations
-let n = 4		## This would override the mutability (regardless of impl)
+# Other variable stuff
+mut n = 3		# Variables can be "shadowed" by latter declarations
+let n = 4		# This would override the mutability (regardless of impl)
 
-## Keywords
-match			## Allow '.' flipping with match (match should like like a function, but it might need compile-time support)
+# Keywords
+match			# Allow '.' flipping with match (match should like like a function, but it might need compile-time support)
 if

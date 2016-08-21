@@ -1,0 +1,64 @@
+# Let's start off with a simple "Cipher" trait
+let Cipher = {
+	def encode = (String) => String
+	def decode = (String) => String
+}
+
+# Lets create an instance of our Cipher class
+	# Like Java, we must supply implementations for the abstract methods
+let caeser = Cipher {
+	def encode = .map (c) => c + 5		# The types/arguments are inherited from the Cipher
+	def decode = .map (- 5)				# Take advangate of currying
+}
+
+# Lets expand our caeser cipher with a constructor
+	# Technically this actually creates a function that returns a Cipher
+let caeser = (shft: Char) Cipher {
+	def encode = .msg (+ shft)
+	def decode = .map (- shft)
+}
+
+caeser('C').encode("hello") = "JGNNQ"
+caeser('C').decode("JGNNQ") = "hello"
+let c_caeser = caeser('C')				# possible ??
+c_caeser.encode("hello") .eq caeser('C').encode("hello")
+
+##
+    This works, but what if we want to only accept caeser ciphers
+	Unfortunately caeser is only an instantiation of Cipher, the type isn't workable
+    Luckily the change is incredibly simple, trivial even
+##
+
+# Types are indicated by capital letters, variables by lowercase, and operators by symbols
+	# So by capitalizing the name we can a much more flexible construction
+	# Note that the arg list contract now specifies the constructor for the type 
+let Caeser = (shft: Char) Cipher {
+	def encode = .msg (c) => c + shft
+	def decode = .map (- shft)
+}
+
+
+# This is good for our purposes, but if we want to make a cryptography library
+# We need to make our cipher trait a bit more generic over its encryption types
+	# Modern ciphers work on collections of bits and not characters
+
+# The syntax is (currently) borrowed from Scala (though not everything (yet))
+let Cipher[T] = {
+	def encode = (T*) => T*			# Take a sequence of T's and return such
+	def decode = (T*) => T*	
+}
+
+# We can even protect against wrongful conversions through local types
+	# Now you can only decrypt an encrypted message (and vice versa)
+	# This doesn't work correctly yet
+let Cipher[T] = {
+	let EncType = T{}					# Protection's easily lost and it's not composable at all
+	def encode = (T*) => EncType*		# I think the relationship's reversed too
+	def decode = (EncType*) => T*
+}
+
+# So now how does our Caeser Cipher get modified
+let Caeser = (shft: Char) Cipher[Char] {	# The `[Char]` may be unnecessary
+	def encode = .map (+ shft)
+	def decode = .map (- shft)
+}
