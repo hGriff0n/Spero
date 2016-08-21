@@ -7,3 +7,6 @@
 [submodule "spero-lang"]
 	path = spero-lang
 	url = https://github.com/hGriff0n/spero-lang
+[submodule "vs-spero"]
+	path = vs-spero
+	url = https://github.com/hGriff0n/vs-spero
