@@ -1,3 +1,9 @@
+## TODO
+Work on parametrics
+Work on metaprogramming doodles
+Start designing the type system
+##
+
 # Syntax for defining algebraic data types
 	# Special context needed because ADTs are a collection of constructors, not types
 type Option[T] = Some(T) | None
@@ -11,13 +17,13 @@ let Vec[T] = (n: Size) {
 	# T must be a type (ie. "T: Type", the ": Type" is filled in by default)
 }
 
-# Same but the size is now part of the type
+# Dependent Typing Syntax ???
 let Vec[T, n: Size] = { ... }		# Values can be part of the parameter system
 					# Does this enable dependent typing ???
 
 
 # Local type alias (local types also allowed)
-using Reducable: Numeric | Traversable
+using Reducable = Numeric | Traversable
 
 
 # Other Parametric stuff
@@ -28,9 +34,9 @@ using Reducable: Numeric | Traversable
 
 # Create a type with a constructor that takes a String
 let Person = (name: String) {
-	static count mut = 0				# Mutable static field
+	static count mut = 0				# Mutable static field (mutable syntax uncertain)
 
-	def this = (:Person) .name .this		# Copy constructor
+	def this = (:Person) .name.this			# Variable-less copy constructor
 	def hello = println("Hello! I'm {name}!")	# Method? With interpolation
 							# What differentiates this from assigning to the result of an equation (see "variables" below)
 }
@@ -47,7 +53,7 @@ Float		# double
 let Cipher[T] = {
 	let Enc = T{}
 	def encode = (T*) => Enc*	# The current syntax I'm experimenting on
-	def decode = (Enc*) => T*	# def specifies function signatures without require implementation
+	def decode = (Enc*) => T*	# Function signatures
 }
 
 # Should subtypes have to specify types of inherited functions ??
@@ -59,8 +65,9 @@ let Caeser = (shft: Char) {
 }
 
 
-# Creating lambda types
+# Lambda Types and Inheritance
 let caeser = Cipher[Char]{ ... }	# caeser is actually an instance of Cipher
+let caeser = { use Cipher[Char] ... }	# same thing as above (above is sugar for this)
 
 
 # Subtyping/Type restrictions
@@ -68,13 +75,5 @@ def foo = (x) { ... }		# args must support all methods called on x (but what dif
 def foo = (x: Numeric) { ... }	# args must inherit from Numeric (+ method support)
 				# unless this isn't how inferrence works
 
-# Interfaces and Inheritance
-def Caeser = (shft: Char) {
-	use Cipher[Char]	# Is this the same or different than the current `use`
-}
-
-def Caeser = Cipher { ... }	# Sugar for { use Cipher ... }
-
-
 # Metaprogramming
-# TODO
+(Int, Float, String).filter(Numeric).size

@@ -1,7 +1,7 @@
 ## TODO
 Figure out how to resolve indexing and dot-flipping
 Settle on mutability solution
-Write down array syntax
+Figure out how to access a tuple
 ##
 
 # This is a single line comment
@@ -55,7 +55,7 @@ let m = "Hello"		# Variables can be "shadowed" by latter declarations
 let n = mut 3		# function
 mut n = 3		# context
 let n mut = 3		# contract
-let n: mut = 3		# type modifier, ala `const` (the mut "function" would just perform inference)
+let n: mut Int = 3		# type modifier, ala `const` (the mut "function" would just perform inference)
 
 
 # Dot-flipping
@@ -70,6 +70,10 @@ std:io:println
 
 Int.abs			# You can test for an existence of a function rather simply
 Int:abs
+
+# Sequences/Views
+let view = [1, 2, 3, 4, 5]	# Note that view is not an array (it has type T*)
+let arr = view.asArray		# Array is instead a stdlib collection (of type Array[T])
 
 ##
 Keywords:		<- The "flippable" keywords needs more explanation
@@ -88,7 +92,7 @@ Keywords:		<- The "flippable" keywords needs more explanation
 	mod
 	use
 
-    Uncertain keywords:
+    Uncertain:
 	else
 ##
 

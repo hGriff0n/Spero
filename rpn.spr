@@ -61,16 +61,23 @@ def arrayTest = (nums: Int*) {
 def sortTest[T] = (view: T*) {
 	let (a, b) = (3, 4)
 
-	view.sort((a, b) {
-		a < b								 # Assume there's a more complex calculation here
-	}).toStr.println
+	view.sort((a, b) a < b).toStr.println	# Assume there's a more complex calculation here
 
 }
 
-def split = (s: String, i: Int) =>		# The `=>` is an alternate way to start the function body ??
+def split = (s: String, i: Int)	{			# The `=>` is an alternate way to start the function body ??
 	s.zipWith(index)
 	 .groupWhile(< i)
+	 .map(.snd .mkString)					# How to access a tuple ???
+}
 
+def noargs = () {
+	let person = "Enter your name: {}".std:io:getln
+	let age = "Enter your age: {}".std:io:getln
+	let (gen, race) = "Enter your gender: {}\nEnter your race: {}".std:io:getln
+	"{person}, {age}, {gen}, {race}".fmt
+}
+	 
 ##
 Problems:
 	Large problems with writing variable-less functions

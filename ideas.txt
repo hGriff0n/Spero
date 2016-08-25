@@ -1,3 +1,3 @@
 built-in event loop (ala lever)
     easy to develop concurrency
-    main would be a default 
+    main would be a default

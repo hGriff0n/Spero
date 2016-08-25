@@ -1,21 +1,38 @@
 ## TODO:
-Figure out how to define no-arg functions
-Figure out how to reassign no-arg functions
-Figure out how to accept var args
+Settle on function signature syntax
+Work on lambda arg syntax (parsing question)
+Lazy vs strict function evaluation
+Settle on argument syntax
 ##
 
-# Testing out no-arg functions
-def foo = "Hello"		# Current syntax (this would just assign a string however)
+# No-arg functions
+def foo = () "Hello"		# This is how you define a no-arg function (parsing may be tricky to resolve)
+def foo = () {			# The reasoning and semantics need a bit of work (but that should be rolled into the lambda work)
+	let person = "Enter your name: {}".std:io:getln			# Here's another problem with indexing
+	"Hello {person}!".fmt
+}
+
+using tst = foo			# This is how a no-arg function has to be re-"assigned"
+let add = +			# Normal reassignment is equivalent to calling `+` with no arguments (ie. currying)
+using add = +			# Operator syntax rules do not apply to add (it's the name, not the implementation
 
 
-# Testing out simple function def syntax 
-let add = (x, y:) { x + y }	# New function syntax
-let add = +			# Functional support
+# Lambda functions
+let sortfn = (a, b) { a < b }	# This works for any number of lines
+let sortfn = (a, b) a < b	# I want one that works for one liners
+let sortfn = (a, b) -> a < b	# That I can also extend to function signatures
+let sortfn = (a, b) => a < b
+
+
+# Function Signatures
+def foo = (Int) String		# Mirrors the declaration syntax
+def foo = (Int) => String	# The current syntax
+def foo = (Int) -> String	# This may be delving into the metaprogramming territory
 
 
 # Testing out contracts
 let factorial = (:Number) .match {
-	x => 1 .if x < 2			## This may require some creative grammar rules
+	x => 1 .if x < 2		## This may require some creative grammar rules
 	n => n * factorial(n - 1)
 }
 
@@ -30,14 +47,14 @@ data Option[T] = Some(T) | None
 # An function that doesn't follow variable name rules is automatically infix
 
 # Scala style definitions (no ',' to separate args)
-def >>= = (opt f) match opt {
+def >>= = (opt f) match opt {		# What if 'opt' becomes a context ???
 	Some(val) => Some(f(val))
 	None => None
 }
 
 # Current syntax
-let >>= = (opt, f) .match {		# what if opt becomes a context
-	Some(val), f => Some(f(val))	# this would turn f into an optional arg
+let >>= = (opt, f) .match {
+	Some(val), f => Some(f(val))
 	None, _ => None
 }
 
@@ -85,7 +102,10 @@ TODO: Determine if dot-flipping should remove the "parentheses" requirement (for
 ##
 
 let factorial = (n) { n * n - 1 .factorial }
-let factoiral = (n) { n * n - (1.factorial) }		## This is equivalent to the above
-let factorial = (n) { n * (n - 1) .factorial }		## This is not (way too greedy)
+let factoiral = (n) { n * n - (1.factorial) }		# This is equivalent to the above
+let factorial = (n) { n * (n - 1) .factorial }		# This is not (way too greedy)
 
-# TODO: Determine how to assign a no-arg function
+# Variable arguments
+def max[T] = (:T*) .sortWith(>)(0)			# A T* accepts a coninuous list of T if it is the last argument
+max([3, 4, 5]) == max(3, 4, 5)				# Unless a view is passed in
+
