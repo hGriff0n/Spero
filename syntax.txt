@@ -1,3 +1,9 @@
+## TODO
+Figure out how to resolve indexing and dot-flipping
+Settle on mutability solution
+Write down array syntax
+##
+
 # This is a single line comment
 
 ##
@@ -5,7 +11,7 @@ This is a multiline comment
 ##
 
 # Assignment syntax
-<context> <name> <contracts> = <expression>
+<context> <name> <contracts> = <scope>
 	# I'm not sure about how multiple contracts will be handled
 
 ##
@@ -16,15 +22,14 @@ Context is always a keyword that describes how the rest of the expression gets t
 	static <- introduce a new name binding of static visibility
 	using  <- create a new alias in the current scope
 	type   <- create a new ADT in the scope (constructors are in the expression)
-	mod    <- indicate the module for the current file (file section?)
-	use    <- import from another module
 
     Possible Contexts:
         mut    <- mutable name binding
+	data   <- replaces `type`
 
 Name indicates the scoped binding that the statement will exist under
 Some additional information about the binding can also be derived here
-	variable  = [a-z].*		<- first letter must be lowercase
+	variable  = [a-z_].*		<- first letter must be lowercase
 	type      = [A-Z].*		<- first letter must be uppercase
 	operator  = ^[variable|type]	<- anything else, automatic infix syntax
 
@@ -36,14 +41,9 @@ Contracts refine the binding information with additional rules for static matchi
     Possible Contracts:
         mutabilitiy	    =   mut
 
-Operators
-	Assignment '='		<- can't write "let =(x) = ..."
-	Subtyping  ':'		<- can't write "let :(x) = ..."
-	Equality   '=='
-
-The expression can be any valid construct in the language
-Scopes (multiple expressions) can possibly be encapsulated by surrounding with '{}'
-	I'm not sure about whether whitespace should format scopes or not
+Scope is the series of instructions that will be bound to the name
+	Single-line scopes do not need the `{}`, but multiline scopes do
+	TODO: IMPROVE explanation
 ##
 
 # Some examples of assignment
@@ -52,15 +52,17 @@ let t :String = 3	# Error (type contract not maintained)
 let m = "Hello"		# Variables can be "shadowed" by latter declarations
 
 # Enabling mutability
-let n = mut 3		# Special 'mut' function
-mut n = 3		# I could move 'mut' into the context
-let n mut = 3		# Or put it into the contract
+let n = mut 3		# function
+mut n = 3		# context
+let n mut = 3		# contract
+let n: mut = 3		# type modifier, ala `const` (the mut "function" would just perform inference)
 
 
 # Dot-flipping
 "Hello".print		# Same as print("Hello"). Functions can be applied in-/post-fix by prepending a '.' to their name
 "3 + 4 = {}".println(7) # Can be used with functions that take multiple arguments, the "calling" value is inserted as the first argument
 			# This is how OOP is implemented internally, through an implicit "self" parameter
+
 
 # Indexing 		<- The interaction of indexing and dot-flipping is a current sticking point of the language
 std.io.println
@@ -83,7 +85,15 @@ Keywords:		<- The "flippable" keywords needs more explanation
 
     Normal keywords:
 	{Context keywords}
+	mod
+	use
 
     Uncertain keywords:
 	else
+##
+
+##
+Default Operators:
+	Equality   '=='
+	Assignment '='
 ##

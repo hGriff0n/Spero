@@ -1,11 +1,23 @@
+## TODO:
+Figure out how to define no-arg functions
+Figure out how to reassign no-arg functions
+Figure out how to accept var args
+##
+
+# Testing out no-arg functions
+def foo = "Hello"		# Current syntax (this would just assign a string however)
+
+
 # Testing out simple function def syntax 
-let add = (x, y) { x + y }	# New function syntax
-let add = '+			# Functional support (very experimental)
+let add = (x, y:) { x + y }	# New function syntax
+let add = +			# Functional support
 
 
-# Testing out contracts (old syntax)
-factorial (< 0) = 1
-factorial n = n * factorial(n - 1)
+# Testing out contracts
+let factorial = (:Number) .match {
+	x => 1 .if x < 2			## This may require some creative grammar rules
+	n => n * factorial(n - 1)
+}
 
 
 # Testing out parametric stuff
@@ -15,14 +27,7 @@ factorial n = n * factorial(n - 1)
 data Option[T] = Some(T) | None
 # Keyword is necessary because Some and None aren't types, but constructors
 
-# An function that doesn't follow variable rules is automatically infix
-# Rust style definitions
-def >>=(opt: Option, f: Function) = {
-	opt .match {		# `.<name>` turns the function/etc into infix
-		Some(val) => Some(f(val))
-		None => None
-	}
-}
+# An function that doesn't follow variable name rules is automatically infix
 
 # Scala style definitions (no ',' to separate args)
 def >>= = (opt f) match opt {
@@ -31,9 +36,9 @@ def >>= = (opt f) match opt {
 }
 
 # Current syntax
-let >>= = (opt, f) => match opt {	# what if opt becomes a context
-	Some(val) => Some(f val)	# this would turn f into an optional arg
-	None => None
+let >>= = (opt, f) .match {		# what if opt becomes a context
+	Some(val), f => Some(f(val))	# this would turn f into an optional arg
+	None, _ => None
 }
 
 Some(3) >>= add(5)			# operators are infix by default (no '.' needed)
@@ -46,22 +51,41 @@ def foo = (mut x: Int) {
 	x = x + 1
 }
 
-# Function casing (demonstrate with take, factorial, 
+# Function pattern matching
 def take[T] = (:Size, :T*) .match {
 	(0, _) = Nil
 	(_, Nil) = Nil
 	(n, x:xs) = x : take(n - 1, xs)
 }
 
+let add = (x, y) .match {
+	0, y  => y
+	suc(x), y => suc(add(x, y))
+}
+
+let fibonacci = (:Number) .match {
+	0 => 1
+	1 => 1
+	n => fibonacci(n - 1) + fibonacci(n - 2)
+}
+
 ##
 Dot flipping ('.' operator)
 Non-operator functions can be used in an infix manner by appending their name with a '.'
+	Operators are implicitly infix, though they can used as normal functions, ie with `()`
+	If an operator is "dot-flipped", then its precedence is "upgraded" to that of a function (so "5 * 3 .+ 3" equals 30)		<- Not very experimental at the moment
 If a function only takes one argument, dot flipping allows postfix calling (similar to Haskell ./$ operator)
+If a function takes 2+ arguments, dot flipping puts the "calling" value as the first argument
+	Attempting to match the position would be unfeasible (ie. f(Int, Int) ??)
 Class methods are implemented through dot-flipping ("3.abs" => (Int.abs)(3))
 	Class (non-static) methods implicitly get a "self" member when defining
 
-TODO: Consider what '.+' means
-TODO: Determine how to call operators in a prefix manner
 TODO: Determine if i should add a syntax to call postfix
-TODO: Determine what dot-flipping does on functions with >2 arguments (though this is what class methods do anyway)
+TODO: Determine if dot-flipping should remove the "parentheses" requirement (for non-operators)
 ##
+
+let factorial = (n) { n * n - 1 .factorial }
+let factoiral = (n) { n * n - (1.factorial) }		## This is equivalent to the above
+let factorial = (n) { n * (n - 1) .factorial }		## This is not (way too greedy)
+
+# TODO: Determine how to assign a no-arg function

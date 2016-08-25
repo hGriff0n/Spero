@@ -1,0 +1,13 @@
+mod opt
+
+type Option[T] = Some(T) | None {
+    def get = self.match {
+        Some(v) => v
+    }
+}
+
+def main = {
+    let val = Some(3)
+
+    "{}".println(val.get)
+}

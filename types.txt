@@ -1,20 +1,10 @@
 # Syntax for defining algebraic data types
-	# Context needed because ADTs are a collection of constructors, not types
-type Option[T] = Some(T) | None {
-	def get = self .match {
-		Some(v) => v
-		None => error
-	}
+	# Special context needed because ADTs are a collection of constructors, not types
+type Option[T] = Some(T) | None
 
-	def or_else = (e: T) self .match {
-		Some(v) => v
-		None => e
-	}
-}
 
 # Syntax for defining custom structures
 let Animal = { ... }
-let Cat = Animal{ ... }
 
 # Syntax for defining parametric structures
 let Vec[T] = (n: Size) {
@@ -40,30 +30,15 @@ using Reducable: Numeric | Traversable
 let Person = (name: String) {
 	static count mut = 0				# Mutable static field
 
-	def this = (clone: Person) this(clone.name)	# Copy constructor
-	def hello = println "Hello! I'm {name}!"	# Method? With interpolation
+	def this = (:Person) .name .this		# Copy constructor
+	def hello = println("Hello! I'm {name}!")	# Method? With interpolation
+							# What differentiates this from assigning to the result of an equation (see "variables" below)
 }
-
-
-# Type programming ??? (It looks right, if I'm going to take this path)
-let Fibbonaci (n: Size) = Fibbonacci (n - 1) + Fibbonacci (n - 2)
-Fibbonacci 0 = 1
-Fibbonacci 1 = 1
 
 # Standard Types
 Size		# unsigned
 Int		# signed
 Float		# double
-
-# Could def be used for "public" in class definitions ???
-# let would represent "protected"
-
-##
-How to add interfaces (inherit from multiple traits) ???
-	Add them to the contract
-	Add after the fact (with etc)
-	impl context (change the type ad-hoc)
-##
 
 
 # Spero Design Sheet: Caeser
@@ -72,42 +47,34 @@ How to add interfaces (inherit from multiple traits) ???
 let Cipher[T] = {
 	let Enc = T{}
 	def encode = (T*) => Enc*	# The current syntax I'm experimenting on
-	let decode = (Enc*) => T*	# def specifies function signatures without require implementation
+	def decode = (Enc*) => T*	# def specifies function signatures without require implementation
 }
 
 # Should subtypes have to specify types of inherited functions ??
-let Caeser = (shft: Char) Cipher[Char] {
-	let encode = .map (+ shft)
+let Caeser = (shft: Char) {
+	use Cipher[Char]
+
+	def encode = .map (+ shft)
 	def decode = .map (- shft)
 }
 
 
-# Creating lambda type
+# Creating lambda types
 let caeser = Cipher[Char]{ ... }	# caeser is actually an instance of Cipher
 
-
-# Variable
-def foo = "Hello"
-
-let str = foo			# str is assigned the result of foo
-let str :String = foo()		# no parens = empty parens
-let str = 'foo			# str is assigned the function (' acts like lisp ???)
-let str :Function = foo		# str is assigned the function (unless foo => Function?)
 
 # Subtyping/Type restrictions
 def foo = (x) { ... }		# args must support all methods called on x (but what differentiates this from a tuple with the value of x ???)
 def foo = (x: Numeric) { ... }	# args must inherit from Numeric (+ method support)
 				# unless this isn't how inferrence works
 
-# Ideas for allowing interfaces
-impl Caeser = Cipher
-impl Cat = Animal
-
+# Interfaces and Inheritance
 def Caeser = (shft: Char) {
-	impl Cipher[Char]
+	use Cipher[Char]	# Is this the same or different than the current `use`
 }
 
-def Caeser = (shft: Char) { ... } + Cipher[Char]
-def Caeser = (shft: Char) { ... } with Cipher[Char]
+def Caeser = Cipher { ... }	# Sugar for { use Cipher ... }
 
-with impl Cipher
+
+# Metaprogramming
+# TODO

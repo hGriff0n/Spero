@@ -2,3 +2,12 @@ mod hello
 use std:io:println
 
 def main = "Hello, World!" .println
+
+# Might change language to make this possible
+#"Hello, World!".println
+
+##
+Could I lose the main and just have the println ???
+    Maybe if I move to the event-loop, the non-function stuff, the "globals" will get evaluated in the setup phase
+    And then main is the default entry-point for interactive execution
+##

@@ -39,7 +39,9 @@ let Cipher[T] = {
 }
 
 # map[T, V] = (T*, (T) => V) => V*
-def Caeser = (shft: Char) Cipher[Char] {
+def Caeser = (shft: Char) {
+	use Cipher[Char]						# Inheritance/Interfaces
+
 	def encode = .map (+ shft)				# True "varible-less" functions
 	def decode = .map (- shft)				# They inferentially meet the Cipher requirements
 }
@@ -50,12 +52,21 @@ def test = (log: Logger) {					# Can the '{' unpack the arg tuple ??
 }
 
 def arrayTest = (nums: Int*) {
-	let arr = [1, 2, 3, 4, 5] ++ nums		# The sequence(view) is the language intrinsic, not arrays
+	let view = [1, 2, 3, 4, 5] ++ nums		# The language intrinsic is a view (or sequence)
+	let arr = nums.toArray					# Array is a stdlib feature
+
 	println("The first element is {}", arr(0))
 }
 
-# Is it possible to write a variable-less function with multiple args (see Huffman)
-	# The syntax would be `(:T, :T)` for the arguments anyways
+def sortTest[T] = (view: T*) {
+	let (a, b) = (3, 4)
+
+	view.sort((a, b) {
+		a < b								 # Assume there's a more complex calculation here
+	}).toStr.println
+
+}
+
 def split = (s: String, i: Int) =>		# The `=>` is an alternate way to start the function body ??
 	s.zipWith(index)
 	 .groupWhile(< i)
