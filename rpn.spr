@@ -6,16 +6,16 @@ The test program is primarily a basic RPN calculator with some non-rpn functions
 mod rpn
 use std:{io, str}:*
 
-def main = getln .parse .println("= {}")
+def main = .getln .parse .println("= {}")
 
 type Stack[T] = Empty | Cons(T, Stack) {
 	def toStr = self .match {
-		Cons(i, Empty) => i.toStr
+		Cons(i, Empty) => i :: String
 		_              => "nil"
 	}
 }
 
-let parse = (:String)
+let parse = (::String)
 	.groupWhile(isDigit)
 	.removeIf(isSpace)
 	.reduce(Empty, (a, b) .match {
@@ -25,47 +25,53 @@ let parse = (:String)
 		Cons(r, Cons(l, _s)), "*" => Cons(l * r, _s)
 		Cons(l, _s), "~"          => Cons(-l, _s)
 		s, _                      => Cons(_.toInt, s) 
-	})._1									# A minor problem with the current proposal (the '_1')
+	})
 
-# Comment for consistency with `rpn_v2.spr`
-let eval = (:Stack[Int]) .match {
+let eval = (::Stack[Int]) .match {
 	Cons(i, Empty) => i.toStr
 	_              => "nil"
 }
 
 let Cipher[T] = {
-	def encode = (T*) => T*					# `encode` takes a T sequence and produces a T sequence
-	def decode = (T*) => T*
+	def encode :: (T*) -> T*					# `encode` takes a T sequence and produces a T sequence
+	def decode :: (T*) -> T*
 }
 
 # map[T, V] = (T*, (T) => V) => V*
-def Caeser = (shft: Char) {
+def Caeser = (shft :: Char) {
 	use Cipher[Char]						# Inheritance/Interfaces
 
 	def encode = .map (+ shft)				# True "varible-less" functions
 	def decode = .map (- shft)				# They inferentially meet the Cipher requirements
 }
 
-def test = (log: Logger) {					# Can the '{' unpack the arg tuple ??
+def test = (log :: Logger) {					# Can the '{' unpack the arg tuple ??
 	log << ("{} {} +".fmt(3, 4) .parse .eval)
 	log << ("{} {} + {} *".fmt(3, 4, 5) .parse .eval)
 }
 
-def arrayTest = (nums: Int*) {
+def arrayTest = (nums :: Int*) {
 	let view = [1, 2, 3, 4, 5] ++ nums		# The language intrinsic is a view (or sequence)
 	let arr = nums.toArray					# Array is a stdlib feature
 
 	println("The first element is {}", arr(0))
 }
 
-def sortTest[T] = (view: T*) {
+def sortTest[T] = () {
 	let (a, b) = (3, 4)
 
-	view.sort((a, b) a < b).toStr.println	# Assume there's a more complex calculation here
-
+	[3, 4, 5, 1, 2].sort(true).toStr.println		# These should not print the same thing
+	[3, 4, 5, 1, 2].sort((a, b) a < b).toStr.println
 }
 
-def split = (s: String, i: Int)	{			# The `=>` is an alternate way to start the function body ??
+# def encode = .map (c) c + 5
+
+def functionTest = () {
+	def foo = () "Hello".println
+	"Goodbye".println						# This is the only thing that should print
+}
+
+def split = (s :: String, i :: Int)	{			# The `=>` is an alternate way to start the function body ??
 	s.zipWith(index)
 	 .groupWhile(< i)
 	 .map(.snd .mkString)					# How to access a tuple ???

@@ -1,8 +1,28 @@
 ## TODO
-Work on parametrics
+Work on generics
 Work on metaprogramming doodles
 Start designing the type system
 ##
+
+# Generics Design sheet
+using Reducable = Numeric | Traversable		# Local type alias
+
+[T: Type]			# Templated on a type T that inherits from Type (all types do)
+[T]				# Sugar for the above
+[n: Size]			# Templated on a value, n, that is a size (how will this work)
+[T, n: Size]			# Templated on T and n (dependent typing ???)
+[T: Numeric | Traversable]	# T must be Numeric or Traversable
+[T: !Numeric]			# T can't be Numeric
+[Int]				# Invalid in a declaration (valid in use)
+
+# Co/contra-variance
+[T+]				# Covariance (if it's not the default)
+[+T]
+[T-]				# Contravariance (A: B -> T[B]: T[A]) (covariance is the default behavior)
+[^T]
+[T^]				# Invariance (if it's not the default)
+[?T]
+
 
 # Syntax for defining algebraic data types
 	# Special context needed because ADTs are a collection of constructors, not types
@@ -13,31 +33,14 @@ type Option[T] = Some(T) | None
 let Animal = { ... }
 
 # Syntax for defining parametric structures
-let Vec[T] = (n: Size) {
-	# T must be a type (ie. "T: Type", the ": Type" is filled in by default)
-}
-
-# Dependent Typing Syntax ???
-let Vec[T, n: Size] = { ... }		# Values can be part of the parameter system
-					# Does this enable dependent typing ???
-
-
-# Local type alias (local types also allowed)
-using Reducable = Numeric | Traversable
-
-
-# Other Parametric stuff
-[T: ^Numeric]			# T can't be Numeric
-[T: Numeric | Traversable]	# T must be Numeric or Traversable
-[T: Reducable]			# Same as above
-
+let Vec[T] = (n: Size) { ... }
 
 # Create a type with a constructor that takes a String
 let Person = (name: String) {
 	static count mut = 0				# Mutable static field (mutable syntax uncertain)
 
 	def this = (:Person) .name.this			# Variable-less copy constructor
-	def hello = println("Hello! I'm {name}!")	# Method? With interpolation
+	def hello = () println("Hello! I'm {name}!")	# Method? With interpolation
 							# What differentiates this from assigning to the result of an equation (see "variables" below)
 }
 
@@ -46,8 +49,6 @@ Size		# unsigned
 Int		# signed
 Float		# double
 
-
-# Spero Design Sheet: Caeser
 
 # Define Cipher trait (a type with unimplemented members)
 let Cipher[T] = {

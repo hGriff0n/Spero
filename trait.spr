@@ -1,18 +1,19 @@
 let Showable = {
-    def toStr = () => String
+    def toStr :: () => String
 }
 
+@annotate("This is a class")
 let Numeric = {
-    def + = (Numeric) => Numeric
-    def - = (:Numeric) .neg + self
+    def + :: (Numeric) => Numeric
+    def - = .neg + self
 }
 
 # BigInt is showable and numeric
-def BigInt = (num: String) {
+def BigInt = (num :: String) {
     use {Numeric, Showable}                 # Same syntax as the module mechanism (semantics slightly different)
 
     def toStr = num
-    def + = (val: Numeric)
+    def + = (val :: Numeric)
         BigInt(num + val.toStr)
 }
 

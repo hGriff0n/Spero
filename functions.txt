@@ -1,12 +1,16 @@
 ## TODO:
-Settle on function signature syntax
 Work on lambda arg syntax (parsing question)
 Lazy vs strict function evaluation
-Settle on argument syntax
+Can I generalize dot-flipping to allow for multiple "front"-args
+Resolver argument-tuple implies return tuple problem
 ##
 
+# Function Type Signature
+(Args...) -> Ret
+
 # No-arg functions
-def foo = () "Hello"		# This is how you define a no-arg function (parsing may be tricky to resolve)
+def foo = () "Hello"
+def foo = ."Hello"		# Will this work ???
 def foo = () {			# The reasoning and semantics need a bit of work (but that should be rolled into the lambda work)
 	let person = "Enter your name: {}".std:io:getln			# Here's another problem with indexing
 	"Hello {person}!".fmt
@@ -20,35 +24,50 @@ using add = +			# Operator syntax rules do not apply to add (it's the name, not 
 # Lambda functions
 let sortfn = (a, b) { a < b }	# This works for any number of lines
 let sortfn = (a, b) a < b	# I want one that works for one liners
-let sortfn = (a, b) -> a < b	# That I can also extend to function signatures
-let sortfn = (a, b) => a < b
+let sortfn = (a, b) -> a < b
 
 
-# Function Signatures
-def foo = (Int) String		# Mirrors the declaration syntax
-def foo = (Int) => String	# The current syntax
-def foo = (Int) -> String	# This may be delving into the metaprogramming territory
+# Argument syntax
+def foo = (f) f			# f can be of any value type
+def foo = (F) .F:new		# f must be a type (forwards to F's constructor)
+
+def foo = (f :: Reducable) f	# f must match (or be a subtype of) Reducable (need to work on how to resolve this)
+def foo = (f = 3) f		# f must be an Int, default value of 3
+def foo = (f :: Size = 3) f	# f must be a Size, default value of 3
+
+def foo = (f :< Numeric) f	# f must be a sub-type of Int			<- Don't know if I'll include top/bottom typing yet
+def foo = (f :> Int) f		# f must be a super-type of Int
+
+
+# Functional composition
+# If a dot is the first character in a scope, the following line is a "composition"
+# Calling is like placing the argument tuple in front of the dot
+def sortUniuqe = .sort .noDup
+
+sortUnique(1, 2, 3, 4, 5) => [1, 2, 3, 4, 5].sort.noDup
+
+
+# Variable-less functions can make use of composition syntax
+def foo = .reduce			# This accepts anything that `reduce` accepts
+def foo = (::Reducable) .reduce		# This only accepts things that match `Reducable`
+					# Why am I allowed to declare ADT constructors without the '::'
 
 
 # Testing out contracts
 let factorial = (:Number) .match {
-	x => 1 .if x < 2		## This may require some creative grammar rules
+	x => 1 .if x < 2		# This may require some creative grammar rules
 	n => n * factorial(n - 1)
 }
 
 
-# Testing out parametric stuff
-
-
 # Testing out infix function def syntax (match/generic syntax is uncertain at this point)
-data Option[T] = Some(T) | None
-# Keyword is necessary because Some and None aren't types, but constructors
+type Option[T] = Some(T) | None
 
 # An function that doesn't follow variable name rules is automatically infix
 
 # Scala style definitions (no ',' to separate args)
 def >>= = (opt f) match opt {		# What if 'opt' becomes a context ???
-	Some(val) => Some(f(val))
+	Some(val) => f(val).Some
 	None => None
 }
 
@@ -64,12 +83,12 @@ Some(3) add(5) ..>>=			# what if '..' turned a function into postfix
 
 
 # Argument context and contract
-def foo = (mut x: Int) {
+def foo = (mut x :: Int) {
 	x = x + 1
 }
 
 # Function pattern matching
-def take[T] = (:Size, :T*) .match {
+def take[T] = (::Size, ::T*) .match {
 	(0, _) = Nil
 	(_, Nil) = Nil
 	(n, x:xs) = x : take(n - 1, xs)
@@ -80,7 +99,7 @@ let add = (x, y) .match {
 	suc(x), y => suc(add(x, y))
 }
 
-let fibonacci = (:Number) .match {
+let fibonacci = (::Number) .match {
 	0 => 1
 	1 => 1
 	n => fibonacci(n - 1) + fibonacci(n - 2)
@@ -106,6 +125,6 @@ let factoiral = (n) { n * n - (1.factorial) }		# This is equivalent to the above
 let factorial = (n) { n * (n - 1) .factorial }		# This is not (way too greedy)
 
 # Variable arguments
-def max[T] = (:T*) .sortWith(>)(0)			# A T* accepts a coninuous list of T if it is the last argument
+def max[T] = (::T*) .sortWith(>)(0)			# A T* accepts a coninuous list of T if it is the last argument
 max([3, 4, 5]) == max(3, 4, 5)				# Unless a view is passed in
 

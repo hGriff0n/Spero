@@ -1,19 +1,19 @@
 # Let's start off with a simple "Cipher" trait
 let Cipher = {
-	def encode = (String) => String
-	def decode = (String) => String
+	def encode :: (String) -> String
+	def decode :: (String) -> String
 }
 
 # Lets create an instance of our Cipher class
 	# Like Java, we must supply implementations for the abstract methods
 let caeser = Cipher {
-	def encode = .map (c) => c + 5		# The types/arguments are inherited from the Cipher
+	def encode = .map (c) { c + 5 }		# The types/arguments are inherited from the Cipher
 	def decode = .map (- 5)				# Take advangate of currying
 }
 
 # Lets expand our caeser cipher with a constructor
 	# Technically this actually creates a function that returns a Cipher
-let caeser = (shft: Char) {
+let caeser = (shft :: Char) {
 	use Cipher							# This is the same as "Cipher {" (which is really just sugar for this)
 
 	def encode = .msg (+ shft)
@@ -34,8 +34,8 @@ c_caeser.encode("hello") .eq caeser('C').encode("hello")
 # Types are indicated by capital letters, variables by lowercase, and operators by symbols
 	# So by capitalizing the name we can a much more flexible construction
 	# Note that the arg list contract now specifies the constructor for the type 
-let Caeser = (shft: Char) Cipher {
-	def encode = .msg (c) => c + shft
+let Caeser = (shft :: Char) Cipher {
+	def encode = .msg (c) { c + shft }
 	def decode = .map (- shft)
 }
 
@@ -46,8 +46,8 @@ let Caeser = (shft: Char) Cipher {
 
 # The syntax is (currently) borrowed from Scala (though not everything (yet))
 let Cipher[T] = {
-	def encode = (T*) => T*			# Take a sequence of T's and return such
-	def decode = (T*) => T*	
+	def encode :: (T*) -> T*			# Take a sequence of T's and return such
+	def decode :: (T*) -> T*	
 }
 
 # We can even protect against wrongful conversions through local types
@@ -55,12 +55,12 @@ let Cipher[T] = {
 	# This doesn't work correctly yet
 let Cipher[T] = {
 	let EncType = T{}					# Protection's easily lost and it's not composable at all
-	def encode = (T*) => EncType*		# I think the relationship's reversed too
-	def decode = (EncType*) => T*
+	def encode :: (T*) -> EncType*		# I think the relationship's reversed too
+	def decode :: (EncType*) -> T*
 }
 
 # So now how does our Caeser Cipher get modified
-let Caeser = (shft: Char) {
+let Caeser = (shft :: Char) {
 	use Cipher[Char]					# The `[Char]` may be unnecessary
 
 	def encode = .map (+ shft)

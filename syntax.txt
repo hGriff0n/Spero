@@ -35,7 +35,7 @@ Some additional information about the binding can also be derived here
 
 Contracts refine the binding information with additional rules for static matching
     Current Contracts: (Come up with defaults once I've settled on the list)
-	type bindings	    =   :T
+	type bindings	    =   :: T	<- syntax taken from haskell (extra character because I want programmers to use type inference, also allows for a single character in indexing)
 	parametrics	    =   [T]
 
     Possible Contracts:
@@ -48,14 +48,14 @@ Scope is the series of instructions that will be bound to the name
 
 # Some examples of assignment
 let m = 3		# Variables are immutable by default
-let t :String = 3	# Error (type contract not maintained)
+let t :: String = 3	# Error (type contract not maintained)
 let m = "Hello"		# Variables can be "shadowed" by latter declarations
 
 # Enabling mutability
 let n = mut 3		# function
 mut n = 3		# context
 let n mut = 3		# contract
-let n: mut Int = 3		# type modifier, ala `const` (the mut "function" would just perform inference)
+let n :: mut Int = 3	# type modifier, ala `const` (the mut "function" would just perform inference)
 
 
 # Dot-flipping
@@ -64,12 +64,10 @@ let n: mut Int = 3		# type modifier, ala `const` (the mut "function" would just 
 			# This is how OOP is implemented internally, through an implicit "self" parameter
 
 
-# Indexing 		<- The interaction of indexing and dot-flipping is a current sticking point of the language
-std.io.println
-std:io:println
-
-Int.abs			# You can test for an existence of a function rather simply
-Int:abs
+# Indexing
+std:io:Writer		# module
+Int:abs			# type
+Int:push		# this will fail if called (don't fail necessarily for metaprogramming uses)
 
 # Sequences/Views
 let view = [1, 2, 3, 4, 5]	# Note that view is not an array (it has type T*)
