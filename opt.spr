@@ -2,7 +2,7 @@ mod opt
 
 type Option[T] = Some(T) | None {
     def get = self.match {
-        Some(v) => v
+        Some(v) -> v
     }
 }
 

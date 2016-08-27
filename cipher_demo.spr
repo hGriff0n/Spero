@@ -7,7 +7,7 @@ let Cipher = {
 # Lets create an instance of our Cipher class
 	# Like Java, we must supply implementations for the abstract methods
 let caeser = Cipher {
-	def encode = .map (c) { c + 5 }		# The types/arguments are inherited from the Cipher
+	def encode = .map (c) -> .+ 5		# The types/arguments are inherited from the Cipher
 	def decode = .map (- 5)				# Take advangate of currying
 }
 
@@ -20,10 +20,11 @@ let caeser = (shft :: Char) {
 	def decode = .map (- shft)
 }
 
-caeser('C').encode("hello") = "JGNNQ"
-caeser('C').decode("JGNNQ") = "hello"
-let c_caeser = caeser('C')				# possible ??
-c_caeser.encode("hello") .eq caeser('C').encode("hello")
+caeser('C').encode("hello") == "JGNNQ"
+caeser('C').decode("JGNNQ") == "hello"
+
+let c_caeser = caeser('C')
+c_caeser.encode("hello") == caeser('C').encode("hello")
 
 ##
     This works, but what if we want to only accept caeser ciphers
@@ -59,9 +60,10 @@ let Cipher[T] = {
 	def decode :: (EncType*) -> T*
 }
 
-# So now how does our Caeser Cipher get modified
+# So now how does our Caeser Cipher get modified ?
+	# Not much, just have to modify our inheritance
 let Caeser = (shft :: Char) {
-	use Cipher[Char]					# The `[Char]` may be unnecessary
+	use Cipher[Char]
 
 	def encode = .map (+ shft)
 	def decode = .map (- shft)

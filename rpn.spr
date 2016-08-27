@@ -6,30 +6,30 @@ The test program is primarily a basic RPN calculator with some non-rpn functions
 mod rpn
 use std:{io, str}:*
 
-def main = .getln .parse .println("= {}")
+def main = .getln .parse .("={}".println)
 
 type Stack[T] = Empty | Cons(T, Stack) {
 	def toStr = self .match {
-		Cons(i, Empty) => i :: String
-		_              => "nil"
+		Cons(i, Empty) -> i :: String
+		_              -> "nil"
 	}
 }
 
-let parse = (::String)
+let parse = (String) ->
 	.groupWhile(isDigit)
 	.removeIf(isSpace)
 	.reduce(Empty, (a, b) .match {
-		Cons(r, Cons(l, _s)), "+" => Cons(l + r, _s)
-		Cons(r, Cons(l, _s)), "-" => Cons(l - r, _s)
-		Cons(r, Cons(l, _s)), "/" => Cons(l / r, _s)
-		Cons(r, Cons(l, _s)), "*" => Cons(l * r, _s)
-		Cons(l, _s), "~"          => Cons(-l, _s)
-		s, _                      => Cons(_.toInt, s) 
+		Cons(r, Cons(l, _s)), "+" -> Cons(l + r, _s)
+		Cons(r, Cons(l, _s)), "-" -> Cons(l - r, _s)
+		Cons(r, Cons(l, _s)), "/" -> Cons(l / r, _s)
+		Cons(r, Cons(l, _s)), "*" -> Cons(l * r, _s)
+		Cons(l, _s), "~"          -> Cons(-l, _s)
+		s, _                      -> Cons(_.toInt, s) 
 	})
 
-let eval = (::Stack[Int]) .match {
-	Cons(i, Empty) => i.toStr
-	_              => "nil"
+let eval = (Stack[Int]) .match {
+	Cons(i, Empty) -> i.toStr
+	_              -> "nil"
 }
 
 let Cipher[T] = {
@@ -58,10 +58,9 @@ def arrayTest = (nums :: Int*) {
 }
 
 def sortTest[T] = () {
-	let (a, b) = (3, 4)
+	let (a, b) = (3, "I")									# Use `<>` if parsing doesn't work out
 
-	[3, 4, 5, 1, 2].sort(true).toStr.println		# These should not print the same thing
-	[3, 4, 5, 1, 2].sort((a, b) a < b).toStr.println
+	[3, 4, 5, 1, 2].sort((a, b) -> a < b).toStr.println
 }
 
 # def encode = .map (c) c + 5
@@ -71,17 +70,16 @@ def functionTest = () {
 	"Goodbye".println						# This is the only thing that should print
 }
 
-def split = (s :: String, i :: Int)	{			# The `=>` is an alternate way to start the function body ??
+def split = (s :: String, i :: Int)	->
 	s.zipWith(index)
 	 .groupWhile(< i)
 	 .map(.snd .mkString)					# How to access a tuple ???
-}
 
 def noargs = () {
 	let person = "Enter your name: {}".std:io:getln
 	let age = "Enter your age: {}".std:io:getln
 	let (gen, race) = "Enter your gender: {}\nEnter your race: {}".std:io:getln
-	"{person}, {age}, {gen}, {race}".fmt
+	"{person}, {age - 5}, {gen}, {race}".fmt
 }
 	 
 ##
@@ -90,6 +88,4 @@ Problems:
 		Arguments are in a tuple => operations are on tuples and return type is a tuple
 		Neither are desired in the abstract (need a simple way to justify decomposing)
 	Possible issues with type-level metaprogramming
-	Small issue with syntax for lambda functions
-		Is `(a, b)` a tuple with the values of a and b or an arugment tuple of generic type ???
 ##

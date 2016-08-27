@@ -1,17 +1,25 @@
 ## TODO:
-Work on lambda arg syntax (parsing question)
 Lazy vs strict function evaluation
-Can I generalize dot-flipping to allow for multiple "front"-args
-Resolver argument-tuple implies return tuple problem
 ##
+
+# Variable-less functions can make use of composition syntax
+def foo = .reduce			# This accepts anything that `reduce` accepts
+def foo = (Reducable) -> .reduce	# There's still some possible problems with this (cause type tuples are still a thing)
+
 
 # Function Type Signature
 (Args...) -> Ret
 
+## Defining a function
+(Params...) { ... }
+(Params...) -> ...		# One-liner sugar
+. ...				# Dot-forwarding (args get inserted after the first function)
+##
+
 # No-arg functions
-def foo = () "Hello"
-def foo = ."Hello"		# Will this work ???
-def foo = () {			# The reasoning and semantics need a bit of work (but that should be rolled into the lambda work)
+def foo = () -> "Hello"
+def foo = ."Hello"		# foo(...) => "Hello"(...)
+def foo = () {
 	let person = "Enter your name: {}".std:io:getln			# Here's another problem with indexing
 	"Hello {person}!".fmt
 }
@@ -21,65 +29,43 @@ let add = +			# Normal reassignment is equivalent to calling `+` with no argumen
 using add = +			# Operator syntax rules do not apply to add (it's the name, not the implementation
 
 
+# Valid identity function ???
+def id = .
+
 # Lambda functions
-let sortfn = (a, b) { a < b }	# This works for any number of lines
-let sortfn = (a, b) a < b	# I want one that works for one liners
+let sortfn = (a, b) { a < b }
 let sortfn = (a, b) -> a < b
 
 
 # Argument syntax
-def foo = (f) f			# f can be of any value type
-def foo = (F) .F:new		# f must be a type (forwards to F's constructor)
+def foo = (f) -> f		# f can be of any value type
+def foo = (F) -> F:new		# f must be a type (forwards to F's constructor)
 
-def foo = (f :: Reducable) f	# f must match (or be a subtype of) Reducable (need to work on how to resolve this)
-def foo = (f = 3) f		# f must be an Int, default value of 3
-def foo = (f :: Size = 3) f	# f must be a Size, default value of 3
+def foo = (f :: Reducable) -> f	# f must match Reducable
+def foo = (f = 3) -> f		# f must be an Int, default value of 3
+def foo = (f :: Size = 3) -> f	# f must be a Size, default value of 3
 
-def foo = (f :< Numeric) f	# f must be a sub-type of Int			<- Don't know if I'll include top/bottom typing yet
-def foo = (f :> Int) f		# f must be a super-type of Int
-
-
-# Functional composition
-# If a dot is the first character in a scope, the following line is a "composition"
-# Calling is like placing the argument tuple in front of the dot
-def sortUniuqe = .sort .noDup
-
-sortUnique(1, 2, 3, 4, 5) => [1, 2, 3, 4, 5].sort.noDup
-
-
-# Variable-less functions can make use of composition syntax
-def foo = .reduce			# This accepts anything that `reduce` accepts
-def foo = (::Reducable) .reduce		# This only accepts things that match `Reducable`
-					# Why am I allowed to declare ADT constructors without the '::'
+def foo = (f < Numeric) -> f	# f must be a sub-type of Int			<- Don't know if I'll include top/bottom typing yet
+def foo = (f > Int) -> f	# f must be a super-type of Int
 
 
 # Testing out contracts
-let factorial = (:Number) .match {
-	x => 1 .if x < 2		# This may require some creative grammar rules
-	n => n * factorial(n - 1)
+let factorial = (Number) -> .match {	# Dot-forwarding still works with the '->'
+	x -> 1 .if x < 2		# This may require some creative grammar rules
+	n { n * factorial(n - 1) }
 }
 
 
 # Testing out infix function def syntax (match/generic syntax is uncertain at this point)
 type Option[T] = Some(T) | None
 
-# An function that doesn't follow variable name rules is automatically infix
-
-# Scala style definitions (no ',' to separate args)
-def >>= = (opt f) match opt {		# What if 'opt' becomes a context ???
-	Some(val) => f(val).Some
-	None => None
-}
-
-# Current syntax
-let >>= = (opt, f) .match {
-	Some(val), f => Some(f(val))
-	None, _ => None
+let >>= = (opt, f) -> .match {
+	Some(val), f -> Some(f(val))
+	None, _ -> None
 }
 
 Some(3) >>= add(5)			# operators are infix by default (no '.' needed)
->>=(None, add(4))			# what if .>>= allowed this instead ???
-Some(3) add(5) ..>>=			# what if '..' turned a function into postfix
+>>=(None, add(4))			# can still be used as normal functions
 
 
 # Argument context and contract
@@ -88,43 +74,67 @@ def foo = (mut x :: Int) {
 }
 
 # Function pattern matching
-def take[T] = (::Size, ::T*) .match {
-	(0, _) = Nil
-	(_, Nil) = Nil
-	(n, x:xs) = x : take(n - 1, xs)
+def take[T] = (Size, T*) -> .match {
+	0, _ -> Nil
+	_, Nil -> Nil
+	n, x++xs -> x ++ take(n - 1, xs)
 }
 
-let add = (x, y) .match {
-	0, y  => y
-	suc(x), y => suc(add(x, y))
+let add = .match {
+	0, y  -> y
+	suc(x), y -> suc(add(x, y))
 }
 
-let fibonacci = (::Number) .match {
-	0 => 1
-	1 => 1
-	n => fibonacci(n - 1) + fibonacci(n - 2)
+let fibonacci = (Number) -> .match {
+	0 -> 1
+	1 -> 1
+	n -> fibonacci(n - 1) + fibonacci(n - 2)
 }
 
 ##
-Dot flipping ('.' operator)
+Dot flipping
 Non-operator functions can be used in an infix manner by appending their name with a '.'
 	Operators are implicitly infix, though they can used as normal functions, ie with `()`
 	If an operator is "dot-flipped", then its precedence is "upgraded" to that of a function (so "5 * 3 .+ 3" equals 30)		<- Not very experimental at the moment
 If a function only takes one argument, dot flipping allows postfix calling (similar to Haskell ./$ operator)
 If a function takes 2+ arguments, dot flipping puts the "calling" value as the first argument
 	Attempting to match the position would be unfeasible (ie. f(Int, Int) ??)
-Class methods are implemented through dot-flipping ("3.abs" => (Int.abs)(3))
+If a function is dot-flipped on a tuple, the n elements of the tuple is "matched" to the first n args of the function
+	If a function takes less than n args, then there is a dispatch error								<- Might be nice to just forward those args to any result
+Class methods are implemented through dot-flipping (3.abs => Int:abs(3))
 	Class (non-static) methods implicitly get a "self" member when defining
 
-TODO: Determine if i should add a syntax to call postfix
 TODO: Determine if dot-flipping should remove the "parentheses" requirement (for non-operators)
 ##
 
 let factorial = (n) { n * n - 1 .factorial }
-let factoiral = (n) { n * n - (1.factorial) }		# This is equivalent to the above
+let factorial = (n) { n * n - (1.factorial) }		# This is equivalent to the above
 let factorial = (n) { n * (n - 1) .factorial }		# This is not (way too greedy)
 
+##
+Dot-forwarding
+If the first symbol in a function body is a '.', then the function arguments are applied to the following function/keyword
+	Additionally the new function inherits from the type signature of the called function
+		1. The argument list, if a more restrictive argument signature is not provided
+			a. It is an error if a function takes more args than the called function takes
+		2. The return type, if no further transformations are performed
+##
+
+let add = .match {					# Pure dot-forwarding
+	0, y -> y
+	suc(x), y -> suc(add(x y))
+}
+
+def sortUniuqe = (Traversable) -> .sort .noDup		# Works with one-liners
+
+let factorial = (Size) {				# Works with '{}' syntax too
+	.==(0) .if 1					# Dot-forwarding and dot-flipping in one-line
+	else n * factorial(n - 1)
+}
+
+
 # Variable arguments
-def max[T] = (::T*) .sortWith(>)(0)			# A T* accepts a coninuous list of T if it is the last argument
+def max[T] = (T*) -> .sortWith(>)(0)			# A T* accepts a coninuous list of T if it is the last argument
 max([3, 4, 5]) == max(3, 4, 5)				# Unless a view is passed in
+(3, 4, 5).max == max(3, 4, 5)
 

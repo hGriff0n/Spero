@@ -2,17 +2,19 @@
 Work on generics
 Work on metaprogramming doodles
 Start designing the type system
+Determine how casting will work
 ##
 
 # Generics Design sheet
 using Reducable = Numeric | Traversable		# Local type alias
 
-[T: Type]			# Templated on a type T that inherits from Type (all types do)
+#<T :: Type>
+[T :: Type]			# Templated on a type T that inherits from Type (all types inherit from the supertype, Type)
 [T]				# Sugar for the above
-[n: Size]			# Templated on a value, n, that is a size (how will this work)
-[T, n: Size]			# Templated on T and n (dependent typing ???)
-[T: Numeric | Traversable]	# T must be Numeric or Traversable
-[T: !Numeric]			# T can't be Numeric
+[n :: Size]			# Templated on a value, n, that is a size (how will this work)
+[T, n :: Size]			# Templated on T and n (dependent typing ???)
+[T :: Numeric | Traversable]	# T must be Numeric or Traversable
+[T :: !Numeric]			# T can't be Numeric
 [Int]				# Invalid in a declaration (valid in use)
 
 # Co/contra-variance
@@ -26,39 +28,34 @@ using Reducable = Numeric | Traversable		# Local type alias
 
 # Syntax for defining algebraic data types
 	# Special context needed because ADTs are a collection of constructors, not types
-type Option[T] = Some(T) | None
+type Option[T] = Some(T) | None				# These names are technically types ???
 
 
 # Syntax for defining custom structures
 let Animal = { ... }
 
 # Syntax for defining parametric structures
-let Vec[T] = (n: Size) { ... }
+let Vec[T] = (n :: Size) { ... }
 
 # Create a type with a constructor that takes a String
-let Person = (name: String) {
-	static count mut = 0				# Mutable static field (mutable syntax uncertain)
+let Person = (name :: String) {
+	static count mut = 0					# Mutable static field (mutable syntax uncertain)
 
-	def this = (:Person) .name.this			# Variable-less copy constructor
-	def hello = () println("Hello! I'm {name}!")	# Method? With interpolation
-							# What differentiates this from assigning to the result of an equation (see "variables" below)
+	# How to access class fields from an instance, with ':' or '.'
+	def this = (Person) -> .name.this			# Variable-less copy constructor (needs work)
+	def hello = () -> println("Hello! I'm {name}!")
 }
-
-# Standard Types
-Size		# unsigned
-Int		# signed
-Float		# double
 
 
 # Define Cipher trait (a type with unimplemented members)
 let Cipher[T] = {
 	let Enc = T{}
-	def encode = (T*) => Enc*	# The current syntax I'm experimenting on
-	def decode = (Enc*) => T*	# Function signatures
+	def encode :: (T*) -> Enc*	# The '::' instead of the '=' is experimental (specifying a type signature contract)
+	def decode :: (Enc*) -> T*	# Function signatures
 }
 
 # Should subtypes have to specify types of inherited functions ??
-let Caeser = (shft: Char) {
+let Caeser = (shft :: Char) {
 	use Cipher[Char]
 
 	def encode = .map (+ shft)
@@ -68,13 +65,20 @@ let Caeser = (shft: Char) {
 
 # Lambda Types and Inheritance
 let caeser = Cipher[Char]{ ... }	# caeser is actually an instance of Cipher
-let caeser = { use Cipher[Char] ... }	# same thing as above (above is sugar for this)
+let caeser = { use Cipher<Char> ... }	# same thing as above (above is sugar for this)
 
 
 # Subtyping/Type restrictions
 def foo = (x) { ... }		# args must support all methods called on x (but what differentiates this from a tuple with the value of x ???)
-def foo = (x: Numeric) { ... }	# args must inherit from Numeric (+ method support)
+def foo = (x :: Numeric) { ... }	# args must inherit from Numeric (+ method support)
 				# unless this isn't how inferrence works
 
+# Casting
+let i = 3
+let s = i.toStr			# Definately in
+let s = i.String		# If the constructor supports it (though behavior may differ)
+
+let s = i :: String		# This is an intriguing possibility, though it might make more sense as a Boolean test (ie. is i a String?)s
+
 # Metaprogramming
-(Int, Float, String).filter(Numeric).size
+[Int, Float, String].filter(.:: Numeric).filter(.:floor).sizeof		# The fundamental building block of metaprogramming is the type-list

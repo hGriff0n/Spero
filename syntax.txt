@@ -43,7 +43,14 @@ Contracts refine the binding information with additional rules for static matchi
 
 Scope is the series of instructions that will be bound to the name
 	Single-line scopes do not need the `{}`, but multiline scopes do
-	TODO: IMPROVE explanation
+	TODO: Improve explanations
+
+Note that there is no special keyword/syntax for creating functions, everything is instead a lambda
+	There are three syntaxes for lambda functions (TODO: Improve explanations)
+		1. Multiline - (Params...) { ... }
+		2. Single-line - (Params...) -> ...
+		3. Forwarding - . ...
+			This relies on dot-forwarding to enable very terse function compositions that take full advantage of type inference
 ##
 
 # Some examples of assignment
@@ -72,6 +79,7 @@ Int:push		# this will fail if called (don't fail necessarily for metaprogramming
 # Sequences/Views
 let view = [1, 2, 3, 4, 5]	# Note that view is not an array (it has type T*)
 let arr = view.asArray		# Array is instead a stdlib collection (of type Array[T])
+let arr = view :: Array[Int]	# What would this do ???
 
 ##
 Keywords:		<- The "flippable" keywords needs more explanation

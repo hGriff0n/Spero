@@ -4,7 +4,7 @@ let Showable = {
 
 @annotate("This is a class")
 let Numeric = {
-    def + :: (Numeric) => Numeric
+    def + :: (Numeric) -> Numeric
     def - = .neg + self
 }
 
@@ -13,8 +13,7 @@ def BigInt = (num :: String) {
     use {Numeric, Showable}                 # Same syntax as the module mechanism (semantics slightly different)
 
     def toStr = num
-    def + = (val :: Numeric)
-        BigInt(num + val.toStr)
+    def + = (val :: Numeric) -> BigInt(num + val.toStr)
 }
 
 ##
@@ -23,7 +22,7 @@ def BigInt = (num: String) Numeric{         Sugar for "use Numeric"
     use Showable
 
     def toStr = num
-    def + = (val: Numeric)
+    def + = (val: Numeric) ->
         BigInt(num + val.toStr)
 }
 ##

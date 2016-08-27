@@ -1,7 +1,7 @@
 mod hello
 use std:io:println
 
-def main = ."Hello, World!".println
+def main = () -> "Hello, World!".println
 
 # Might change language to make this possible
 #"Hello, World!".println

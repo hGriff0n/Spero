@@ -1,3 +1,6 @@
 built-in event loop (ala lever)
     easy to develop concurrency
     main would be a default
+
+compiler raises warnings for every "TODO" in a comment
+	or have a "todo" annotation

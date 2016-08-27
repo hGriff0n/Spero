@@ -7,15 +7,15 @@ def Huffman = (probs :: Float*) {
         type Reducer = Unk(String, String) | Knw(String) {
 
 		let mesg = .match {
-			Knw(s) => s
-			_ => Error{ "Could not decode the message" }
+			Knw(s) -> s
+			_ -> Error{ "Could not decode the message" }
 		}
 
-        def help = (::String)
+        def help = (String) ->
             .reduce(Collect(""), (char, collector) {
                 let msg = collector .match {
-                    Unk(s, t) => (s, t + char)
-                    Knw(s) => (s, char)
+                    Unk(s, t) -> (s, t + char)
+                    Knw(s) -> (s, char)
                 }
 
                 if (tree.hasLeafAt(msg._2))
@@ -26,13 +26,12 @@ def Huffman = (probs :: Float*) {
     }
 
     let encoder = HuffmanHelper(probs) {
-        let help = (::String)
-            .fmap(tree.getCodeFor)            # Doesn't consider the 127 thing
+        let help = (String) -> .fmap(tree.getCodeFor)            # Doesn't consider the 127 thing
     }
 
     # Can you drop the `{}` ??? (I was using them to unpack the tuple, make the variables "visible")
-    static writeTo = (f :: File, d :: String) f.writeAll(data)
-    static readFrom = (::File).readAll
+    static writeTo = (f :: File, d :: String) -> f.writeAll(data)
+    static readFrom = (File) -> .readAll
 
     def encode = (in :: File, out :: File) {
         out .writeTo(encoder.help(in .readFrom))
