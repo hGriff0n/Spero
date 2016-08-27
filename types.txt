@@ -1,5 +1,4 @@
 ## TODO
-Work on generics
 Work on metaprogramming doodles
 Start designing the type system
 ##
@@ -7,21 +6,20 @@ Start designing the type system
 # Generics Design sheet
 using Reducable = Numeric | Traversable		# Local type alias
 
-[T :: Type]			# Templated on a type T that inherits from Type (all types inherit from the supertype, Type)
-[T]				# Sugar for the above
+[T :: Type]			# Templated on a type T that inherits from Type
+[T]				# Sugar for the above (all types inherit from the supertype `Type`)
 [n :: Size]			# Templated on a value, n, that is a size (how will this work)
 [T, n :: Size]			# Templated on T and n (dependent typing ???)
 [T :: Numeric | Traversable]	# T must be Numeric or Traversable
-[T :: !Numeric]			# T can't be Numeric
-[Int]				# Invalid in a declaration (valid in use)
+[T !: Reducable]		# T can't be Reducable
+[T < Numeric]			# T must be a subtype of Numeric
+[T > Int]			# T must be a supertype of Int
 
-# Co/contra-variance
+[Int]				# Generic specialization ???
+
+# Co/contra-variance (don't know if the type system will included it though)
 [T+]				# Covariance (if it's not the default)
-[+T]
-[T-]				# Contravariance (A: B -> T[B]: T[A]) (covariance is the default behavior)
-[^T]
-[T^]				# Invariance (if it's not the default)
-[?T]
+[T-]				# Contravariance (A :: B => T[B] :: T[A])
 
 
 # Syntax for defining algebraic data types
