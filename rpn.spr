@@ -10,7 +10,7 @@ def main = .getln .parse .("={}".println)
 
 type Stack[T] = Empty | Cons(T, Stack) {
 	def toStr = self .match {
-		Cons(i, Empty) -> i :: String
+		Cons(i, Empty) -> i.toStr
 		_              -> "nil"
 	}
 }
@@ -79,7 +79,8 @@ def noargs = () {
 	let person = "Enter your name: {}".std:io:getln
 	let age = "Enter your age: {}".std:io:getln
 	let (gen, race) = "Enter your gender: {}\nEnter your race: {}".std:io:getln
-	"{person}, {age - 5}, {gen}, {race}".fmt
+
+	"{person}, {age - 5}, {gen}, {race}".fmt			# You can evaluate expressions within the '{}'
 }
 	 
 ##

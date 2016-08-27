@@ -2,13 +2,11 @@
 Work on generics
 Work on metaprogramming doodles
 Start designing the type system
-Determine how casting will work
 ##
 
 # Generics Design sheet
 using Reducable = Numeric | Traversable		# Local type alias
 
-#<T :: Type>
 [T :: Type]			# Templated on a type T that inherits from Type (all types inherit from the supertype, Type)
 [T]				# Sugar for the above
 [n :: Size]			# Templated on a value, n, that is a size (how will this work)
@@ -78,7 +76,8 @@ let i = 3
 let s = i.toStr			# Definately in
 let s = i.String		# If the constructor supports it (though behavior may differ)
 
-let s = i :: String		# This is an intriguing possibility, though it might make more sense as a Boolean test (ie. is i a String?)s
+let b = i :: String		# This is a boolean test (ie. does i match a String)
 
 # Metaprogramming
-[Int, Float, String].filter(.:: Numeric).filter(.:floor).sizeof		# The fundamental building block of metaprogramming is the type-list
+[Int, Float, String]		# A type-list
+(Int, Float, String)		# A type-tuple (no '->' so not an argument tuple)
