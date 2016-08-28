@@ -8,7 +8,7 @@ use std:{io, str}:*
 
 def main = .getln .parse .("={}".println)
 
-type Stack[T] = Empty | Cons(T, Stack) {
+adt Stack[T] = Empty | Cons(T, Stack) {
 	def toStr = self .match {
 		Cons(i, Empty) -> i.toStr
 		_              -> "nil"

@@ -58,7 +58,7 @@ let factorial = (Number) -> .match {	# Dot-forwarding still works with the '->'
 
 
 # Testing out infix function def syntax (match/generic syntax is uncertain at this point)
-type Option[T] = Some(T) | None
+adt Option[T] = Some(T) | None
 
 let >>= = (opt, f) -> .match {
 	Some(val), f -> Some(f(val))

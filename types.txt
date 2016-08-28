@@ -1,6 +1,5 @@
 ## TODO
 Specializing generics
-Consider changing 'type' to 'data' or 'adt' (confusing for adoption if "type" exists and is too restrictive, for adt's only)
 ===
 Work on ref.spqr (might implement pointers and references this way)
 Mutability as part of the type system
@@ -48,8 +47,8 @@ In order for type values to be used in generics, 2 conditions must be met:
 ##
 
 # Syntax for defining algebraic data types
-	# Special context needed because ADTs are a collection of constructors, not types
-type Option[T] = Some(T) | None				# These names are technically types ???
+	# Special context needed because ADTs are a collection of constructors, not types (could I roll in the syntax ???)
+adt Option[T] = Some(T) | None				# These names are technically types ???
 
 
 # Syntax for defining custom structures

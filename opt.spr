@@ -1,6 +1,6 @@
 mod opt
 
-type Option[T] = Some(T) | None {
+adt Option[T] = Some(T) | None {
     def get = self.match {
         Some(v) -> v
     }

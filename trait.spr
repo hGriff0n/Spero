@@ -2,7 +2,7 @@ let Showable = {
     def toStr :: () => String
 }
 
-@annotate("This is a class")
+@comment("This is a class")
 let Numeric = {
     def + :: (Numeric) -> Numeric
     def - = .neg + self

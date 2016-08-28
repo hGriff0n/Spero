@@ -4,6 +4,13 @@ Figure out monads
 Figure out how to access a tuple
 ##
 
+# Enabling mutability
+let n = mut 3		# function
+mut n = 3		# context
+let n mut = 3		# contract
+let n :: mut Int = 3	# type modifier, ala `const` (the mut "function" would just perform inference)
+
+
 # This is a single line comment
 
 ##
@@ -17,15 +24,14 @@ This is a multiline comment
 ##
 Context is always a keyword that describes how the rest of the expression gets treated
     Current Valid Context Keywords:
-	let    <- introduce a new name binding of protected visibility
-	def    <- introduce a new name binding of public visibility
-	static <- introduce a new name binding of static visibility
-	using  <- create a new alias in the current scope
-	type   <- create a new ADT in the scope (constructors are in the expression)
+	let	<- introduce a new name binding of protected visibility
+	def	<- introduce a new name binding of public visibility
+	static	<- introduce a new name binding of static visibility
+	using 	<- create a new alias in the current scope
+	adt	<- create a new ADT in the scope (constructors are in the expression)
 
     Possible Contexts:
-        mut    <- mutable name binding
-	data   <- replaces `type`
+        mut	<- mutable name binding
 
 Name indicates the scoped binding that the statement will exist under
 Some additional information about the binding can also be derived here
@@ -57,12 +63,6 @@ Note that there is no special keyword/syntax for creating functions, everything 
 let m = 3		# Variables are immutable by default
 let t :: String = 3	# Error (type contract not maintained)
 let m = "Hello"		# Variables can be "shadowed" by latter declarations
-
-# Enabling mutability
-let n = mut 3		# function
-mut n = 3		# context
-let n mut = 3		# contract
-let n :: mut Int = 3	# type modifier, ala `const` (the mut "function" would just perform inference)
 
 
 # Dot-flipping
