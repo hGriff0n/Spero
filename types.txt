@@ -1,6 +1,5 @@
 ## TODO
-Work on value type restrictions in generics
-Can you specialize generics
+Specializing generics
 Consider changing 'type' to 'data' or 'adt' (confusing for adoption if "type" exists and is too restrictive, for adt's only)
 ===
 Work on ref.spqr (might implement pointers and references this way)
@@ -9,27 +8,6 @@ Reference and Pointers as classes
 Have a private default constructor
 Start designing the type system
 ##
-
-# Metaprogramming Design Sheet
-[Int, Float, String]					# A type-list (types are instances of the Type superclass)
-(Int, Float, String)					# A type-tuple (no '->' so not an argument tuple)
-
-let type_list = List(Int, Array[Float], String)		# An actual list (has type `List[Type]`)
-let alt_list = List(Int, Array, String)			# Should this be allowable (Array doesn't have a type parameter)
-
-# Check that a type has a method
-let is_splitable = type_list.map(? split)		# '?' inspection keyword-operator (works both ways, also considered 'has' keyword)
-let is_splitable = type_list.map(.hasMethod("split"))	# Get the types that have a split method (inclusion depends on runtime support/compile-time aggresivenes)
-let is_splitable = type_list.map(.methods.find(.name == "split"))
-
-# Check that a type has a method with a given signature
-let int_str = type_list.map(.? call :: (Int) -> String) # '?' inspects the method, '::' checks the signature ('?' has the higher precedence)
-
-# Get a list of all methods that have a given signature
-let int_methods = Int.methods.map(:: (Int) -> Int)
-
-# Create an object from a type list (or have a collection of partially applied constructors)
-let defaults = type_list.map(:new)
 
 
 # Generics Design sheet
@@ -51,9 +29,23 @@ using Reducable = Numeric | Traversable		# Local type alias
 [T+]				# Covariance (if it's not the default)
 [T-]				# Contravariance (A :: B => T[B] :: T[A])
 
-# Generic Value Type Restrictions
-Equality must be verifiable at compile time
 
+## Generic Value Restrictions
+For now, I should be able to restrict it to basic types
+	However I want to be able to open it up to user types
+	The value still has to be known at compile-time
+
+In order for type values to be used in generics, 2 conditions must be met:
+	The type's "eq" method has the @pure annotation
+	The value is known (or inferable) at compile-time
+
+@pure annotation
+	For now, leave it as a simple promise (ie. this function has no side effects)
+	It may be possible to add in some basic checking to ensure that the promise is kept
+		For now though, pure is just a reminder to the programmer
+			It doesn't guarantee the code is well formed
+			This is why I'm restricting to basic types for now
+##
 
 # Syntax for defining algebraic data types
 	# Special context needed because ADTs are a collection of constructors, not types
@@ -109,3 +101,24 @@ let s = i.String		# If the constructor supports it (though behavior may differ)
 
 let b = i :: String		# This is a boolean test (ie. does i match a String)
 
+
+# Metaprogramming Design Sheet
+[Int, Float, String]					# A type-list (types are instances of the Type superclass)
+(Int, Float, String)					# A type-tuple (no '->' so not an argument tuple)
+
+let type_list = List(Int, Array[Float], String)		# An actual list (has type `List[Type]`)
+let alt_list = List(Int, Array, String)			# Should this be allowable (Array doesn't have a type parameter)
+
+# Check that a type has a method
+let is_splitable = type_list.map(? split)		# '?' inspection keyword-operator (works both ways, also considered 'has' keyword)
+let is_splitable = type_list.map(.hasMethod("split"))	# Get the types that have a split method (inclusion depends on runtime support/compile-time aggresivenes)
+let is_splitable = type_list.map(.methods.find(.name == "split"))
+
+# Check that a type has a method with a given signature
+let int_str = type_list.map(.? call :: (Int) -> String) # '?' inspects the method, '::' checks the signature ('?' has the higher precedence)
+
+# Get a list of all methods that have a given signature
+let int_methods = Int.methods.map(:: (Int) -> Int)
+
+# Create an object from a type list (or have a collection of partially applied constructors)
+let defaults = type_list.map(:new)

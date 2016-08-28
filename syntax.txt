@@ -1,5 +1,6 @@
 ## TODO
 Settle on mutability solution (this might be getting to the implementation level)
+Figure out monads
 Figure out how to access a tuple
 ##
 
