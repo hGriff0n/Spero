@@ -1,7 +1,31 @@
 ## TODO
 Work on metaprogramming doodles
+Work on value type restrictions in generics
+Can you specialize generics
+Work on ref.spqr (might implement pointers and references this way)
+Mutability as part of the type system
+Reference and Pointers as classes
 Start designing the type system
 ##
+
+# Metaprogramming
+[Int, Float, String]					# A type-list
+(Int, Float, String)					# A type-tuple (no '->' so not an argument tuple)
+
+let type_list = List(Int, Array[Float], String)		# An actual list (has type `List[Type]`)
+let alt_list = List(Int, Array, String)			# Should this be allowable (Array doesn't have a type parameter)
+
+# Check that a type supports a method
+let is_mappable = type_list.map(.?(.:map))		# Get the types that are mappable (TODO: Syntax)
+
+# Create an object from a type list
+let defaults = type_list.map(.:new)			# Create a bunch of default instances (TODO: Syntax)
+
+# Call a function from a string (TODO: Determine if I want to include this, too much runtime support)
+let fn = "foo"
+fn.call							# Call the function indicated by fn (TODO: Syntax, Keep)
+eval("3 + 3")						# I can always have a special "eval" function
+
 
 # Generics Design sheet
 using Reducable = Numeric | Traversable		# Local type alias
@@ -9,6 +33,7 @@ using Reducable = Numeric | Traversable		# Local type alias
 [T :: Type]			# Templated on a type T that inherits from Type
 [T]				# Sugar for the above (all types inherit from the supertype `Type`)
 [n :: Size]			# Templated on a value, n, that is a size (how will this work)
+				# Note: There are some restrictions on value types in generics
 [T, n :: Size]			# Templated on T and n (dependent typing ???)
 [T :: Numeric | Traversable]	# T must be Numeric or Traversable
 [T !: Reducable]		# T can't be Reducable
@@ -20,6 +45,9 @@ using Reducable = Numeric | Traversable		# Local type alias
 # Co/contra-variance (don't know if the type system will included it though)
 [T+]				# Covariance (if it's not the default)
 [T-]				# Contravariance (A :: B => T[B] :: T[A])
+
+# Generic Value Type Restrictions
+Equality must be verifiable at compile time
 
 
 # Syntax for defining algebraic data types
@@ -34,7 +62,7 @@ let Animal = { ... }
 let Vec[T] = (n :: Size) { ... }
 
 # Create a type with a constructor that takes a String
-let Person = (name :: String) {
+let Person = (name :: mut String) {				# Name is mutable by the class (syntax uncertain)
 	static count mut = 0					# Mutable static field (mutable syntax uncertain)
 
 	# How to access class fields from an instance, with ':' or '.'
@@ -76,6 +104,3 @@ let s = i.String		# If the constructor supports it (though behavior may differ)
 
 let b = i :: String		# This is a boolean test (ie. does i match a String)
 
-# Metaprogramming
-[Int, Float, String]		# A type-list
-(Int, Float, String)		# A type-tuple (no '->' so not an argument tuple)

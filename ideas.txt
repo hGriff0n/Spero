@@ -3,4 +3,4 @@ built-in event loop (ala lever)
     main would be a default
 
 compiler raises warnings for every "TODO" in a comment
-	or have a "todo" annotation
+	or have a "todo" annotation (have both)

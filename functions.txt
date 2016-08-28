@@ -1,20 +1,18 @@
 ## TODO:
-Lazy vs strict function evaluation
+Lazy/strict evaluation
+Currying
+Id function
+Argument mutability and references/pointers
+Variable arguments
 ##
-
-# Variable-less functions can make use of composition syntax
-def foo = .reduce			# This accepts anything that `reduce` accepts
-def foo = (Reducable) -> .reduce	# There's still some possible problems with this (cause type tuples are still a thing)
-
 
 # Function Type Signature
 (Args...) -> Ret
 
-## Defining a function
+# Defining a function
 (Params...) { ... }
 (Params...) -> ...		# One-liner sugar
-. ...				# Dot-forwarding (args get inserted after the first function)
-##
+. ...				# Dot-forwarding
 
 # No-arg functions
 def foo = () -> "Hello"
@@ -47,6 +45,8 @@ def foo = (f :: Size = 3) -> f	# f must be a Size, default value of 3
 
 def foo = (f < Numeric) -> f	# f must be a sub-type of Int			<- Don't know if I'll include top/bottom typing yet
 def foo = (f > Int) -> f	# f must be a super-type of Int
+
+def foo = (f mut) -> {}		# f is mutable inside of the function body (Note: syntax depends on how mutability is implemented
 
 
 # Testing out contracts

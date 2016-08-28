@@ -1,6 +1,5 @@
 ## TODO
-Figure out how to resolve indexing and dot-flipping
-Settle on mutability solution
+Settle on mutability solution (this might be getting to the implementation level)
 Figure out how to access a tuple
 ##
 
