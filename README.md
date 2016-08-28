@@ -15,14 +15,19 @@ The Spero project also contains three sub-projects: speroc, Spark, and vs-spero
 
 ## Current Todo List:
 
-    1) Fix the dot-flipping/indexing syntax issue
-    2) Work on the module import syntax and semantics
-    3) Collect all current contexts and keywords in a list
-    4) Determine if I should allow variable arguments
-    5) Work on OOP syntax and type relationships
-    6) Look into parametric semantics and syntax
-        - Dependent typing (yes/no)?
-        - What are the possibilities in parametrics?
-    7) Make some quick metaprogramming doodles
+    1) Work on the module import syntax and semantics
+    2) Collect all current contexts and keywords in a list
+    3) Determine if I should allow variable arguments
+    4) Work on OOP syntax and type relationships
+    5) Decide on concurrency support
+        - Do I want to go full event-based (wouldn't need main then)
+    6) Start working on implementation details
 
-## Icon at ww.iconfinder.com/icons/606025/ancient_antique_historic_roman_rome_helmet_vintage_warrior_icon
+
+## Some example programs
+
+    # Hello World (main might be unnecessary)
+    def main = () -> "Hello World!".println
+
+
+Icon at ww.iconfinder.com/icons/606025/ancient_antique_historic_roman_rome_helmet_vintage_warrior_icon
