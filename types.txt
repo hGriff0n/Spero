@@ -1,30 +1,35 @@
 ## TODO
-Work on metaprogramming doodles
 Work on value type restrictions in generics
 Can you specialize generics
+Consider changing 'type' to 'data' or 'adt' (confusing for adoption if "type" exists and is too restrictive, for adt's only)
+===
 Work on ref.spqr (might implement pointers and references this way)
 Mutability as part of the type system
 Reference and Pointers as classes
+Have a private default constructor
 Start designing the type system
 ##
 
-# Metaprogramming
-[Int, Float, String]					# A type-list
+# Metaprogramming Design Sheet
+[Int, Float, String]					# A type-list (types are instances of the Type superclass)
 (Int, Float, String)					# A type-tuple (no '->' so not an argument tuple)
 
 let type_list = List(Int, Array[Float], String)		# An actual list (has type `List[Type]`)
 let alt_list = List(Int, Array, String)			# Should this be allowable (Array doesn't have a type parameter)
 
-# Check that a type supports a method
-let is_mappable = type_list.map(.?(.:map))		# Get the types that are mappable (TODO: Syntax)
+# Check that a type has a method
+let is_splitable = type_list.map(? split)		# '?' inspection keyword-operator (works both ways, also considered 'has' keyword)
+let is_splitable = type_list.map(.hasMethod("split"))	# Get the types that have a split method (inclusion depends on runtime support/compile-time aggresivenes)
+let is_splitable = type_list.map(.methods.find(.name == "split"))
 
-# Create an object from a type list
-let defaults = type_list.map(.:new)			# Create a bunch of default instances (TODO: Syntax)
+# Check that a type has a method with a given signature
+let int_str = type_list.map(.? call :: (Int) -> String) # '?' inspects the method, '::' checks the signature ('?' has the higher precedence)
 
-# Call a function from a string (TODO: Determine if I want to include this, too much runtime support)
-let fn = "foo"
-fn.call							# Call the function indicated by fn (TODO: Syntax, Keep)
-eval("3 + 3")						# I can always have a special "eval" function
+# Get a list of all methods that have a given signature
+let int_methods = Int.methods.map(:: (Int) -> Int)
+
+# Create an object from a type list (or have a collection of partially applied constructors)
+let defaults = type_list.map(:new)
 
 
 # Generics Design sheet
@@ -66,7 +71,7 @@ let Person = (name :: mut String) {				# Name is mutable by the class (syntax un
 	static count mut = 0					# Mutable static field (mutable syntax uncertain)
 
 	# How to access class fields from an instance, with ':' or '.'
-	def this = (Person) -> .name.this			# Variable-less copy constructor (needs work)
+	def new = (Person) -> .name.this			# Variable-less copy constructor (needs work)
 	def hello = () -> println("Hello! I'm {name}!")
 }
 
@@ -89,7 +94,7 @@ let Caeser = (shft :: Char) {
 
 # Lambda Types and Inheritance
 let caeser = Cipher[Char]{ ... }	# caeser is actually an instance of Cipher
-let caeser = { use Cipher<Char> ... }	# same thing as above (above is sugar for this)
+let caeser = { use Cipher[Char] ... }	# same thing as above (above is sugar for this)
 
 
 # Subtyping/Type restrictions

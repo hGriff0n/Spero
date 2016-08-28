@@ -105,4 +105,17 @@ Keywords:		<- The "flippable" keywords needs more explanation
 Default Operators:
 	Equality   '=='
 	Assignment '='
+	Inspection '?'
 ##
+
+# Annotation Demo (actual implementation won't be followed, but this is a decent idea of what I want)
+
+@force(parens)							# Annotations are applied to the next statement
+let splitable_constructors = {					# So this whole block requires parentheses to call a function
+	let is_splitable = type_list.map(:split)
+	let constructors = type_list.map(:new)
+
+	(constructors, is_splitable).zip.filter(.match {	# Dot-flipping doesn't need parentheses (special-casing, though)
+		_, splitable -> splitable.Boolean
+	})
+}

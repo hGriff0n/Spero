@@ -2,8 +2,6 @@
 Lazy/strict evaluation
 Currying
 Id function
-Argument mutability and references/pointers
-Variable arguments
 ##
 
 # Function Type Signature
@@ -13,6 +11,7 @@ Variable arguments
 (Params...) { ... }
 (Params...) -> ...		# One-liner sugar
 . ...				# Dot-forwarding
+_ ...				# Inference ???
 
 # No-arg functions
 def foo = () -> "Hello"
@@ -25,15 +24,16 @@ def foo = () {
 using tst = foo			# This is how a no-arg function has to be re-"assigned"
 let add = +			# Normal reassignment is equivalent to calling `+` with no arguments (ie. currying)
 using add = +			# Operator syntax rules do not apply to add (it's the name, not the implementation
+let tst = self ? foo		# There should be a way to refer to the current scope (self might be hacky)
 
 
 # Valid identity function ???
 def id = .
+def id = _
 
 # Lambda functions
 let sortfn = (a, b) { a < b }
 let sortfn = (a, b) -> a < b
-
 
 # Argument syntax
 def foo = (f) -> f		# f can be of any value type
@@ -46,7 +46,8 @@ def foo = (f :: Size = 3) -> f	# f must be a Size, default value of 3
 def foo = (f < Numeric) -> f	# f must be a sub-type of Int			<- Don't know if I'll include top/bottom typing yet
 def foo = (f > Int) -> f	# f must be a super-type of Int
 
-def foo = (f mut) -> {}		# f is mutable inside of the function body (Note: syntax depends on how mutability is implemented
+def foo = (f mut) -> {}		# f is mutable inside of the function body, changes do not propogate outside of the call (Note: syntax depends on how mutability is implemented)
+				# References and/or pointers will be done through some language type changes will propogate if done on those types
 
 
 # Testing out contracts
@@ -135,6 +136,7 @@ let factorial = (Size) {				# Works with '{}' syntax too
 
 # Variable arguments
 def max[T] = (T*) -> .sortWith(>)(0)			# A T* accepts a coninuous list of T if it is the last argument
+def all = (Value*) -> .take(10)				# Polymorphism can be used to accept a wide type range
 max([3, 4, 5]) == max(3, 4, 5)				# Unless a view is passed in
 (3, 4, 5).max == max(3, 4, 5)
 
