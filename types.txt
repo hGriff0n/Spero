@@ -1,8 +1,5 @@
 ## TODO
-Specializing generics
-===
 Work on ref.spqr (might implement pointers and references this way)
-Mutability as part of the type system
 Reference and Pointers as classes
 Have a private default constructor
 Start designing the type system
@@ -25,7 +22,7 @@ using Reducable = Numeric | Traversable		# Local type alias
 [Int]				# Generic specialization ???
 
 # Co/contra-variance (don't know if the type system will included it though)
-[T+]				# Covariance (if it's not the default)
+[T+]				# Covariance (A :: B => T[A] :: T[B])
 [T-]				# Contravariance (A :: B => T[B] :: T[A])
 
 
@@ -45,6 +42,27 @@ In order for type values to be used in generics, 2 conditions must be met:
 			It doesn't guarantee the code is well formed
 			This is why I'm restricting to basic types for now
 ##
+
+# Generic Spcialization
+There are 2 possibilities for generics
+	Basic: [T|n :: T]		# There can't be 2 basics with the same ordering and size (compiler error)
+	Concept: [T :: C]
+
+Specialization resolution
+	If an instantiation matches a concept or a basic, the instantiation is well-formed
+	If an instantiation matches a concept and a basic, the instantiation is well-formed
+	If an instantiation matches multiple concepts, a compiler error is produced
+	If no instantiation can be found, a compiler error is produced
+
+def sort[T] = (T*) { ... }		#a
+def sort[T !: Sortable] = (T*) { ... }	#b
+def sort = (Numeric*) { ... }		#c
+
+let arr :: Int* = [4,3,5,2,1]
+sort(arr)			# c	Int* :: Numeric*
+sort([arr])			# a	Int** !: Numeric*, Int* :: Sortable
+sort(['d', 'a', 'z', 'r'])	# b	Char* !: Numeric*, Char !: Sortable
+
 
 # Syntax for defining algebraic data types
 	# Special context needed because ADTs are a collection of constructors, not types (could I roll in the syntax ???)

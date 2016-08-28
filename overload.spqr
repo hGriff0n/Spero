@@ -1,0 +1,77 @@
+
+let volume = (r :: Float, h :: Int) {
+    r * r * h
+}
+
+# :t volume = (Float, Int) -> Float
+
+let volume = (i :: Int, h :: Int) -> i * h
+
+# :t volume = (Int, Int) -> Int
+
+let test = (Float) -> .* 2
+let error = (Numeric) -> 3
+
+# Note: Float:new(Int) is well-formed
+
+def main = () {
+    let num = 3.3                               # num :: Float
+    let num = 3                                 # num :: Int
+
+    # Prints '6'
+    "{}".println(num.test)                      # Can "shadowed" variables be "recovered" (that's basically what function overloading would be doing)
+
+    # Prints '9'
+    let res = volume(num, 3)
+    "{res}".println
+
+    # Prints '27'
+    let res :: Float = volume(num, 3)           # overload based on return type
+    "{}".println(res)
+
+    let num = 2.3                               # num :: Float
+
+    # Prints '15.87'
+    let res = volume(num, 3)
+    "{res}".println
+
+    {
+        # Prints '9'
+        let num = 3                             # num :: Int
+        "{}".println(volume(num, 3))
+
+        # This is valid under the "goal" semantics
+        #let num = (Int) -> .+ 3                 # num :: (Int) -> Int
+        #"{}".println(volume(num, 3))
+    }
+
+    # This doesn't actually produce an error
+    error(num)
+}
+
+## Current Semantics (easier to implement)
+Shadowing replaces the previous binding (no matter the type)
+
+Assigning a function gives the binding a special "Function" type    <- the only special handling
+    Further assigning of functions will go in as Function "cases"   <- overloading
+    The individual cases can still be queried by the signature
+
+This is the same as the goal option but the type stack is limited to a size of 1
+    The special Function type and handling would also be removed
+##
+
+## Goal Semantics (maximal programs)
+Shadowing adds to "stack" of types associated to the name (impl: probably a bunch of '_type' appending)
+    When resolving a binding, the type list is searched for the best match
+    That binding gets inserted into the call site
+    The list can only contain unique types
+
+Needs some work to ensure that I can make these tranformations in the compiler
+    It's easy to reason about these now but hard to program
+    Provides the possibility to provide really advanced handling (but I don't know about the inferences)
+
+Ambiguity handling
+    If two types equally match a function's arguments
+
+Should function resolution depend on the order of declaration for functions?
+##

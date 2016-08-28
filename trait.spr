@@ -1,5 +1,5 @@
 let Showable = {
-    def toStr :: () => String
+    def toStr :: () -> String
 }
 
 @comment("This is a class")
@@ -12,7 +12,7 @@ let Numeric = {
 def BigInt = (num :: String) {
     use {Numeric, Showable}                 # Same syntax as the module mechanism (semantics slightly different)
 
-    def toStr = num
+    def toStr = () -> num
     def + = (val :: Numeric) -> BigInt(num + val.toStr)
 }
 

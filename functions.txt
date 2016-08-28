@@ -4,13 +4,32 @@ Currying
 Id function
 ##
 
+# Function Overloading
+Functions can be overloaded based on the argument type and the return type
+There are 5 types of type matches in overload resolution: Exact, Polymorphic, Generic, Construction, None
+	Exact: Arg == Param
+	Polymorphic: Arg :: Param		# No sub-matching for now (that'd be "closest-match" area)
+	Generic: Attempt a generic call		# See types.txt for generic specialization sub-matching
+	Construction: Param:new(Arg)
+	None: Failure state
+
+If overload resolution produces a None match, then a compiler error is produced
+An ambiguous resolution occurs between 2 overloads (f1, f2) if...
+	f1.arg == f2.arg and f1.ret == f2.ret (The match levels are the same) or
+	f1.arg == f2.ret and f1.ret == f2.arg (The match levels are crossed)
+Otherwise, the overload with the most exact worst match for the argument and return types is chosen
+	So if f1.arg < f1.ret then f1.arg must be the most exact arg match of the resolution set
+
+
 # Function Type Signature
-(Args...) -> Ret
+(Params...) -> Ret
+Function
 
 # Defining a function
-(Params...) { ... }
+(Params...) (-> Ret) { ... }	# The 'Ret' part is optional
 (Params...) -> ...		# One-liner sugar
 . ...				# Dot-forwarding
+
 _ ...				# Inference ???
 
 # No-arg functions
@@ -21,10 +40,13 @@ def foo = () {
 	"Hello {person}!".fmt
 }
 
-using tst = foo			# This is how a no-arg function has to be re-"assigned"
+let tst = .foo			# Creates a new function that forwards to foo
+using tst = foo			# Creates an "alias" to foo
 let add = +			# Normal reassignment is equivalent to calling `+` with no arguments (ie. currying)
 using add = +			# Operator syntax rules do not apply to add (it's the name, not the implementation
+
 let tst = self ? foo		# There should be a way to refer to the current scope (self might be hacky)
+let tst = ? foo			# Current scope is the default second argument ?
 
 
 # Valid identity function ???
