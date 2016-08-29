@@ -1,0 +1,38 @@
+
+let Wall = (h :: Size, w :: Size) {
+    let windows = mut [].Vector[Window]
+
+    # Would be a compiler error without the mutable annotation (modifying windows)
+    @mutable
+    def addWindow = (w :: Window) -> windows.push_back(w)
+
+    def paintableArea = () {
+        h * w - windows.map(.getArea).reduce(+)
+    }
+
+    def numWindows = () -> windows.size
+}
+
+let Window = (w :: Size, h :: Size) {
+    def getArea = .*(h, w)
+}
+
+def main = () {
+    let (w, h) = "Input wall dimensions (w, h): {} {}".std:io:getln
+    let wall = Wall(h, w)
+
+    let (w :: Int, h :: Size) = "Input window dimensions (w, h): {} {}".std:io:getln
+    "{}".println(wall.numWindows)
+
+
+    # Compiler error: Attempt to call a mutable method on an immutable object
+    #wall.addWindow(w, h)
+
+    # Shadow wall as mutable to allow for a window to be added
+    let wall = mut wall
+    wall.addWindow(w, h)
+
+    # Shadow as immutable (I'm not going to add in an annotation to force immutability to call a function)
+    let wall = wall                     # wouldn't this maintain the mutability
+    "{}".println(wall.numWindows)
+}
