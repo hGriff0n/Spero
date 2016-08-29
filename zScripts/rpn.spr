@@ -5,6 +5,7 @@ The test program is primarily a basic RPN calculator with some non-rpn functions
 
 @todo {
 	"Write stuff in this annotation"
+	"The syntax for todo might need some work"
 }
 
 mod rpn
@@ -41,7 +42,8 @@ let Cipher[T] = {
 	def decode :: (T*) -> T*
 }
 
-# map[T, V] = (T*, (T) => V) => V*
+# map[T, V] = (T*, (T) -> V) -> V*
+# map[T] = (T*, (T) -> ()) -> ()
 def Caeser = (shft :: Char) {
 	use Cipher[Char]						# Inheritance/Interfaces
 
@@ -67,8 +69,6 @@ def sortTest[T] = () {
 	[3, 4, 5, 1, 2].sort((a, b) -> a < b).toStr.println
 }
 
-# def encode = .map (c) c + 5
-
 def functionTest = () {
 	def foo = () "Hello".println
 	"Goodbye".println						# This is the only thing that should print
@@ -84,13 +84,5 @@ def noargs = () {
 	let age = "Enter your age: {}".std:io:getln
 	let (gen, race) = "Enter your gender: {}\nEnter your race: {}".std:io:getln
 
-	"{person}, {age - 5}, {gen}, {race}".fmt			# You can evaluate expressions within the '{}'
+	"{person}, {age - 5}, {}, {race}".fmt(gen)			# You can evaluate expressions within the '{}'
 }
-	 
-##
-Problems:
-	Large problems with writing variable-less functions
-		Arguments are in a tuple => operations are on tuples and return type is a tuple
-		Neither are desired in the abstract (need a simple way to justify decomposing)
-	Possible issues with type-level metaprogramming
-##

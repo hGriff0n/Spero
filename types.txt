@@ -1,9 +1,62 @@
 ## TODO
-Work on ref.spqr (might implement pointers and references this way)
-Reference and Pointers as classes
+Reference and Pointers as classes (ref.spqr)
 Have a private default constructor
 Start designing the type system
 ##
+
+# Syntax for defining algebraic data types
+	# Special context needed because ADTs are a collection of constructors, not types (could I roll in the syntax ???)
+adt Option[T] = Some(T) | None				# These names are technically types ???
+
+
+# Syntax for defining custom structures
+let Animal = { ... }
+
+# Syntax for defining parametric structures
+let Vec[T] = (n :: Size) { ... }
+
+# Create a type with a constructor that takes a String
+let Person = (name :: mut String) {				# Name is mutable by the class (syntax uncertain)
+	static count = mut 0					# Mutable static field
+
+	# How to access class fields from an instance, with ':' or '.'
+	def new = (Person) -> .name.this			# Variable-less copy constructor (needs work)
+	def hello = () -> println("Hello! I'm {name}!")
+}
+
+
+# Define Cipher trait (a type with unimplemented members)
+let Cipher[T] = {
+	let Enc = T{}
+	def encode :: (T*) -> Enc*	# The '::' instead of the '=' is experimental (specifying a type signature contract)
+	def decode :: (Enc*) -> T*	# Function signatures
+}
+
+# Should subtypes have to specify types of inherited functions ??
+let Caeser = (shft :: Char) {
+	use Cipher[Char]
+
+	def encode = .map (+ shft)
+	def decode = .map (- shft)
+}
+
+
+# Lambda Types and Inheritance
+let caeser = Cipher[Char]{ ... }	# caeser is actually an instance of Cipher
+let caeser = { use Cipher[Char] ... }	# same thing as above (above is sugar for this)
+
+
+# Subtyping/Type restrictions
+def foo = (x) { ... }		# args must support all methods called on x (but what differentiates this from a tuple with the value of x ???)
+def foo = (x :: Numeric) { ... }	# args must inherit from Numeric (+ method support)
+				# unless this isn't how inferrence works
+
+# Casting
+let i = 3
+let s = i.toStr			# Definately in
+let s = i.String		# If the constructor supports it (though behavior may differ)
+
+let b = i :: String		# This is a boolean test (ie. does i match a String)
 
 
 # Generics Design sheet
@@ -62,61 +115,6 @@ let arr :: Int* = [4,3,5,2,1]
 sort(arr)			# c	Int* :: Numeric*
 sort([arr])			# a	Int** !: Numeric*, Int* :: Sortable
 sort(['d', 'a', 'z', 'r'])	# b	Char* !: Numeric*, Char !: Sortable
-
-
-# Syntax for defining algebraic data types
-	# Special context needed because ADTs are a collection of constructors, not types (could I roll in the syntax ???)
-adt Option[T] = Some(T) | None				# These names are technically types ???
-
-
-# Syntax for defining custom structures
-let Animal = { ... }
-
-# Syntax for defining parametric structures
-let Vec[T] = (n :: Size) { ... }
-
-# Create a type with a constructor that takes a String
-let Person = (name :: mut String) {				# Name is mutable by the class (syntax uncertain)
-	static count mut = 0					# Mutable static field (mutable syntax uncertain)
-
-	# How to access class fields from an instance, with ':' or '.'
-	def new = (Person) -> .name.this			# Variable-less copy constructor (needs work)
-	def hello = () -> println("Hello! I'm {name}!")
-}
-
-
-# Define Cipher trait (a type with unimplemented members)
-let Cipher[T] = {
-	let Enc = T{}
-	def encode :: (T*) -> Enc*	# The '::' instead of the '=' is experimental (specifying a type signature contract)
-	def decode :: (Enc*) -> T*	# Function signatures
-}
-
-# Should subtypes have to specify types of inherited functions ??
-let Caeser = (shft :: Char) {
-	use Cipher[Char]
-
-	def encode = .map (+ shft)
-	def decode = .map (- shft)
-}
-
-
-# Lambda Types and Inheritance
-let caeser = Cipher[Char]{ ... }	# caeser is actually an instance of Cipher
-let caeser = { use Cipher[Char] ... }	# same thing as above (above is sugar for this)
-
-
-# Subtyping/Type restrictions
-def foo = (x) { ... }		# args must support all methods called on x (but what differentiates this from a tuple with the value of x ???)
-def foo = (x :: Numeric) { ... }	# args must inherit from Numeric (+ method support)
-				# unless this isn't how inferrence works
-
-# Casting
-let i = 3
-let s = i.toStr			# Definately in
-let s = i.String		# If the constructor supports it (though behavior may differ)
-
-let b = i :: String		# This is a boolean test (ie. does i match a String)
 
 
 # Metaprogramming Design Sheet

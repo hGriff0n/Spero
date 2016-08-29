@@ -3,11 +3,8 @@ let volume = (r :: Float, h :: Int) {
     r * r * h
 }
 
-# :t volume = (Float, Int) -> Float
-
 let volume = (i :: Int, h :: Int) -> i * h
 
-# :t volume = (Int, Int) -> Int
 
 let test = (Float) -> .* 2
 let error = (Numeric) -> 3
@@ -19,17 +16,17 @@ def main = () {
     let num = 3                                 # num :: Int
 
     # Prints '6'
-    "{}".println(num.test)                      # Can "shadowed" variables be "recovered" (that's basically what function overloading would be doing)
+    "{}".println(num.test)
 
     # Prints '9'
     let res = volume(num, 3)
     "{res}".println
 
     # Prints '27'
-    let res :: Float = volume(num, 3)           # overload based on return type
-    "{}".println(res)
+    #let res :: Float = volume(num, 3)           # This is actually ambiguous (Constructor) -> Exact v. Exact -> Constructor
+    #"{}".println(res)
 
-    let num = 2.3                               # num :: Float
+    let num = 2.3                                 # num :: Float
 
     # Prints '15.87'
     let res = volume(num, 3)
@@ -37,15 +34,14 @@ def main = () {
 
     {
         # Prints '9'
-        let num = 3                             # num :: Int
+        let num = 3                               # num :: Int
         "{}".println(volume(num, 3))
 
         # This is valid under the "goal" semantics
-        #let num = (Int) -> .+ 3                 # num :: (Int) -> Int
+        #let num = (Int) -> .+ 3                   # num :: (Int) -> Int
         #"{}".println(volume(num, 3))
     }
 
-    # This doesn't actually produce an error
     error(num)
 }
 

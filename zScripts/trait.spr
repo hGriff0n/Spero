@@ -2,10 +2,22 @@ let Showable = {
     def toStr :: () -> String
 }
 
-@comment("This is a class")
+@comment("This comment is tied to the class")
+# This comment is not (ie. Can't see through reflection)
 let Numeric = {
     def + :: (Numeric) -> Numeric
     def - = .neg + self
+}
+
+@comment("Demonstrating mutability restrictions")
+def Int = Numeric {
+    @mutable
+    def += = (n: Numeric) -> self = self + n            # only valid on `mut Int`
+
+    def add = (Numeric) -> .+ self                      # valid on `Int` and `mut Int`
+
+    @pure
+    def == :: (Numeric) -> Bool                         # Don't know how to write '+' and '=' in language yet
 }
 
 # BigInt is showable and numeric
