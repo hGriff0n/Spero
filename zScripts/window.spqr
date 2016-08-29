@@ -1,8 +1,12 @@
 
-let Wall = (h :: Size, w :: Size) {
+let Copyable[T] = {
+    def Copy :: (T) -> T
+}
+
+def Wall = (h :: Size, w :: Size) {
     let windows = mut [].Vector[Window]
 
-    # Would be a compiler error without the mutable annotation (modifying windows)
+    # Would be a compiler error without the mutable annotation (windows.push_back is @mutable)
     @mutable
     def addWindow = (w :: Window) -> windows.push_back(w)
 
@@ -11,6 +15,16 @@ let Wall = (h :: Size, w :: Size) {
     }
 
     def numWindows = () -> windows.size
+
+    # Implement Copyable
+
+    use Copyable[Wall]
+
+    def copy = () {
+        let ret = mut Wall(h, w)
+        ret.windows = windows.copy          # deep copy not needed because Window is not mutable
+        ret
+    }
 }
 
 let Window = (w :: Size, h :: Size) {
@@ -32,7 +46,20 @@ def main = () {
     let wall = mut wall
     wall.addWindow(w, h)
 
+    # This is an immutable copy
+    let myWall = wall
+
+    # This is a variable alias (any occurance of myw can be replaced by wall, 
+    using myw = wall
+
+    {
+        using swall = wall      # alias are performed to the current binding
+        let wall = 3            # swall and myw alias to the same object
+    }
+
     # Shadow as immutable (I'm not going to add in an annotation to force immutability to call a function)
-    let wall = wall                     # wouldn't this maintain the mutability
-    "{}".println(wall.numWindows)
+    let wall = wall
+    "{}".println(myw.numWindows)            # myw is an alias to wall (so it's immutable here)
+
+    "{}".println(myWall.numWindows)
 }

@@ -1,5 +1,6 @@
 ## TODO
 Delve into mutability inference
+Work on the "borrowing"/"aliasing" semantics
 Add a way to access the current scope
 Figure out how to access a tuple
 Figure out monads
@@ -7,23 +8,42 @@ Figure out monads
 
 # Mutability
 Mutability is part of the type system (ala C++ 'const')
-	`Int` is immutable
-	`mut Int` is mutable
+	`Int` is immutable, `mut Int` is mutable
 	`mut` must be bound to a type				<- I may end up changing this in the future
 		can't write "def foo = (f :: mut) -> {}"
 		can write "def foo = (f) -> { let f = mut f ... }
 The `mut` keyword/function helps for type inference
 	It may be possible to implement mut in the language (depending on how inference works)
-		def mut[T] :: (T) -> mut T = .
-Mutability is not maintained in assignment (TODO: I'm not sure about how this'll work at all)
-	let f = mut 3		# mut Int
-	let r = f		# Int (copy)
-	let f = f		# Int (reuse)
+		def mut[T] :: (T) -> mut T = .			<- Possibly inefficient (copying)
+		def mut[T] :: (mut T) -> mut T = .		<- Possibly inefficient (copying)
 'mutable' annotation can be applied to type methods
 	Produces a compiler error if trying to call on an immutable instance
 	A warning is produced if any "state" members are shadowed (especially for mutability)
 	An error is produced if any type members are modified in a method without the 'mutable' annotation
+		With an exception for constructors ("new")
 		This is true even if the type members are mutable themselves
+Assignment and Arguments
+	Mutability is not kept in shadowing assignment, unless `mut` is used
+	The full rules for mutability and shadowing/assignment/function interaction are below
+
+	OPERATION		DEFAULT BEHAVIOR
+	RHS => LHS	(Shadow RHS)
+	T => T			Reuse | Allocate			<- Reuse iff there are no aliases
+	mut T => T		Reuse					^- Otherwise allocate
+	T => mut T		Copy (Can reuse if mut is unnecessary)
+	mut T => mut T		Reuse | Allocate
+	V => T			Allocate
+
+	LHS = RHS	(Assign RHS to LHS)
+	V = T			Alias					<- Aliasing maintains a reference to the object
+	V = mut T		Copy (Can alias if mut is unnecessary)	^- The value is kept around if there are aliases to it
+	T = V			Allocate				^- Even if it is later shadowed
+	
+	Call => Def
+	f(T) => F(T)		Reuse
+	f(mut T) => f(T)	Reuse
+	f(T) => f(mut T)	Copy (Can reuse if mut is unnecessary)
+	f(mut T) => f(mut T)	Copy (Can reuse if mut is unnecessary) 		<- Reuse would break the external semantics
 
 # This is a single line comment
 
@@ -40,7 +60,7 @@ Context is always a keyword that describes how the rest of the expression gets t
     Current Valid Context Keywords:
 	let	<- introduce a new name binding of protected visibility
 	def	<- introduce a new name binding of public visibility
-	static	<- introduce a new name binding of static visibility
+	static	<- introduce a new name binding of static duration
 	using 	<- create a new alias in the current scope
 	adt	<- create a new ADT in the scope (constructors are in the expression)
 

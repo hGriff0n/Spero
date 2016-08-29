@@ -1,4 +1,5 @@
 ## TODO
+Settle on copying/borrowing/mutability intersection
 Reference and Pointers as classes (ref.spqr)
 Have a private default constructor
 Start designing the type system

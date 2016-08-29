@@ -1,0 +1,36 @@
+
+
+def foo = (x :: Int) {
+    let x = mut x       # T => mut T. Copy
+    x += 3
+    let x = x           # mut T => T. Reuse
+}
+
+def foo = (x :: mut Int) -> foo(x)
+
+def mfoo = (x :: mut Int) {
+    x += 2
+}
+
+def main = () {
+    let x = 3
+    let x = x               # T => T. Optimize
+
+    foo(x)                  # f(T) => f(T). Reuse
+    "{}".println(x)         # Should print '3'
+
+    mfoo(x)                 # f(T) => f(mut T). Copy
+    "{}".println(x)         # Should print '3'
+
+    let r = x               # V = T. Alias
+    let x = x + 3           # T => T. Reuse
+
+    "{}".println(r)         # Should print '3'
+    
+    {
+        using t = x         # Alias
+
+        let x = mut 2
+        "{}".println(t)     # Should print '6'
+    }
+}

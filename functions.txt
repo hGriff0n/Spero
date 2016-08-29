@@ -1,4 +1,5 @@
 ## TODO:
+How does 'mut' factor into overload resolution
 Lazy/strict evaluation
 Currying
 Id function
