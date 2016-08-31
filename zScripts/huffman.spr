@@ -18,10 +18,10 @@ def Huffman = (probs :: Float*) {
                     Knw(s) -> (s, char)
                 }
 
-                if (tree.hasLeafAt(msg._2))
-                    Knw(msg._1 + tree.getLeafAt(msg._2))
+                if (tree.hasLeafAt(msg._1))
+                    Knw(msg._0 + tree.getLeafAt(msg._1))
                 else
-                    Unk(msg._1, msg._2)
+                    Unk(msg._0, msg._1)
             }).mesg
     }
 

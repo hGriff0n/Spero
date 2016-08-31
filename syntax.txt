@@ -1,9 +1,8 @@
 ## TODO
-Delve into mutability inference
-Work on the "borrowing"/"aliasing" semantics
-Add a way to access the current scope
-Figure out how to access a tuple
+Fix the problem with the mutability annotation
+Look into raw reference and pointers
 Figure out monads
+Look into borrowing semantics
 ##
 
 # Mutability
@@ -40,7 +39,7 @@ Assignment and Arguments
 	T = V			Allocate				^- Even if it is later shadowed
 	
 	Call => Def
-	f(T) => F(T)		Reuse
+	f(T) => f(T)		Reuse
 	f(mut T) => f(T)	Reuse
 	f(T) => f(mut T)	Copy (Can reuse if mut is unnecessary)
 	f(mut T) => f(mut T)	Copy (Can reuse if mut is unnecessary) 		<- Reuse would break the external semantics
@@ -132,6 +131,7 @@ Keywords:		<- The "flippable" keywords needs more explanation
 	{Context keywords}
 	mod
 	use
+	self		<- refers to the current scope/object instance
 
     Uncertain:
 	else
@@ -144,9 +144,27 @@ Default Operators:
 	Inspection '?'
 ##
 
+# Aliasing
+Aliasing acts as a simple form of variables, with minor syntactical overhead
+	By default, an alias can be implemented as a simple textual replacement of the "source" variable
+	If the source variable is shadowed, then the alias refers to the variable at the point of aliasing
+		This will disable some optimizations due to the maintained reference (see mutability section)
+
+		let x = 3
+		using three = x
+		let x = 5
+		"{}".println(three)		# prints '3'
+
+# Tuples
+let a = (1, 3)
+let (b, c) = a			# Decomposing a tuple
+
+a.max				# Calling a multi-arg function with a dot-flipped tuple
+a._0				# Access the first tuple argument (compiler generated)
+
 # Annotation Demo (actual implementation won't be followed, but this is a decent idea of what I want)
 
-@force(parens)							# Annotations are applied to the next statement
+@force(parens)							# This annotation is applied to the next statement (others may have module/file level application)
 let splitable_constructors = {					# So this whole block requires parentheses to call a function
 	let is_splitable = type_list.map(:split)
 	let constructors = type_list.map(:new)

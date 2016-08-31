@@ -1,7 +1,6 @@
 ## TODO
 Figure out how low-level I want to go
 Definately need to determine how to implement references/pointers
-
 ##
 
 built-in event loop (ala lever)

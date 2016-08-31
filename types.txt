@@ -1,5 +1,4 @@
 ## TODO
-Settle on copying/borrowing/mutability intersection
 Reference and Pointers as classes (ref.spqr)
 Have a private default constructor
 Start designing the type system
@@ -8,6 +7,12 @@ Start designing the type system
 # Syntax for defining algebraic data types
 	# Special context needed because ADTs are a collection of constructors, not types (could I roll in the syntax ???)
 adt Option[T] = Some(T) | None				# These names are technically types ???
+let Option[T] = Some(T) | None
+
+# Trying to unify ADT and type syntax
+let Person = Noone | (name :: mut String) {
+
+}
 
 
 # Syntax for defining custom structures
@@ -138,3 +143,6 @@ let int_methods = Int.methods.map(:: (Int) -> Int)
 
 # Create an object from a type list (or have a collection of partially applied constructors)
 let defaults = type_list.map(:new)
+
+# Test if a function is defined in the current scope
+self ? foo
