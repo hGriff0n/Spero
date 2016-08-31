@@ -29,16 +29,15 @@ def Huffman = (probs :: Float*) {
         let help = (String) -> .fmap(tree.getCodeFor)            # Doesn't consider the 127 thing
     }
 
-    # Can you drop the `{}` ??? (I was using them to unpack the tuple, make the variables "visible")
     static writeTo = (f :: File, d :: String) -> f.writeAll(data)
     static readFrom = (File) -> .readAll
 
     def encode = (in :: File, out :: File) {
-        out .writeTo(encoder.help(in .readFrom))
+        out .Huffman:writeTo(encoder.help(in .Huffman:readFrom))
     }
 
     def decode = (in :: File, out :: File) {
-        out .writeTo(decoder.help(in .readFrom))
+        out .Huffman:writeTo(decoder.help(in .Huffman:readFrom))
     }
 }
 

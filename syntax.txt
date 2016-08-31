@@ -1,48 +1,9 @@
 ## TODO
-Fix the problem with the mutability annotation
-Look into raw reference and pointers
+Look into raw references and pointers
+Look into contextual evaluation (see 'mut_testing.spqr' for more)
 Figure out monads
 Look into borrowing semantics
 ##
-
-# Mutability
-Mutability is part of the type system (ala C++ 'const')
-	`Int` is immutable, `mut Int` is mutable
-	`mut` must be bound to a type				<- I may end up changing this in the future
-		can't write "def foo = (f :: mut) -> {}"
-		can write "def foo = (f) -> { let f = mut f ... }
-The `mut` keyword/function helps for type inference
-	It may be possible to implement mut in the language (depending on how inference works)
-		def mut[T] :: (T) -> mut T = .			<- Possibly inefficient (copying)
-		def mut[T] :: (mut T) -> mut T = .		<- Possibly inefficient (copying)
-'mutable' annotation can be applied to type methods
-	Produces a compiler error if trying to call on an immutable instance
-	A warning is produced if any "state" members are shadowed (especially for mutability)
-	An error is produced if any type members are modified in a method without the 'mutable' annotation
-		With an exception for constructors ("new")
-		This is true even if the type members are mutable themselves
-Assignment and Arguments
-	Mutability is not kept in shadowing assignment, unless `mut` is used
-	The full rules for mutability and shadowing/assignment/function interaction are below
-
-	OPERATION		DEFAULT BEHAVIOR
-	RHS => LHS	(Shadow RHS)
-	T => T			Reuse | Allocate			<- Reuse iff there are no aliases
-	mut T => T		Reuse					^- Otherwise allocate
-	T => mut T		Copy (Can reuse if mut is unnecessary)
-	mut T => mut T		Reuse | Allocate
-	V => T			Allocate
-
-	LHS = RHS	(Assign RHS to LHS)
-	V = T			Alias					<- Aliasing maintains a reference to the object
-	V = mut T		Copy (Can alias if mut is unnecessary)	^- The value is kept around if there are aliases to it
-	T = V			Allocate				^- Even if it is later shadowed
-	
-	Call => Def
-	f(T) => f(T)		Reuse
-	f(mut T) => f(T)	Reuse
-	f(T) => f(mut T)	Copy (Can reuse if mut is unnecessary)
-	f(mut T) => f(mut T)	Copy (Can reuse if mut is unnecessary) 		<- Reuse would break the external semantics
 
 # This is a single line comment
 
@@ -61,6 +22,8 @@ Context is always a keyword that describes how the rest of the expression gets t
 	def	<- introduce a new name binding of public visibility
 	static	<- introduce a new name binding of static duration
 	using 	<- create a new alias in the current scope
+
+    Possibly Deprecated
 	adt	<- create a new ADT in the scope (constructors are in the expression)
 
 Name indicates the scoped binding that the statement will exist under
@@ -143,6 +106,56 @@ Default Operators:
 	Assignment '='
 	Inspection '?'
 ##
+
+# Mutability
+Mutability is part of the type system (ala C++ 'const')
+	`Int` is immutable, `mut Int` is mutable
+	`mut` must be bound to a type				<- I may end up changing this in the future
+		can't write "def foo = (f :: mut) -> {}"
+		can write "def foo = (f) -> { let f = mut f ... }
+The `mut` keyword/function helps for type inference
+	It may be possible to implement mut in the language (depending on how inference works)
+		def mut[T] :: (T) -> mut T = .			# Possibly inefficient (copying)
+		def mut[T] :: (mut T) -> mut T = .		# Possibly inefficient (copying)
+			I don't know if I'd allow this (overloading based on mutability)
+'mutable' annotation
+	The mutable annotation can be applied in the context of type definitions to conditionally enable/disable code
+		'@mutable' has two modes of operation, a enable/disable and a query mode
+		The enable/disable mode applies to the next segment of code		<- General use case
+			This segment will only be available on a mutable instance of the object
+			A compiler error is produced if the call is attempted (the method technically "exists" for resolution)
+		The query mode applies in the context of boolean operations
+			This can enable conditional method behavior based on mutability of the object
+Compiler Behavior
+	A warning is produced if any "state" members are shadowed (especially for mutability)
+	An error is produced if any type members are modified in a method without the 'mutable' annotation
+		This would mean that the annotation is possibly unnecessary, but I'm going to keep it for now
+			Possibly more readable to have the explicit knowledge that the method only exists in certain conditions
+	Type members must be mutable in the definition if any mutable operations are to be performed on them
+		ie. Immutability is innate to type members, mutability is dependent on the surrounding instance
+		If the object is immutable, modification of any non-static members is disallowed	<- might change
+Assignment and Arguments
+	Mutability is not kept in shadowing assignment, unless `mut` is used
+	The full rules for mutability and shadowing/assignment/function interaction are below
+
+	OPERATION		DEFAULT BEHAVIOR
+	RHS => LHS	(Shadow RHS)
+	T => T			Reuse | Allocate			<- Reuse iff there are no aliases
+	mut T => T		Reuse					^- Otherwise allocate
+	T => mut T		Copy (Can reuse if mut is unnecessary)
+	mut T => mut T		Reuse | Allocate
+	V => T			Allocate
+
+	LHS = RHS	(Assign RHS to LHS)
+	V = T			Alias					<- Aliasing maintains a reference to the object
+	V = mut T		Copy (Can alias if mut is unnecessary)	^- The value is kept around if there are aliases to it
+	T = V			Allocate				^- Even if it is later shadowed
+	
+	Call => Def
+	f(T) => f(T)		Reuse
+	f(mut T) => f(T)	Reuse
+	f(T) => f(mut T)	Copy (Can reuse if mut is unnecessary)
+	f(mut T) => f(mut T)	Copy (Can reuse if mut is unnecessary) 		<- Reuse would break the external semantics
 
 # Aliasing
 Aliasing acts as a simple form of variables, with minor syntactical overhead

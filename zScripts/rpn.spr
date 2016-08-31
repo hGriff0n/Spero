@@ -47,7 +47,7 @@ let Cipher[T] = {
 def Caeser = (shft :: Char) {
 	use Cipher[Char]						# Inheritance/Interfaces
 
-	def encode = .map (+ shft)				# True "varible-less" functions
+	def encode = .map (+ shft)				# Point-free functions
 	def decode = .map (- shft)				# They inferentially meet the Cipher requirements
 }
 
