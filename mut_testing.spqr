@@ -12,6 +12,58 @@ def mfoo = (x :: mut Int) {
     x += 2
 }
 
+let Foo = {
+    let arr = mut [1, 4, 3, 6].Vector[Int]
+
+    if curTime.morning?
+        "WAKE UP!".println
+
+    # Mutable-only methods
+    @mutable
+    def sort = () -> arr = arr.sort
+
+    @mutable
+    def push = (x :: Int) -> arr = arr.push_back(x)
+
+
+    # This method has different behavior based on the object's mutability
+    def pop = () ->
+        arr.pop_back .if @mutable else "Pop!".println
+
+
+    # Immutable methods
+    def size = () -> arr.size
+
+    def toStr = () -> arr.toStr
+
+
+    # Custom constructors are implemented as static methods (mutability and calling concerns)
+    static new = (mult :: Int) {
+        let ret = mut Foo
+        ret.arr.map!(* mult)
+        ret
+    }
+
+    # Interesting possibility (The '{ ... }' is evaluated within the context of the constructed Foo)
+    static new = (mult :: Int) -> Foo { arr.map!(* mult) }
+
+    # Doesn't call through the default constructor
+    # Attempt 1: Use `alloc`
+    static new = (arr :: Int*) {
+        let ret = mut Foo:alloc
+        ret.arr = Vector(arr)
+        ret
+    }
+
+    # Attempt 2: Disable construction
+    static new = (arr :: Int*) {
+        @disable(constructor)           # @construct(false)
+        let ret = mut Foo
+        ret.arr = Vector(arr)
+        ret
+    }
+}
+
 def main = () {
     let x = 3
     let x = x               # T => T. Optimize
@@ -33,4 +85,11 @@ def main = () {
         let x = mut 2
         "{}".println(t)     # Should print '6'
     }
+
+    let f = Foo
+    "{}: {}".println(f.size, f)
+
+    # sort modifies f
+    f.sort
+    "{}: {}".println(f.size, f)
 }

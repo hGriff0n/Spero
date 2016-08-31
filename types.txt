@@ -26,7 +26,7 @@ let Person = (name :: mut String) {				# Name is mutable by the class (syntax un
 	static count = mut 0					# Mutable static field
 
 	# How to access class fields from an instance, with ':' or '.'
-	def new = (Person) -> .name.this			# Variable-less copy constructor (needs work)
+	def new = (Person) -> .name.this			# Point-free copy constructor (needs work)
 	def hello = () -> println("Hello! I'm {name}!")
 }
 
@@ -101,6 +101,20 @@ In order for type values to be used in generics, 2 conditions must be met:
 			It doesn't guarantee the code is well formed
 			This is why I'm restricting to basic types for now
 ##
+
+# Constructors
+	The primary constructor is defined through the type definition
+		The '(...)' defines any needed arguments (note this is optional and defaults to no arguments)
+		The '{ ... }' defines the constructor body (what gets executed)
+			TODO: Find a way to split off invariants from class members
+	Secondary constructors are implemented as static "new" methods
+		The return type for these methods is the calling type
+		Implement by creating a mutable instance of the calling type then modifying what is necessary
+		It is possible to disable the default constructor from running any code (just setup and allocation)
+			TODO: Finalize the syntax (T:alloc or @disable(constructor)
+	Note: Construction is always performed on mutable instances
+	Objects can be constructor be "calling" the type name (ie. T(...)) or by calling the new method (ie. T:new(...)
+		The former is implemented as the latter internally
 
 # Generic Spcialization
 There are 2 possibilities for generics
