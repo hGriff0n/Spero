@@ -1,6 +1,6 @@
 ## TODO
-Look into raw references and pointers
 Look into contextual evaluation (see 'mut_testing.spqr' for more)
+Resolve overload resolution with 'mut', pointers, and views
 Figure out monads
 Look into borrowing semantics
 ##
@@ -70,7 +70,7 @@ Int:push		# this will fail if called
 # Querying
 Int?push		# Test if Int:push is valid
 push?Int		# Test if push takes an Int
-?push			# Test if push is defined in the current scope ???
+scope?push			# Test if push is defined in the current scope ???
 
 
 # Sequences/Views
@@ -94,7 +94,8 @@ Keywords:		<- The "flippable" keywords needs more explanation
 	{Context keywords}
 	mod
 	use
-	self		<- refers to the current scope/object instance
+	scope	<- refers to the current scope
+	self	<- refers to the current object inside of the object
 
     Uncertain:
 	else
@@ -135,33 +136,27 @@ Compiler Behavior
 		ie. Immutability is innate to type members, mutability is dependent on the surrounding instance
 		If the object is immutable, modification of any non-static members is disallowed	<- might change
 Assignment and Arguments
-	Mutability is not kept in shadowing assignment, unless `mut` is used
-	The full rules for mutability and shadowing/assignment/function interaction are below
+	Mutability is not kept in shadowing or assignment, unless `mut` is used
+	The full rules for mutability and shadowing/assignment/function interaction are below		<- Note: T includes 'mut T', 'T&', 'T*' unless otherwise specified
 
 	OPERATION		DEFAULT BEHAVIOR
-	RHS => LHS	(Shadow RHS)
-	T => T			Reuse | Allocate			<- Reuse iff there are no aliases
-	mut T => T		Reuse					^- Otherwise allocate
-	T => mut T		Copy (Can reuse if mut is unnecessary)
-	mut T => mut T		Reuse | Allocate
-	V => T			Allocate
+	LHS = RHS	(Shadow LHS)
+	t = V|T			Reuse if no aliases | Allocate
+	t = mut T		Reuse if no aliases | Copy | Allocate
 
 	LHS = RHS	(Assign RHS to LHS)
-	V = T			Alias					<- Aliasing maintains a reference to the object
-	V = mut T		Copy (Can alias if mut is unnecessary)	^- The value is kept around if there are aliases to it
-	T = V			Allocate				^- Even if it is later shadowed
+	v = T			Alias
+	v = mut T		Copy | Allocate
 	
-	Call => Def
-	f(T) => f(T)		Reuse
-	f(mut T) => f(T)	Reuse
-	f(T) => f(mut T)	Copy (Can reuse if mut is unnecessary)
-	f(mut T) => f(mut T)	Copy (Can reuse if mut is unnecessary) 		<- Reuse would break the external semantics
+	Definition
+	f(T)			Reuse
+	f(mut T)		Reuse if mut unnecessary | Copy
 
 # Aliasing
 Aliasing acts as a simple form of variables, with minor syntactical overhead
 	By default, an alias can be implemented as a simple textual replacement of the "source" variable
 	If the source variable is shadowed, then the alias refers to the variable at the point of aliasing
-		This will disable some optimizations due to the maintained reference (see mutability section)
+		This will disable some optimizations due to the maintained references
 
 		let x = 3
 		using three = x
