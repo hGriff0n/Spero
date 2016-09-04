@@ -1,6 +1,6 @@
 ## TODO
-Figure out how low-level I want to go
-Definately need to determine how to implement references/pointers
+Add in a way to restrict a type's mutability (force it to always mutable/immutable)
+Look into adding in a way to "export" annotated scopes into the encompasing scope
 ##
 
 built-in event loop (ala lever)
@@ -10,4 +10,21 @@ built-in event loop (ala lever)
 compiler raises warnings for every "TODO" in a comment
 	or have a "todo" annotation (have both)
 
-Rust-style "unsafe" blocks
+Compile-time execution (ala Ante)
+
+
+Safety annotations (see Rust for better explanations)
+	Some segments of code are inherently unsafe, but necessary
+	These segments can be executed within a "safe" block through the '@safe' annotation
+		This turns off some, but not all, compiler checks to
+	If an unsafe function/operation is not surrounded in a "safe" block, the encompasing function is considered to be unsafe
+		main (or the entry function) must be considered safe
+	It's also possible to mark functions/etc. as "unsafe" through '@unsafe'
+
+# Foo can only exist as a mutable object
+@mutable
+def Foo = { ... }
+
+# Bar can't exist as a mutable object
+@disable(mut)
+def Bar = { ... }

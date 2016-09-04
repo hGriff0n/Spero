@@ -1,5 +1,6 @@
 ## TODO:
-How does 'mut' factor into overload resolution
+Ensure that overloading rules work
+
 Lazy/strict evaluation
 Currying
 Id function
@@ -13,6 +14,12 @@ There are 5 types of type matches in overload resolution: Exact, Polymorphic, Ge
 	Generic: Attempt a generic call		# See types.txt for generic specialization sub-matching
 	Construction: Param:new(Arg)
 	None: Failure state
+
+Mutability is only considered if there are 2 overloads of equal matching
+	The 'mut T' overload is taken iff a 'mut T' is passed
+
+Pointers/Views can only be accepted by a 'T&'/'T*'
+	Overload rules are for resolving between 2 'T&'/'T*' overloads
 
 If overload resolution produces a None match, then a compiler error is produced
 An ambiguous resolution occurs between 2 overloads (f1, f2) if...

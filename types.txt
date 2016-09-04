@@ -1,6 +1,7 @@
 ## TODO
-Write out rules for type construction and destruction
-Flesh out ADT style syntax (how do normal constructors interact)
+Figure out T[n] vs T(n)
+Figure out how to implement Vector and Array
+
 Have a private default constructor
 Start designing the type system
 ##
@@ -11,33 +12,46 @@ let Animal = { ... }
 # Syntax for defining parametric structures
 let Vec[T] = (n :: Size) { ... }
 
-# Create a type with a constructor that takes a String
+# Create a type with a default constructor
 let Person = (name :: mut String) {				# Name is mutable by the class
 	static count = mut 0					# Mutable static field
 
 	# Use '.' to access class fields/methods from an instance
-	def new = (Person) -> .name.Person			# Point-free copy constructor
-	def new = (age :: Int) {
-		name = (sys:now.sys:time.ad_year - age).names.random
-	}
-
-	# Custom delete methods 
-	static delete = (p :: mut Person&) -> ()
-
-	def hello = () -> println("Hello! I'm {name}!")
+	def hello = () -> println("Hello! I'm {self.name}!")
 }
 
+# Constructors and Destructors
+Additional constructors are implemented by overloading the static "new" method in one of 2 ways
+	Create a mutable instance using another constructor and transform the members
+	"Complete" the type definition
+		The syntax for this is "<type> { <def> }"
+			'let' members must be bound in the def section
+			'def' members may be left unbound 	<- Abstract types
+		The default constructor is implemented in these terms
+			See "types.spqr" for a better representation of this
+		
+Custom destructor is implemented by overriding the static "drop" method
+	The T:drop method takes a singular "mut T" as its argument
+	Destructor calls are implicitly inserted in reverse order of declaration
+		At the end of scopes and in a parent object's destructor
+	Destructors can be explicitly called if desired with the following effects
+		The variable that is "dropped" is invalid until it is reassigned/shadowed
+			It still "owns" its memory location for optimization purposes
+		The implicit destructor call is not added at the end of the scope
+	
+
 # ADTs can be implemented through "named" constructors
+	# Might implement this through sub-typing
 let Option[T] = Some(T) | None {}				# 'Option' construction is disabled
 
-# You can re-enable 'T' construction by providing an "unnamed" constructor
-	# Or by implementing "new" constructors inside the class definition
+# You can re-enable 'T' construction by providing an "unnamed" constructor or creating "new" constructors
 let Person = Noone | (name :: mut String) { ... }
 
 # Types can be distinguished based on the constructor if ADT syntax is used
-let Option[T] = Some(T) | None {
+let Option[T] = Some(T) | None | () {
 	def get = () -> self.match {
 		Some(t) -> t
+		Option -> 3		# 'T' construction is not distinguishable
 	}
 }
 

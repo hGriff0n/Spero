@@ -1,13 +1,17 @@
+## TODO
+Explain rules better
+##
+
 Manual Memory Management
 
 For a normal user, Spero provides two memory types: View (T*) and Pointer (T&)
 	Mutability for these types is a bit different from other types
 		It is not possible to make a mutable view or pointer
-		It is only possible to make a view or pointer to a mutable type
+		It is possible to make a view or pointer to a mutable type
 			ie. 'mut' applies to 'T' not 'T*'
-		Additionally, you can hold a mutable and normal pointer to the same memory
+		Additionally, you can't hold a mutable and normal pointer to the same memory
 	Pointers and Views own their memory
-		This "ownership" is enforced through a "ref-counting" principle
+		This "ownership" is possibly enforced through a "ref-counting" principle
 			This can possibly be statically determined
 		When the last pointer is finally de-allocated, the memory is freed
 			If there is an associated type, the type destructor is first called
@@ -20,20 +24,26 @@ Pointers and Safety
 		Given Rust, the only way to statically check might be through extra syntax
 
 Implementation (the 'mem' module)
-	mem provides two implementation types, Addr and Chunk[n]
-		Addr
-		Chunk|Chunk[n]			# Chunk's are mutable by default
+	mem provides two implementation types, Addr and Chunk([n])
+		'Addr' represents a memory address
+			Operations with 'Addr' are inherently unsafe
+			'Addr' is mostly useful with 'as[T]' casts
+		Chunk represents an owned memory segment on the heap
+			Chunk memory are mutable by default (ie. write works)
 			Mutability is only restricted if an explicit type is associated to it
 				ala through "mem:alloc[T]"
-	Pointers and Views can be implemented using Chunk[n]
+
+	Pointers and Views can be implemented using 'mem:Chunk'
 		Spero just provides syntax/method sugar and safety guarantees
 
+
+# Memory usage sheet
 
 let addr = 0x3a5f.mem:Addr		# Memory Address
 let cnk = mem:alloc[4]			# Heap <- static checking?
 let vck = mem:alloc[Int.size * 10]	# Heap
 let rck = mem:alloc(16)			# Heap <- runtime?
-let ptr = mut mem:alloc[Int]		# Heap <- mut Int&
+let ptr = mem:alloc[mut Int]		# Heap <- mut Int&
 
 let x = &(addr.as[Int])			# unsafe
 let y = ar.read[Char]			# safe (copy)
@@ -54,7 +64,7 @@ let dup = ptr				# Error: mut Int& and Int& to same memory
 
 let ptr = ptr
 def foo = (mut Int&) -> ()
-foo(ptr)				# ?? Fine if not aliased
+foo(ptr)				# Implicitly converted to 'mut Int&' for the call
 let dup = ptr
 foo(ptr)				# Error: mut Int& and Int& to same memory
 

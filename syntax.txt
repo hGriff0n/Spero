@@ -1,8 +1,6 @@
 ## TODO
 Look into contextual evaluation (see 'mut_testing.spqr' for more)
-Resolve overload resolution with 'mut', pointers, and views
 Figure out monads
-Look into borrowing semantics
 ##
 
 # This is a single line comment
@@ -22,9 +20,6 @@ Context is always a keyword that describes how the rest of the expression gets t
 	def	<- introduce a new name binding of public visibility
 	static	<- introduce a new name binding of static duration
 	using 	<- create a new alias in the current scope
-
-    Possibly Deprecated
-	adt	<- create a new ADT in the scope (constructors are in the expression)
 
 Name indicates the scoped binding that the statement will exist under
 Some additional information about the binding can also be derived here
@@ -141,16 +136,19 @@ Assignment and Arguments
 
 	OPERATION		DEFAULT BEHAVIOR
 	LHS = RHS	(Shadow LHS)
-	t = V|T			Reuse if no aliases | Allocate
-	t = mut T		Reuse if no aliases | Copy | Allocate
+	t = V|T			Reuse if no aliases | Copy
+	t = mut T		Reuse if no aliases | Copy
 
 	LHS = RHS	(Assign RHS to LHS)
-	v = T			Alias
-	v = mut T		Copy | Allocate
+	v = T			Copy
+	v = mut T		Copy
 	
 	Definition
 	f(T)			Reuse
-	f(mut T)		Reuse if mut unnecessary | Copy
+	f(mut T)		Reuse if no aliases | Copy
+
+	The compiler may be able to determine if the 'mut' is unnecessary
+		It can then convert a `mut T` into a `T` for efficiency
 
 # Aliasing
 Aliasing acts as a simple form of variables, with minor syntactical overhead

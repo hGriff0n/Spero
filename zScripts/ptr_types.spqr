@@ -9,7 +9,7 @@ def Array[T, n :: Size] = {
     def at = (i :: Size) {
         @todo("Add range checking behavior. Possibly add in annotation querying?")
         
-        &(ptr.sub[T](i))
+        Ok(ptr.sub[T](i))
     }
 
     use {Mappable, Indexable}
@@ -33,6 +33,54 @@ def Array[T, n :: Size] = {
         } .while i < n
 
         ret
+    }
+}
+
+# Can I implement Vector in terms of Array ???
+def VecArray[T] = {
+    let ptr = mut Array[T, 10]
+    let (size, cap) = mut (0, 10)
+
+    @safe
+    def at = (i :: Size) {
+        if i < size
+            Ok(ptr(i))
+        else
+            Error("Out of Range")
+    }
+
+    @mutable
+    def push_back = (val :: T) {
+        if size == cap {
+            cap = 20
+            let cur = ptr
+
+            ptr = mut Array[T, 20]
+            ptr.map!((i) -> &(cur.at(i))
+        }
+        
+        ptr(size) = val
+        size += 1
+    }
+}
+
+def Vector[T] = {
+    let siz = mut 0
+    let cap = mut 10
+    let ptr = mut alloc(cap)
+
+    @mutable
+    def push_back = (val :: T) {
+        if size == cap {
+            cap *= 2
+            let cur = ptr
+
+            ptr = mut alloc(cap)                    # 'mut' refers to the variable and the binding
+            ptr.map!((i) -> &get(cur, i))
+        }
+
+        ptr(size) = val
+        size += 1
     }
 }
 

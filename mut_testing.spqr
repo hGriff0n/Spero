@@ -37,29 +37,15 @@ let Foo = {
     def toStr = () -> arr.toStr
 
 
-    # Custom constructors are implemented as methods (they're called on the created object, not the calling)
-    def new = (mult :: Int) {
-        let ret = mut Foo
+    # Custom constructors are implemented as static methods
+    static new = (mult :: Int) ->       # The '{...}' is "completing" the definition
+        Foo {                           # Technically the type is abstract (members have no values)
+            arr = mut [1, 4, 3, 6].map(* mult).Vector[Int]
+        }
+
+    static new = (mult :: Int) {
+        let ret = mut Foo               # Piggyback on the default constructor
         ret.arr.map!(* mult)
-        ret
-    }
-
-    # Interesting possibility (The '{ ... }' is evaluated within the context of the constructed Foo)
-    def new = (mult :: Int) -> Foo { arr.map!(* mult) }
-
-    # Doesn't call through the default constructor
-    # Attempt 1: Use `alloc`
-    def new = (arr :: Int*) {
-        let ret = mut alloc[Foo]
-        ret.arr = Vector(arr)
-        ret
-    }
-
-    # Attempt 2: Disable construction
-    def new = (arr :: Int*) {
-        @disable(constructor)           # @construct(false)
-        let ret = mut Foo
-        ret.arr = Vector(arr)
         ret
     }
 }
