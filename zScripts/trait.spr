@@ -3,7 +3,7 @@ let Showable = {
 }
 
 @comment("This comment is tied to the class")
-# This comment is not (ie. Can't see through reflection)
+# This comment is not (ie. Can't be seen with reflection)
 let Numeric = {
     def + :: (Numeric) -> Numeric
     def - = .neg + self
@@ -16,13 +16,14 @@ def Int = Numeric {
 
     def add = (Numeric) -> .+ self                      # valid on `Int` and `mut Int`
 
-    @pure
-    def == :: (Numeric) -> Bool                         # Don't know how to write '+' and '=' in language yet
+    @pure def == :: (Numeric) -> Bool
+
+    @pure def + :: (Numeric) -> Int
 }
 
 # BigInt is showable and numeric
 def BigInt = (num :: String) {
-    use {Numeric, Showable}                 # Same syntax as the module mechanism (semantics slightly different)
+    use {Numeric, Showable}                             # Same syntax as module imports (possible problems)
 
     def toStr = () -> num
     def + = (val :: Numeric) -> BigInt(num + val.toStr)

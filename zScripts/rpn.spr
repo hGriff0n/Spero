@@ -3,21 +3,23 @@ A little test program to help work out the vs-spero extension and for settling t
 The test program is primarily a basic RPN calculator with some non-rpn functions
 ##
 
-@todo {
-	"Write stuff in this annotation"
+@todo(
+	"Write stuff in this annotation",
 	"The syntax for todo might need some work"
-}
+)
 
 mod rpn
 use std:{io, str}:*
 
 def main = .getln .parse .("={}".println)
 
-adt Stack[T] = Empty | Cons(T, Stack) {
+def Stack[T] = Empty | Cons(T, Stack) {
 	def toStr = self .match {
 		Cons(i, Empty) -> i.toStr
 		_              -> "nil"
 	}
+
+	def push = (t :: T) -> Cons(t, self)
 }
 
 let parse = (String) ->

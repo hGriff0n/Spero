@@ -4,7 +4,7 @@ use std.{io, iter}.*
 def Huffman = (probs :: Float*) {
     # The tree gets constructed automatically since it accepts a Float*
     let decoder = HuffmanHelper(probs) {
-        type Reducer = Unk(String, String) | Knw(String) {
+        def Reducer = Unk(String, String) | Knw(String) {}
 
 		let mesg = .match {
 			Knw(s) -> s

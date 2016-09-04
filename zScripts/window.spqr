@@ -1,6 +1,7 @@
 
 let Copyable[T] = {
-    def Copy :: (T) -> T
+    static new :: (T) -> T
+    def copy = (T) -> .T:new
 }
 
 def Wall = (h :: Size, w :: Size) {
@@ -10,20 +11,15 @@ def Wall = (h :: Size, w :: Size) {
     @mutable
     def addWindow = (w :: Window) -> windows.push_back(w)
 
-    def paintableArea = () {
+    def paintableArea = () ->
         h * w - windows.map(.getArea).reduce(+)
-    }
 
     def numWindows = () -> windows.size
 
-    # Implement Copyable
-
     use Copyable[Wall]
 
-    def copy = () {
-        let ret = mut Wall(h, w)
-        ret.windows = windows.copy          # deep copy not needed because Window is not mutable
-        ret
+    static new = (cpy :: Wall) -> Wall {
+        windows = cpy.windows.cpy
     }
 }
 
