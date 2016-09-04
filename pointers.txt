@@ -1,0 +1,69 @@
+Manual Memory Management
+
+For a normal user, Spero provides two memory types: View (T*) and Pointer (T&)
+	Mutability for these types is a bit different from other types
+		It is not possible to make a mutable view or pointer
+		It is only possible to make a view or pointer to a mutable type
+			ie. 'mut' applies to 'T' not 'T*'
+		Additionally, you can hold a mutable and normal pointer to the same memory
+	Pointers and Views own their memory
+		This "ownership" is enforced through a "ref-counting" principle
+			This can possibly be statically determined
+		When the last pointer is finally de-allocated, the memory is freed
+			If there is an associated type, the type destructor is first called
+
+Pointers and Safety
+	Due to lifetime resolution reasons, it's not possible to safely make a local pointer
+		Pointers are restricted to alloc calls inside of normal code
+		Local pointers can be created in "safe" code through the ref function
+	This is something I want to make safe, but it depends on the compiler
+		Given Rust, the only way to statically check might be through extra syntax
+
+Implementation (the 'mem' module)
+	mem provides two implementation types, Addr and Chunk[n]
+		Addr
+		Chunk|Chunk[n]			# Chunk's are mutable by default
+			Mutability is only restricted if an explicit type is associated to it
+				ala through "mem:alloc[T]"
+	Pointers and Views can be implemented using Chunk[n]
+		Spero just provides syntax/method sugar and safety guarantees
+
+
+let addr = 0x3a5f.mem:Addr		# Memory Address
+let cnk = mem:alloc[4]			# Heap <- static checking?
+let vck = mem:alloc[Int.size * 10]	# Heap
+let rck = mem:alloc(16)			# Heap <- runtime?
+let ptr = mut mem:alloc[Int]		# Heap <- mut Int&
+
+let x = &(addr.as[Int])			# unsafe
+let y = ar.read[Char]			# safe (copy)
+let z = &ptr				# safe
+
+addr.write('Z')				# unsafe
+&(rck.as[mut Int]) = 3.3		# unsafe
+&ptr = 5				# safe
+
+let ptr = ptr
+let dup = mut ptr			# Error: mut Int& and Int& to same memory
+
+let dup = ptr
+let ptr = mut ptr			# Error: mut Int& and Int& to same memory
+
+let ptr = mut ptr
+let dup = ptr				# Error: mut Int& and Int& to same memory
+
+let ptr = ptr
+def foo = (mut Int&) -> ()
+foo(ptr)				# ?? Fine if not aliased
+let dup = ptr
+foo(ptr)				# Error: mut Int& and Int& to same memory
+
+let x = 10
+@safe {
+	foo(x.ref)			# Can do a local pointer in the safe block
+}
+
+{
+	let ptr = mem:alloc[mut Int]
+	&ptr = 15
+}					# ptr is deallocated here (and the int is deleted)
