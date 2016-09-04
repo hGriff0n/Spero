@@ -1,0 +1,64 @@
+mod ptrs
+
+use std:{mem, fs}:*
+
+def Array[T, n :: Size] = {
+    let ptr = mut alloc[T.size * n]
+
+    @safe
+    def at = (i :: Size) {
+        @todo("Add range checking behavior. Possibly add in annotation querying?")
+        
+        &(ptr.sub[T](i))
+    }
+
+    use {Mappable, Indexable}
+
+    @mutable
+    def map! = (f :: (T) -> T) {
+        let i = mut 0
+        
+        while i < n {
+            at(i) = i.at.f
+            i += 1
+        }
+    }
+
+    def map[V] = (f :: (T) -> V) {
+        let (ret, i) = mut (Array[V, n], 0)
+
+        {
+            i.at = at(i).f
+            i += 1
+        } .while i < n
+
+        ret
+    }
+}
+
+def Foo = () {
+    use std:sys                                     # This is a problem (use is for inheritance, this is to bring std:sys into scope)
+
+    let f = mut "f.txt".File
+    "Default open at {}".writeln(f, sys:now)
+
+    def new = (foo :: mut Foo) {
+        f = foo.f.copy
+        "Duplicate at {}".writeln(f, sys:now)
+    }
+
+    static delete = (foo :: mut Foo&) {
+        "Closed at {}".writeln(f, sys:now)
+    }
+}
+
+def main = () {
+    Foo
+
+    # These all get the 2nd element in the 'cnk' "array"
+    using T = Int
+    let cnk = mut alloc[Int.size * 5]
+    cnk.sub[Int, 1]
+    cnk.sub[Int](1)                             # unsafe '(1)'
+    cnk.chunk[T.size, 2 * T.size].as[T]         # unsafe 'as'
+}

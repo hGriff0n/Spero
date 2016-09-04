@@ -1,19 +1,9 @@
 ## TODO
-Reference and Pointers as classes (ref.spqr)
+Write out rules for type construction and destruction
+Flesh out ADT style syntax (how do normal constructors interact)
 Have a private default constructor
 Start designing the type system
 ##
-
-# Syntax for defining algebraic data types
-	# Special context needed because ADTs are a collection of constructors, not types (could I roll in the syntax ???)
-adt Option[T] = Some(T) | None				# These names are technically types ???
-let Option[T] = Some(T) | None
-
-# Trying to unify ADT and type syntax
-let Person = Noone | (name :: mut String) {
-
-}
-
 
 # Syntax for defining custom structures
 let Animal = { ... }
@@ -22,14 +12,34 @@ let Animal = { ... }
 let Vec[T] = (n :: Size) { ... }
 
 # Create a type with a constructor that takes a String
-let Person = (name :: mut String) {				# Name is mutable by the class (syntax uncertain)
+let Person = (name :: mut String) {				# Name is mutable by the class
 	static count = mut 0					# Mutable static field
 
-	# How to access class fields from an instance, with ':' or '.'
-	def new = (Person) -> .name.this			# Point-free copy constructor (needs work)
+	# Use '.' to access class fields/methods from an instance
+	def new = (Person) -> .name.Person			# Point-free copy constructor
+	def new = (age :: Int) {
+		name = (sys:now.sys:time.ad_year - age).names.random
+	}
+
+	# Custom delete methods 
+	static delete = (p :: mut Person&) -> ()
+
 	def hello = () -> println("Hello! I'm {name}!")
 }
 
+# ADTs can be implemented through "named" constructors
+let Option[T] = Some(T) | None {}				# 'Option' construction is disabled
+
+# You can re-enable 'T' construction by providing an "unnamed" constructor
+	# Or by implementing "new" constructors inside the class definition
+let Person = Noone | (name :: mut String) { ... }
+
+# Types can be distinguished based on the constructor if ADT syntax is used
+let Option[T] = Some(T) | None {
+	def get = () -> self.match {
+		Some(t) -> t
+	}
+}
 
 # Define Cipher trait (a type with unimplemented members)
 let Cipher[T] = {

@@ -15,7 +15,7 @@ def mfoo = (x :: mut Int) {
 let Foo = {
     let arr = mut [1, 4, 3, 6].Vector[Int]
 
-    if curTime.morning?
+    if sys:now.hour < 12
         "WAKE UP!".println
 
     # Mutable-only methods
@@ -37,26 +37,26 @@ let Foo = {
     def toStr = () -> arr.toStr
 
 
-    # Custom constructors are implemented as static methods (mutability and calling concerns)
-    static new = (mult :: Int) {
+    # Custom constructors are implemented as methods (they're called on the created object, not the calling)
+    def new = (mult :: Int) {
         let ret = mut Foo
         ret.arr.map!(* mult)
         ret
     }
 
     # Interesting possibility (The '{ ... }' is evaluated within the context of the constructed Foo)
-    static new = (mult :: Int) -> Foo { arr.map!(* mult) }
+    def new = (mult :: Int) -> Foo { arr.map!(* mult) }
 
     # Doesn't call through the default constructor
     # Attempt 1: Use `alloc`
-    static new = (arr :: Int*) {
-        let ret = mut Foo:alloc
+    def new = (arr :: Int*) {
+        let ret = mut alloc[Foo]
         ret.arr = Vector(arr)
         ret
     }
 
     # Attempt 2: Disable construction
-    static new = (arr :: Int*) {
+    def new = (arr :: Int*) {
         @disable(constructor)           # @construct(false)
         let ret = mut Foo
         ret.arr = Vector(arr)

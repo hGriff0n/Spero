@@ -1,13 +1,24 @@
 mod opt
 
-adt Option[T] = Some(T) | None {
+def Option[T] = Some(T) | None {
     def get = self.match {
         Some(v) -> v
     }
+
+    def or_else = (e :: T) ->
+        self.match {
+            Some(v) -> v
+            None -> e
+        }
+
+    def new = () -> None
+    def new = (T) -> .Some
 }
 
 def main = {
     let val = Some(3)
+    let tst = Option[Int]
 
     "{}".println(val.get)
+    "{}".println(tst.or_else(3))
 }
