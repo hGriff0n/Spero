@@ -1,19 +1,24 @@
 ## TODO
-Figure out T[n] vs T(n)
 Figure out how to implement Vector and Array
 
 Have a private default constructor
 Start designing the type system
 ##
 
-# Syntax for defining custom structures
+# Syntax for defining custom types (indicated by the capitalization)
 let Animal = { ... }
 
-# Syntax for defining parametric structures
+# Syntax for defining generic types (indicated through the '[]')
 let Vec[T] = (n :: Size) { ... }
 
+# Types can be specialized in several ways
+let Baz[T] = { ... }			# Base generic definition
+let Baz[Int] = { ... }			# Specialize for 'T == Int'
+let Baz = Baz[Int]{ ... }		# Create a non-generic instance that inherits from Baz[Int]
+					# You can also have the non-generic as the "base"
+
 # Create a type with a default constructor
-let Person = (name :: mut String) {				# Name is mutable by the class
+let Person = (name :: mut  String) {				# Name is mutable by the class
 	static count = mut 0					# Mutable static field
 
 	# Use '.' to access class fields/methods from an instance
@@ -24,10 +29,11 @@ let Person = (name :: mut String) {				# Name is mutable by the class
 Additional constructors are implemented by overloading the static "new" method in one of 2 ways
 	Create a mutable instance using another constructor and transform the members
 	"Complete" the type definition
-		The syntax for this is "<type> { <def> }"
-			'let' members must be bound in the def section
+		The syntax for this is "<type> { <bindings> }"
+			'let' members must be bound
 			'def' members may be left unbound 	<- Abstract types
-		The default constructor is implemented in these terms
+		This allows construction without calling a constructor
+			The default constructor is implemented in these terms
 			See "types.spqr" for a better representation of this
 		
 Custom destructor is implemented by overriding the static "drop" method
@@ -64,7 +70,7 @@ let Cipher[T] = {
 
 # Should subtypes have to specify types of inherited functions ??
 let Caeser = (shft :: Char) {
-	use Cipher[Char]
+	use Cipher[Char]		# 'use' specifies impl/inheritance relations if in a type definition (module imports elsewhere)
 
 	def encode = .map (+ shft)
 	def decode = .map (- shft)
