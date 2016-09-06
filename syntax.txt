@@ -65,7 +65,7 @@ Int:push		# this will fail if called
 # Querying
 Int?push		# Test if Int:push is valid
 push?Int		# Test if push takes an Int
-scope?push			# Test if push is defined in the current scope ???
+scope?push		# Test if push is defined in the current scope ???
 
 
 # Sequences/Views
@@ -87,8 +87,8 @@ Keywords:		<- The "flippable" keywords needs more explanation
 
     Normal keywords:
 	{Context keywords}
-	mod
-	use
+	mod	<- declares module name
+	use	<- module import and type implementation/inheritance (not in the same context)
 	scope	<- refers to the current scope
 	self	<- refers to the current object inside of the object
 
@@ -148,7 +148,7 @@ Assignment and Arguments
 	f(mut T)		Reuse if no aliases | Copy
 
 	The compiler may be able to determine if the 'mut' is unnecessary
-		It can then convert a `mut T` into a `T` for efficiency
+		It can then remove the `mut` for efficiency (and add a warning)
 
 # Aliasing
 Aliasing acts as a simple form of variables, with minor syntactical overhead
@@ -179,3 +179,12 @@ let splitable_constructors = {					# So this whole block requires parentheses to
 		_, splitable -> splitable.Boolean
 	})
 }
+
+Annotations
+	Current:
+		mutable		<- restrict a method to a mutable type
+		pure		<- mark a function as "pure"
+		safe		<- mark an unsafe block as safe
+		unsafe		<- mark a safe block as unsafe
+	Ideas:
+		mem_limit 	<- restrict the amount of memory a type/module/etc can own

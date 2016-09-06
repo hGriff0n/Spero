@@ -85,18 +85,16 @@ def Vector[T] = {
 }
 
 def Foo = () {
-    use std:sys                                     # This is a problem (use is for inheritance, this is to bring std:sys into scope)
-
     let f = mut "f.txt".File
-    "Default open at {}".writeln(f, sys:now)
+    "Default open at {}".writeln(f, std:sys:now)
 
     def new = (foo :: mut Foo) {
         f = foo.f.copy
-        "Duplicate at {}".writeln(f, sys:now)
+        "Duplicate at {}".writeln(f, std:sys:now)
     }
 
     static delete = (foo :: mut Foo&) {
-        "Closed at {}".writeln(f, sys:now)
+        "Closed at {}".writeln(f, std:sys:now)
     }
 }
 

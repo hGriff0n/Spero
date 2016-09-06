@@ -1,0 +1,50 @@
+mod over
+
+# Basic Resolution
+def foo = (Int) {}
+def foo = (Num) {}
+def foo = (Foo) {}
+def foo[T] = (T) {}
+
+# Resolution Failure
+def bar = (Int) {}
+def bar = (Num) {}
+def bar = (Foo) {}
+
+# Mutability
+def baz = (mut Int, mut Int) {}
+def baz = (Int) {}
+def baz = (mut Int) {}
+
+# Ambiguity
+def raf = (Num, Int) {}
+def raf = (Int, Num) {}
+def raf[T] = (Int, T) {}
+
+# Cross-ambiguity
+def bac = (Int) -> 3.3
+def bac = (Float) -> 3
+
+# Return type selection
+def tst = (String) -> 3
+def tst = (String) -> 3.3
+
+# Construction
+def bal = (Foo, Int) {}
+def bal = (Foo) {}
+def bal = (Bar) {}
+
+def Foo = (String, Int) {}
+def Bar = (Int) {
+    @explicit
+    static new = (Float) -> .Int.Bar
+}
+
+# Generics Specialization
+def foo = (Num) {}
+def foo[T !: Sortable] = (T) {}
+def foo[T] = (T) {}
+
+def main = () {
+
+}

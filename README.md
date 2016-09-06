@@ -18,7 +18,7 @@ The Spero project also contains three sub-projects: speroc, Spark, and vs-spero
     1) Work on the module import syntax and semantics
     2) Collect all current contexts and keywords in a list
     3) Determine if I should allow variable arguments
-    4) Work on OOP syntax and type relationships
+    4) Work on the type system
     5) Decide on concurrency support
         - Do I want to go full event-based (wouldn't need main then)
     6) Start working on implementation details
