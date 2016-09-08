@@ -1,4 +1,5 @@
 ## TODO
+Figure out how concurrency will be implemented
 Add in a way to restrict a type's mutability (force it to always mutable/immutable)
 Look into adding in a way to "export" annotated scopes into the encompasing scope
 ##
@@ -6,9 +7,6 @@ Look into adding in a way to "export" annotated scopes into the encompasing scop
 built-in event loop (ala lever)
     easy to develop concurrency
     main would be a default
-
-compiler raises warnings for every "TODO" in a comment
-	or have a "todo" annotation (have both)
 
 Compile-time execution (ala Ante)
 
@@ -21,10 +19,11 @@ Safety annotations (see Rust for better explanations)
 		main (or the entry function) must be considered safe
 	It's also possible to mark functions/etc. as "unsafe" through '@unsafe'
 
+
 # Foo can only exist as a mutable object
 @mutable
 def Foo = { ... }
 
 # Bar can't exist as a mutable object
-@disable(mut)
+@mutable(false)
 def Bar = { ... }

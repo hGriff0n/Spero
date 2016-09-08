@@ -1,6 +1,7 @@
 ## TODO:
-Ensure that overloading rules work
+Figure out whether return type overloading will be possible
 
+Improve overload explanation
 Lazy/strict evaluation
 Currying
 Id function
@@ -8,11 +9,11 @@ Id function
 
 # Function Overloading
 Functions can be overloaded based on the argument type and the return type
-There are 5 types of type matches in overload resolution: Exact, Polymorphic, Generic, Construction, None
+There are 5 types of type matches in overload resolution: Exact, Polymorphic, Generic, Implicit, None
 	Exact: Arg == Param
 	Polymorphic: Arg :: Param		# No sub-matching for now (that'd be "closest-match" area)
 	Generic: Attempt a generic call		# See types.txt for generic specialization sub-matching
-	Construction: Param:new(Arg)
+	Implicit: Attempt a construction
 	None: Failure state
 
 Mutability is only considered if there are 2 overloads of equal matching
@@ -21,11 +22,15 @@ Mutability is only considered if there are 2 overloads of equal matching
 Pointers/Views can only be accepted by a 'T&'/'T*'
 	Overload rules are for resolving between 2 'T&'/'T*' overloads
 
-If overload resolution produces a None match, then a compiler error is produced
+Only direct, non-explicit constructors are considered during the implicit resolution phase
+	An ambiguous resolution occurs if 2 possible construction paths are found
+		I may be ammenable to changing this to consider arity
+
+If overload resolution produces a None match, a compiler error is produced
 An ambiguous resolution occurs between 2 overloads (f1, f2) if...
-	f1.arg == f2.arg and f1.ret == f2.ret (The match levels are the same) or
-	f1.arg == f2.ret and f1.ret == f2.arg (The match levels are crossed)
-		I could pick the one with the better return match
+	f1.arg == f2.arg and f1.ret == f2.ret (The match levels are the same)
+If f1.arg == f2.ret and f1.ret == f2.arg (ie. the match levels are crossed)
+	The function with the more exact return match is chosen
 Otherwise, the overload with the most exact worst match for the argument and return types is chosen
 	So if f1.arg < f1.ret then f1.arg must be the most exact arg match of the resolution set
 

@@ -1,4 +1,6 @@
 ## TODO
+Look into changing '::' to help type inference (instead of "instanceof" checking, see overload.spr)
+
 Look into contextual evaluation (see 'mut_testing.spqr' for more)
 Figure out monads
 ##
@@ -186,5 +188,6 @@ Annotations
 		pure		<- mark a function as "pure"
 		safe		<- mark an unsafe block as safe
 		unsafe		<- mark a safe block as unsafe
+		todo		<- compiler raises a warning for todos (and in comments)
 	Ideas:
 		mem_limit 	<- restrict the amount of memory a type/module/etc can own
