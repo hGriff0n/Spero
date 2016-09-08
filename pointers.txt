@@ -1,4 +1,6 @@
 ## TODO
+Get pointers and memory management to work better
+
 Explain rules better
 ##
 
@@ -33,8 +35,16 @@ Implementation (the 'mem' module)
 			Mutability is only restricted if an explicit type is associated to it
 				ala through "mem:alloc[T]"
 
-	Pointers and Views can be implemented using 'mem:Chunk'
+	Pointers/Views can be implemented in terms of 'mem:Chunk'
 		Spero just provides syntax/method sugar and safety guarantees
+
+Views and Sequences
+	A view is a lightweight way of accepting varargs and containers in the same function
+		Views are non-owning ranges in all cases (varargs are on the stack ??)
+		In order to be accepted as a view, a type must implement the 'Iterable' interface
+			This may change in the future (to get more restrictive)
+	[1, 2, 3, 4] is a syntactical shortcut for creating an Array[T, n]
+		Array implements the View interface (as it's a sequence)
 
 
 # Memory usage sheet

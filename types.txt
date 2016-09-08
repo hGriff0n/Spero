@@ -1,5 +1,6 @@
 ## TODO
-Figure out how to implement Vector and Array
+Implement collections.spr (figure out views/etc)
+Plan out how mutability transfers across the type system
 
 Have a private default constructor
 Start designing the type system

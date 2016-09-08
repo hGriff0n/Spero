@@ -1,0 +1,239 @@
+mod collections
+
+use std:mem
+
+##
+This file is to work towards implementing standard library containers
+
+Problems:
+    The process of interacting with pointers needs to be smoothed
+    Modifying elements from outside the class (ie. 'arr(0) += 2')
+        'set' goes a ways towards it, but it doesn't quite work (ala example)
+    What constitutes a view
+    How should the collection module be set up
+    Find an easy way of "mimicing" borrowing (ie. a vector can't be modified while there's an active iterator of it)
+        'VecIter' solution only works if the Vector is mutable
+    No way of preventing indexing un-initialized data in Array
+    The 'ref' keywords needs to be removed from syntax highlighting
+        I need to improve the highlighting overall
+##
+
+# Interfaces
+def Iterator[T] = {
+    @mutable
+    def next :: () -> Error[T]             # Don't like the name of the type (what is it in rust)
+    def hasNext :: () -> Bool
+}
+
+@todo("Figure out how a way to specify a protected member in a child class")
+def Indexable[K, V] = {
+    #let at :: (K) -> Error[V&]             # set and get can be implemented in terms of at (just need a way to specify at in child types)
+
+    def get :: (K) -> Error[V]              # Handle regular indexing
+
+    @mutable
+    def set :: (K, V) -> Error[V]           # Handle mutable indexing
+
+    #@mutable
+    #def mget :: (K, V) -> Error[mut V&]
+}
+
+# TODO: Figure out the purpose of this interface (is it just to be able to use Iterator methods directly on Objects that can produce an iterator)
+def Iterable[T] = {
+    def iter :: () -> Iterator[T]
+}
+
+def Seq[T] = {
+    use {Iterable[T], Indexable[Size, T]}
+}
+
+
+# Array
+def Array[T] = (n :: Size) {
+    use Seq[T]
+
+    let arr = mem:alloc[T](n)           # Allocate space for n T's
+    @todo("What should the behavior of 'mem:alloc' be in regards to initialization ???")
+
+    # Implementing Indexable methods
+    def get = (i :: Size) {
+        if i < n Ok(arr.sub(i))
+        else Error("Out of range")
+    }
+    
+    @mutable
+    def set = (i :: Size, v :: T) {
+        if i < n {
+            &(arr.sub(i)) = v
+            Ok(v)
+        } else
+            Error("Out of range")
+    }
+
+    # Implementing Iterable methods
+    def iter = () -> ArrayIter
+    def len = () -> arr.size / T.size
+
+    def ArrayIter = {
+        let cur = mut arr.sub(0)
+        let end = arr.end
+
+        def hasNext = () -> cur.addr < end.addr
+
+        @mutable
+        def next = () {
+            if hasNext {
+                let tmp = cur
+                cur += T.size           # TODO: Figure out how cur will get "moved" along
+                Ok(tmp)
+            } else
+                Error("Attempt to call next on exhausted iterator")
+        }
+    }
+
+    # Note: This doesn't collide with Array[T, n]:new(T*)
+    static new = (vals :: T*) -> Array[T] {
+        let arr = mem:calloc(vals)      # Copy-allocate vals
+    }
+}
+
+# Array Literal (ie. [a, b, c])
+def Array[T, n] = (vals :: T*) Array[T] {
+    let arr = mem:calloc(vals)          # Copy-allocate the vals
+
+    @pure                           # What is the 'pure' tag going to stand for (statically known or unchanging) ???
+    def len = () -> n
+}
+
+# Growable array
+def Vector[T] = (capacity :: mut Size) {
+    use Seq[T]
+
+    let arr = mut Array[T](capacity)
+    let siz = mut 0
+    let iter = mut false
+
+    # Implement Indexable methods
+    def get = (i :: Size) {
+        if i < siz arr.at(i)
+        else Error("Out of range")
+    }
+
+    @mutable {
+        def set = (i :: Size, v :: T) {
+            if i < siz arr.set(i, v)
+            else Error("Out of range")
+        }
+
+        def push = (v :: T) {
+            if siz == capacity {
+                let tmp = mut Array[T](capacity *= 2)
+                tmp.copy(arr)
+                arr = tmp
+            }
+
+            arr(siz) = v
+            siz += 1
+        }
+
+        def pop = () {
+            if siz > 0 {
+                siz -= 1
+                T:delete(&(arr.at(siz)))            # Delete the last element
+            }
+        }
+    }
+
+    # Implement Iterable methods
+    def iter = () -> VecIter
+    def len = () -> siz
+
+    def VecIter = {
+        let cur = mut 0
+        iter = true                                 # VecIter can only be created from a mutable instance of
+
+        def hasNext = () -> cur < siz
+        
+        @mutable
+        def next = () {
+            if hasNext {
+                let tmp = cur
+                cur += 1 # or T.size
+                arr(cur)
+            } else
+                Error("Attempt to call next on exhausted iterator")
+        }
+
+        static delete = (mut VecIter) -> iter = false
+    }
+}
+
+# Linked List
+def List[T] = {
+    use Seq[T]
+
+    let ls :: mut Option[Node] = mut None
+    let siz = mut 0
+
+    def get = (i :: Size) {
+
+    }
+
+    @mutable {
+        def set = (i :: Size, v :: T) {
+
+        }
+
+        def add = (v :: T) {
+
+        }
+    }
+
+    def iter = () -> ListIter
+    def len = () -> siz
+    
+    @safe
+    let ListIter = {
+        let it = mut ls.ref
+
+        def hasNext = () -> &it.next .match {
+            Some(s) -> true
+            None -> false
+        }
+
+        def next = () {
+            if hasNext {
+                let tmp = &cur
+                cur = tmp.next.ref
+                Ok(cur.get)
+            } else
+                Error("Attempt to call next on exhausted iterator")
+        }
+    }
+
+    def Node = (elem :: mut T) {
+        def next :: mut Option[Node] = mut None
+        def get = () -> elem
+    }
+}
+
+# Binary Tree
+def Tree[T] = {
+    use Iterable[T]
+}
+
+# Map Interface
+def Map[K, V] = {
+    use Iterable[(K, V)]
+    use Indexable[K, V]
+}
+
+# Hash map
+def HashMap[K, V] = Map[K, V] {
+
+}
+
+# Tree map
+def TreeMap[K, V] = Map[K, V] {
+    
+}
