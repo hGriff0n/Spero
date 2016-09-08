@@ -93,7 +93,9 @@ let i = 3
 let s = i.toStr			# Definately in
 let s = i.String		# If the constructor supports it (though behavior may differ)
 
-let b = i :: String		# This is a boolean test (ie. does i match a String)
+#let b = i :: String		Error: i is not a function that can return a String
+	# The '::' helps the compiler chose the correct return type for overloaded functions
+let b = i :? String		# This is a boolean test (is i an instance of String)
 
 
 # Generics Design sheet

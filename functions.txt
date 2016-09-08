@@ -1,5 +1,5 @@
 ## TODO:
-Figure out whether return type overloading will be possible
+Can functions return different types (overloading on return is allowed) ???
 
 Improve overload explanation
 Lazy/strict evaluation
@@ -8,7 +8,7 @@ Id function
 ##
 
 # Function Overloading
-Functions can be overloaded based on the argument type and the return type
+Functions can be overloaded based on the argument types and the return type
 There are 5 types of type matches in overload resolution: Exact, Polymorphic, Generic, Implicit, None
 	Exact: Arg == Param
 	Polymorphic: Arg :: Param		# No sub-matching for now (that'd be "closest-match" area)
@@ -30,7 +30,7 @@ If overload resolution produces a None match, a compiler error is produced
 An ambiguous resolution occurs between 2 overloads (f1, f2) if...
 	f1.arg == f2.arg and f1.ret == f2.ret (The match levels are the same)
 If f1.arg == f2.ret and f1.ret == f2.arg (ie. the match levels are crossed)
-	The function with the more exact return match is chosen
+	Then the function with the more exact return match is chosen
 Otherwise, the overload with the most exact worst match for the argument and return types is chosen
 	So if f1.arg < f1.ret then f1.arg must be the most exact arg match of the resolution set
 

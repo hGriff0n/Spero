@@ -1,6 +1,7 @@
 mod collections
 
 use std:mem
+use std:adt:*
 
 ##
 This file is to work towards implementing standard library containers
@@ -21,21 +22,24 @@ Problems:
 # Interfaces
 def Iterator[T] = {
     @mutable
-    def next :: () -> Error[T]             # Don't like the name of the type (what is it in rust)
+    def next :: () -> Result[T]
     def hasNext :: () -> Bool
 }
 
 @todo("Figure out how a way to specify a protected member in a child class")
 def Indexable[K, V] = {
-    #let at :: (K) -> Error[V&]             # set and get can be implemented in terms of at (just need a way to specify at in child types)
+    #let at :: (K) -> Result[V&]             # set and get can be implemented in terms of at (just need a way to specify at in child types)
 
-    def get :: (K) -> Error[V]              # Handle regular indexing
+    def get :: (K) -> Result[V]              # Handle regular indexing
 
     @mutable
-    def set :: (K, V) -> Error[V]           # Handle mutable indexing
+    def set :: (K, V) -> Result[V]           # Handle mutable indexing
 
     #@mutable
-    #def mget :: (K, V) -> Error[mut V&]
+    #def mget :: (K) -> Result[mut V&]
+
+    #@mutable
+    #def mset :: (K, V) -> Result[mut V&]
 }
 
 # TODO: Figure out the purpose of this interface (is it just to be able to use Iterator methods directly on Objects that can produce an iterator)
@@ -52,7 +56,9 @@ def Seq[T] = {
 def Array[T] = (n :: Size) {
     use Seq[T]
 
-    let arr = mem:alloc[T](n)           # Allocate space for n T's
+    #let arr = mut mem:alloc[mut T](n)      # Which one gives the correct mutability characteristics
+    #let arr = mem:alloc[mut T](n)
+    let arr = mut mem:alloc[T](n)           # Allocate space for n T's
     @todo("What should the behavior of 'mem:alloc' be in regards to initialization ???")
 
     # Implementing Indexable methods
@@ -110,7 +116,7 @@ def Vector[T] = (capacity :: mut Size) {
     use Seq[T]
 
     let arr = mut Array[T](capacity)
-    let siz = mut 0
+    let siz :: Size = mut 0
     let iter = mut false
 
     # Implement Indexable methods
@@ -119,6 +125,8 @@ def Vector[T] = (capacity :: mut Size) {
         else Error("Out of range")
     }
 
+    # Apply the mutable annotation to all the "enclosed" functions
+        # The functions are still declared in the type scope
     @mutable {
         def set = (i :: Size, v :: T) {
             if i < siz arr.set(i, v)
@@ -126,11 +134,8 @@ def Vector[T] = (capacity :: mut Size) {
         }
 
         def push = (v :: T) {
-            if siz == capacity {
-                let tmp = mut Array[T](capacity *= 2)
-                tmp.copy(arr)
-                arr = tmp
-            }
+            if siz == capacity
+                arr = mut Array[T](capacity *= 2).copy(arr)
 
             arr(siz) = v
             siz += 1
@@ -139,8 +144,16 @@ def Vector[T] = (capacity :: mut Size) {
         def pop = () {
             if siz > 0 {
                 siz -= 1
-                T:delete(&(arr.at(siz)))            # Delete the last element
+                let tmp = arr(siz)
+                T:delete(&(arr.at(siz)))
+                tmp
             }
+        }
+
+        # Overloading pop if a return value is not needed
+        def pop = () {
+            pop() :: T
+            ()
         }
     }
 
@@ -150,7 +163,8 @@ def Vector[T] = (capacity :: mut Size) {
 
     def VecIter = {
         let cur = mut 0
-        iter = true                                 # VecIter can only be created from a mutable instance of
+        iter = true                                 # "Borrow" the calling vector so it can't be modified
+                                                    # So VecIter can only be created from a mutable Vector ???
 
         def hasNext = () -> cur < siz
         

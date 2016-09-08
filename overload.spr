@@ -54,6 +54,7 @@ def foo[T !: Sortable] = (T) {}
 def foo[T] = (T) {}
 
 def main = () {
+    #let y = tst("Hello")           Error: Ambiguous overload (return type can not be inferred)
     let y :: Float = tst("Hello")
     let x = bac(3)                  # bac(Int) -> Float
     let z :: Int = bac(3)           # bac(Float) -> Int
@@ -61,7 +62,7 @@ def main = () {
     #let w = bac(3) :: Float        Ambiguous if '::' performs type checking ?? I could call bac(Int) as return type doesn't matter
 
     # How do I get it to print int ??
-    println("{:t}", bac(3))         # Assume ':t' means print the type
+    println("{:t}", bac(3) :: Int)         # Assume ':t' means print the type
 
     # This is a true cross-match
     let l :: Num = res(3)

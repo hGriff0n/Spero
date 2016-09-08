@@ -1,6 +1,4 @@
 ## TODO
-Look into changing '::' to help type inference (instead of "instanceof" checking, see overload.spr)
-
 Look into contextual evaluation (see 'mut_testing.spqr' for more)
 Figure out monads
 ##
