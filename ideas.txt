@@ -1,7 +1,5 @@
 ## TODO
 Figure out how concurrency will be implemented
-Add in a way to restrict a type's mutability (force it to always mutable/immutable)
-Look into adding in a way to "export" annotated scopes into the encompasing scope
 ##
 
 built-in event loop (ala lever)
@@ -18,6 +16,11 @@ Safety annotations (see Rust for better explanations)
 	If an unsafe function/operation is not surrounded in a "safe" block, the encompasing function is considered to be unsafe
 		main (or the entry function) must be considered safe
 	It's also possible to mark functions/etc. as "unsafe" through '@unsafe'
+
+Some annotations can "export" the enclosed code into the encomposing scope
+	let x = 5
+	@mutable { ... }
+		Everything in the '...' is in the same scope as 'x' (not in a sub-scope)
 
 
 # Foo can only exist as a mutable object

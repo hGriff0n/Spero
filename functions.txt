@@ -1,7 +1,8 @@
 ## TODO:
-Improve overload explanation
 Lazy/strict evaluation
 Currying
+
+Improve overload explanation
 Id function
 ##
 

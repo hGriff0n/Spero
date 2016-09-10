@@ -1,5 +1,4 @@
 ## TODO
-Look into contextual evaluation (see 'mut_testing.spqr' for more)
 Figure out monads
 ##
 
@@ -179,6 +178,17 @@ let (b, c) = a			# Decomposing a tuple
 
 a.max				# Calling a multi-arg function with a dot-flipped tuple
 a._0				# Access the first tuple argument (compiler generated)
+
+# Contextual Evaluation
+Annotations (and possibly other constructs) can be used to enable contextual evaluation
+	This can allow different control paths for mutable methods (see example)
+There still needs some work done on this regarding any compile time restrictions
+	Might have some difficulties getting it to work as well
+
+def Foo = {
+	def push = () ->	# push has different behavior depending if the calling Foo is mutable
+		do_push() .if @mutable else "Can't push".println
+}
 
 # Annotation Demo (actual implementation won't be followed, but this is a decent idea of what I want)
 

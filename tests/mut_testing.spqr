@@ -30,7 +30,6 @@ let Foo = {
     def pop = () ->
         arr.pop_back .if @mutable else "Pop!".println
 
-
     # Immutable methods
     def size = () -> arr.size
 

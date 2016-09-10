@@ -1,6 +1,4 @@
 ## TODO
-Get pointers and memory management to work better
-
 Explain rules better
 ##
 
