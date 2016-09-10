@@ -1,6 +1,4 @@
 ## TODO:
-Can functions return different types (overloading on return is allowed) ???
-
 Improve overload explanation
 Lazy/strict evaluation
 Currying
@@ -140,8 +138,6 @@ If a function is dot-flipped on a tuple, the n elements of the tuple is "matched
 	If a function takes less than n args, then there is a dispatch error								<- Might be nice to just forward those args to any result
 Class methods are implemented through dot-flipping (3.abs => Int:abs(3))
 	Class (non-static) methods implicitly get a "self" member when defining
-
-TODO: Determine if dot-flipping should remove the "parentheses" requirement (for non-operators)
 ##
 
 let factorial = (n) { n * n - 1 .factorial }

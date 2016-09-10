@@ -1,6 +1,5 @@
 ## TODO
 Implement collections.spr (figure out views/etc)
-Plan out how mutability transfers across the type system
 
 Have a private default constructor
 Start designing the type system
@@ -19,8 +18,9 @@ let Baz = Baz[Int]{ ... }		# Create a non-generic instance that inherits from Ba
 					# You can also have the non-generic as the "base"
 
 # Create a type with a default constructor
-let Person = (name :: mut  String) {				# Name is mutable by the class
-	static count = mut 0					# Mutable static field
+let Person = (name :: mut  String) {		# Name is a mutable member
+	static count = mut 0			# Mutable static field
+	let age = mut 0				# Another mutable member
 
 	# Use '.' to access class fields/methods from an instance
 	def hello = () -> println("Hello! I'm {self.name}!")

@@ -8,10 +8,9 @@ This file is to work towards implementing standard library containers
 
 Problems:
     The process of interacting with pointers needs to be smoothed
-    Modifying elements from outside the class (ie. 'arr(0) += 2')
+    Figure out how to modify elements from outside the class (ie. 'arr(0) += 2')
         'set' goes a ways towards it, but it doesn't quite work (ala example)
-    What constitutes a view
-    How should the collection module be set up
+    How should collections be set up
     Find an easy way of "mimicing" borrowing (ie. a vector can't be modified while there's an active iterator of it)
         'VecIter' solution only works if the Vector is mutable
     No way of preventing indexing un-initialized data in Array
@@ -53,6 +52,7 @@ def Seq[T] = {
 
 
 # Array
+@explicit                                   # Make "size" constructor explicit ???
 def Array[T] = (n :: Size) {
     use Seq[T]
 
@@ -70,7 +70,9 @@ def Array[T] = (n :: Size) {
     @mutable
     def set = (i :: Size, v :: T) {
         if i < n {
-            &(arr.sub(i)) = v
+            # &arr.sub(i) = v               The '&' binds to the expression 'arr' -> Because this translates to Chunk[T]:sub(&arr, i)
+            # &(arr.sub(i)) = v             The '&' binds to the expression 'arr.sub(i)'
+            arr.sub(i) &= v                 # Equivalent to the above line (can I extend this to '.' ???)
             Ok(v)
         } else
             Error("Out of range")
@@ -90,7 +92,7 @@ def Array[T] = (n :: Size) {
         def next = () {
             if hasNext {
                 let tmp = cur
-                cur += T.size           # TODO: Figure out how cur will get "moved" along
+                cur += T.size               # TODO: Figure out how cur will get "moved" along
                 Ok(tmp)
             } else
                 Error("Attempt to call next on exhausted iterator")
@@ -99,15 +101,15 @@ def Array[T] = (n :: Size) {
 
     # Note: This doesn't collide with Array[T, n]:new(T*)
     static new = (vals :: T*) -> Array[T] {
-        let arr = mem:calloc(vals)      # Copy-allocate vals
+        let arr = mem:calloc(vals)          # Copy-allocate vals
     }
 }
 
 # Array Literal (ie. [a, b, c])
 def Array[T, n] = (vals :: T*) Array[T] {
-    let arr = mem:calloc(vals)          # Copy-allocate the vals
+    let arr = mem:calloc(vals)              # Copy-allocate the vals
 
-    @pure                           # What is the 'pure' tag going to stand for (statically known or unchanging) ???
+    @pure                                   # What is the 'pure' tag going to stand for (statically known or unchanging) ???
     def len = () -> n
 }
 
@@ -145,7 +147,7 @@ def Vector[T] = (capacity :: mut Size) {
             if siz > 0 {
                 siz -= 1
                 let tmp = arr(siz)
-                T:delete(&(arr.at(siz)))
+                T:delete(&arr.at(siz))
                 tmp
             }
         }
@@ -186,7 +188,7 @@ def Vector[T] = (capacity :: mut Size) {
 def List[T] = {
     use Seq[T]
 
-    let ls :: mut Option[Node] = mut None
+    let ls :: mut Node[T] = Sentinel
     let siz = mut 0
 
     def get = (i :: Size) {
@@ -224,9 +226,18 @@ def List[T] = {
                 Error("Attempt to call next on exhausted iterator")
         }
     }
+    
+    def Node = Sentinel | (elem :: mut T) {
+        let nxt = mut Sentinel
 
-    def Node = (elem :: mut T) {
-        def next :: mut Option[Node] = mut None
+        @mutable
+        def insert = (n :: Node) {
+            let next = nxt
+            nxt = n
+            n.nxt = next
+        }
+
+        def next = () -> nxt
         def get = () -> elem
     }
 }
@@ -251,3 +262,15 @@ def HashMap[K, V] = Map[K, V] {
 def TreeMap[K, V] = Map[K, V] {
     
 }
+
+
+def tst = mut List[Array[Int]]
+# List[T] is implemented with a mut Node[T]
+# Node[T] is implemented with a mut T
+# Array[T] is implemented with a mut Chunk[T]
+# Chunk[T] is implemented as a mut T&
+# Therefore the following code is valid
+
+tst.add(10.Array[Int])              # Explicit invocation of the constructor
+tst(0).map!(+ 5)                    # Is this allowable (how does mutability pass)
+tst.add(3, 4, 5, 10)                # Implicit constructor invocation

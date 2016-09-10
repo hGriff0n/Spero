@@ -109,6 +109,7 @@ Mutability is part of the type system (ala C++ 'const')
 	`mut` must be bound to a type				<- I may end up changing this in the future
 		can't write "def foo = (f :: mut) -> {}"
 		can write "def foo = (f) -> { let f = mut f ... }
+
 The `mut` keyword/function helps for type inference
 	It may be possible to implement mut in the language (depending on how inference works)
 		def mut[T] :: (T) -> mut T = .			# Possibly inefficient (copying)
@@ -122,6 +123,16 @@ The `mut` keyword/function helps for type inference
 			A compiler error is produced if the call is attempted (the method technically "exists" for resolution)
 		The query mode applies in the context of boolean operations
 			This can enable conditional method behavior based on mutability of the object
+
+Intertype-mutability
+	Types may have member variables that are mutable and immutable
+		The exact mutability behavior depends on the mutability of the enclosing type
+
+	def Foo = {
+		let imm = 0			# 'imm' is always immutable
+		let mu = mut 0			# 'mu' is mutable whenever the enclosing 'Foo' is mutable
+	}
+
 Compiler Behavior
 	A warning is produced if any "state" members are shadowed (especially for mutability)
 	An error is produced if any type members are modified in a method without the 'mutable' annotation
@@ -130,6 +141,7 @@ Compiler Behavior
 	Type members must be mutable in the definition if any mutable operations are to be performed on them
 		ie. Immutability is innate to type members, mutability is dependent on the surrounding instance
 		If the object is immutable, modification of any non-static members is disallowed	<- might change
+
 Assignment and Arguments
 	Mutability is not kept in shadowing or assignment, unless `mut` is used
 	The full rules for mutability and shadowing/assignment/function interaction are below		<- Note: T includes 'mut T', 'T&', 'T*' unless otherwise specified
