@@ -7,11 +7,8 @@ systems, the process of compilation, and more.
 The Spero project also contains four sub-projects: speroc, spero-std, Spark, and vs-spero
 
     speroc - Spero reference compiler. Unknown implementation language
-
     spero-std - The implementation for the spero standard library
-
     Spark - Spero build/dependency manager. Initial development will be done in Rust
-    
     vs-spero - VS Code extension that adds Spero support
 
 
