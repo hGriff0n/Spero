@@ -4,9 +4,11 @@ Spero is a new compiled, statically typed language that I've taken to creating t
 systems, the process of compilation, and more.
 
 
-The Spero project also contains three sub-projects: speroc, Spark, and vs-spero
+The Spero project also contains four sub-projects: speroc, spero-std, Spark, and vs-spero
 
     speroc - Spero reference compiler. Unknown implementation language
+
+    spero-std - The implementation for the spero standard library
 
     Spark - Spero build/dependency manager. Initial development will be done in Rust
     
@@ -17,11 +19,10 @@ The Spero project also contains three sub-projects: speroc, Spark, and vs-spero
 
     1) Work on the module import syntax and semantics
     2) Collect all current contexts and keywords in a list
-    3) Determine if I should allow variable arguments
-    4) Work on the type system
-    5) Decide on concurrency support
+    3) Work on the type system
+    4) Decide on concurrency support
         - Do I want to go full event-based (wouldn't need main then)
-    6) Start working on implementation details
+    5) Start working on implementation details
 
 
 ## Some example programs
