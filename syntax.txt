@@ -211,3 +211,8 @@ Annotations
 		todo		<- compiler raises a warning for todos (and in comments)
 	Ideas:
 		mem_limit 	<- restrict the amount of memory a type/module/etc can own
+
+	Annotations are divided into two sections, global and local
+		global annotations apply to the entire module/project
+		local annotations apply to the next code segment/function/type
+	

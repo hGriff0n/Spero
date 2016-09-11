@@ -27,6 +27,17 @@ def SugarFoo = (file :: String) {
     }
 }
 
+# The primary constructor is explicit (not available for overload resolution)
+@primary(explicit)
+def Bar = (n :: mut Int) {
+    static new = (min :: Int, max :: Int) ->
+        Bar(std:math:rand:Random(min, max))
+
+    # This constructor is only usable within this class
+    @private
+    static new = (r :: std:math:rand:Random) -> Bar(r.next)
+}
+
 def main = () {
     let f = Foo
 

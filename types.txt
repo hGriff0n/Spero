@@ -1,8 +1,6 @@
 ## TODO
-Have a private/explicit default constructor (how to apply annotations to default constructors)
-Add in a way to restrict a type's mutability (force it to always mutable/immutable)
-
 Start designing the type system
+Determine if I want to keep the '@private' annotation <- complicating visibility
 ##
 
 # Syntax for defining custom types (indicated by the capitalization)
@@ -24,28 +22,7 @@ let Person = (name :: mut  String) {		# Name is a mutable member
 
 	# Use '.' to access class fields/methods from an instance
 	def hello = () -> println("Hello! I'm {self.name}!")
-}
-
-# Constructors and Destructors
-Additional constructors are implemented by overloading the static "new" method in one of 2 ways
-	Create a mutable instance using another constructor and transform the members
-	"Complete" the type definition
-		The syntax for this is "<type> { <bindings> }"
-			'let' members must be bound
-			'def' members may be left unbound 	<- Abstract types
-		This allows construction without calling a constructor
-			The default constructor is implemented in these terms
-			See "types.spqr" for a better representation of this
-		
-Custom destructor is implemented by overriding the static "drop" method
-	The T:drop method takes a singular "mut T" as its argument
-	Destructor calls are implicitly inserted in reverse order of declaration
-		At the end of scopes and in a parent object's destructor
-	Destructors can be explicitly called if desired with the following effects
-		The variable that is "dropped" is invalid until it is reassigned/shadowed
-			It still "owns" its memory location for optimization purposes
-		The implicit destructor call is not added at the end of the scope
-	
+}	
 
 # ADTs can be implemented through "named" constructors
 	# Might implement this through sub-typing
@@ -133,21 +110,30 @@ In order for type values to be used in generics, 2 conditions must be met:
 		For now though, pure is just a reminder to the programmer
 			It doesn't guarantee the code is well formed
 			This is why I'm restricting to basic types for now
-##
 
-# Constructors
+@mutable has no effects on type definitions
+
+# Constructors/Destructors
 	The primary constructor is defined through the type definition
 		The '(...)' defines any needed arguments (note this is optional and defaults to no arguments)
-		The '{ ... }' defines the constructor body (what gets executed)
-			TODO: Find a way to split off invariants from class members
-	Secondary constructors are implemented as static "new" methods
-		The return type for these methods is the calling type
-		Implement by creating a mutable instance of the calling type then modifying what is necessary
+		The '{ ... }' defines the constructor/type body (what gets executed)
+			Not everything is executed (only what's necessary to make a unique instance)
+		Annotations can be applied to this constructor as arguments to the '@primary' annotation
+	Secondary constructors are implemented by overloading the static "new" method in one of 2 ways
+		Create and modify a mutable instance (calls another constructor)
+		Complete the type definition (replace the primary constructor)
+			The syntax is "<type> { <bindings> }" ala Abstract Types
+			See typs.spqr for a better representation of this
+		Constructors can be marked with '@explicit' to prevent usage in implicit construction
 		It is possible to disable the default constructor from running any code (just setup and allocation)
-			TODO: Finalize the syntax (T:alloc or @disable(constructor)
-	Note: Construction is always performed on mutable instances
-	Objects can be constructor be "calling" the type name (ie. T(...)) or by calling the new method (ie. T:new(...)
-		The former is implemented as the latter internally
+	Custom destructors are implemented by overriding the static "drop" method
+		This method takes a singular "mut T" as its argument (may take a "mut T&")
+		Destructor calls are implicitly inserted in reverse order of declaration
+			This insertion occurs at scope exits and in an enclosing destructor
+		Destructors can be explicitly called if desired/necessary
+			The variable is "dropped" is marked as invalid until it's reassigned/shadowed
+				It valid to still "own" its memory for optimization purposes
+			The implicit destructor call is not added
 
 # Generic Spcialization
 There are 2 possibilities for generics
