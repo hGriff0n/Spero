@@ -75,6 +75,6 @@ def main = () {
     "{}: {}".println(f.size, f)
 
     # sort modifies f
-    f.sort
+    f.sort!
     "{}: {}".println(f.size, f)
 }

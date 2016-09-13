@@ -1,7 +1,5 @@
 ## TODO:
-Lazy/strict evaluation
-Currying
-
+Determine how currying will be supported
 Improve overload explanation
 Id function
 ##
@@ -172,4 +170,10 @@ def max[T] = (T*) -> .sortWith(>)(0)			# A T* accepts a coninuous list of T if i
 def all = (Value*) -> .take(10)				# Polymorphism can be used to accept a wide type range
 max([3, 4, 5]) == max(3, 4, 5)				# Unless a view is passed in
 (3, 4, 5).max == max(3, 4, 5)
+
+
+# Advanced function operations
+Currying is implicitly supported on all spero functions
+	It may be possible to disable this on a function level with '@disable(curry)' or similar syntax
+
 

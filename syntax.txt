@@ -161,6 +161,10 @@ Assignment and Arguments
 	The compiler may be able to determine if the 'mut' is unnecessary
 		It can then remove the `mut` for efficiency (and add a warning)
 
+Types can be forced to only be mutable/immutable (can only be held in one of the modes)
+	Mutability is forced by marking the type as '@mutable'
+	Immutability is forced by disabling mutability with '@disable(mut)'
+
 # Aliasing
 Aliasing acts as a simple form of variables, with minor syntactical overhead
 	By default, an alias can be implemented as a simple textual replacement of the "source" variable
@@ -190,6 +194,9 @@ def Foo = {
 		do_push() .if @mutable else "Can't push".println
 }
 
+# Lazy evaluation can be mimiced through Streams/Generators
+
+
 # Annotation Demo (actual implementation won't be followed, but this is a decent idea of what I want)
 
 @force(parens)							# This annotation is applied to the next statement (others may have module/file level application)
@@ -209,6 +216,8 @@ Annotations
 		safe		<- mark an unsafe block as safe
 		unsafe		<- mark a safe block as unsafe
 		todo		<- compiler raises a warning for todos (and in comments)
+		disable		<- turn off language features for an expression
+				<- currently supports currying/mutability
 	Ideas:
 		mem_limit 	<- restrict the amount of memory a type/module/etc can own
 
