@@ -1,0 +1,32 @@
+Grammar worksheet 		# The lanugages grammar rules go here
+
+given that whitespace is ignored where possible (only useful for delimiating expressions)
+given list[rule, sep = ',', min = 0] specifies a list of >= 'min' instances of 'rule' seperated by a 'sep'
+
+# Comments
+comment = #[^\n]*
+multiline = ##[^##]*##
+annotation = @<variable><fn_call_args>
+
+# Binding grammar
+name_char = [a-zA-Z_
+variable = [a-z_]<name_char>*
+type = [A-Z]<name_char>*
+operator = [&=]?[&+-/\*<>=!~]*			# Specify the set of characters that operators can be made from (the first [] are characters that can't be found on their own as those forms are reserved)
+
+# Keyword
+vkeyword = let | def | static
+dynamic = match | if
+static = mod | use
+uncertain = else
+keyword = <vkeyword> | <dynamic> | <static> | <uncertain>
+
+# Atoms
+boolean = true | false
+decimal = [0-9]*
+hex = x[0-9A-Fa-f]*
+binary = b[01]*
+float = <decimal>?\.<decimal>
+string = "(.|/")*"				# Need to make sure you can escape quotations
+
+atom = { list<atoms, '\n'> }

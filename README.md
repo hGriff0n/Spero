@@ -14,17 +14,18 @@ The Spero project also contains four sub-projects: speroc, spero-std, Spark, and
 
 ## Current Todo List:
 
-    1) Work on the module import syntax and semantics
-    2) Collect all current contexts and keywords in a list
-    3) Work on the type system
-    4) Decide on concurrency support
-        - Do I want to go full event-based (wouldn't need main then)
-    5) Start working on implementation details
+    1) Working on the module/import syntax and semantics
+    2) Describing the full grammar
+    3) Designing the type system
+    4) Deciding on concurrency model
+    5) Formalizing language documentation
+    6) Start working on the compiler
+    7) Planning out the standard library
 
 
 ## Some example programs
 
-    # Hello World (main might be unnecessary)
+    # Hello World
     def main = () -> "Hello World!".println
 
 

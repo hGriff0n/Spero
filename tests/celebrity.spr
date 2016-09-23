@@ -1,0 +1,43 @@
+mod celeb
+
+use std:util:{Array, Set}
+
+def Person = Nobody | Somebody(mut String) {
+    let know_list = mut Set[Person]
+
+    @mutable
+    def setKnowList = (s :: Set[Person]) -> know_list = s
+
+    def knows = (p :: Person) -> (self, p).match {
+        Nobody, _ -> false
+        _, Nobody -> false
+        _ -> know_list.contains(p)
+    }
+
+    static == = (p1 :: Person, p2 :: Person) -> .match {
+        Somebody(n1), Somebody(n2) -> n1 == n2
+        _, _ -> false
+    }
+}
+
+# Could this work as well ???
+def getLocalCeleb = (Nobody, next) -> next
+def getLocalCeleb = (curr :: Person, next :: Person) {
+    if !next.knows(curr) || curr.knows(next) next
+    else curr
+}
+
+def getLocalCeleb = (curr :: Person, next :: Person) -> curr.match {
+    Nobody -> next
+    _ {
+        if (!next.knows(curr) || curr.knows(next)) next
+        else curr
+    }
+}
+
+def celebrity[n] = (group :: Array[Person, n]) {
+    let fceleb = group.reduce(Nobody, getLocalCeleb)
+    let bceleb = group.reverse.reduce(Nobody, getLocalCeleb)
+
+    fceleb == bceleb
+}

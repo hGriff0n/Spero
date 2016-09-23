@@ -1,0 +1,139 @@
+NOTE: Some of the assertions, especially in regard to overloading and inference, are entirely theoretical at this point in time. I have no idea of how difficult it'll be to implement them
+
+Functions
+  Grammar:
+    function = 		# NOTE: vcontext -> "visibility context" ie. let|def|static
+      <vcontext> <var|op><gen|sig>? = <arg_tuple> (-> <type>)? { <body> }
+      <vcontext> <var|op><gen|sig>? = <arg_tuple> -> <statement>
+      <vcontext> <var|op> = .<statement>	# This will need some work
+    arg_tuple = (list<arg>)
+    arg = <binding>(:: mut? <type>)?(= <statement>)?
+    fncall = <var|op>(\(list<statement>\))? | <statement><op><statement>? | <op><statement>
+
+  Type Signature:
+    (Params...) -> Ret
+    Function
+
+  Omitting Parentheses:
+    Function parentheses can be omitted when a no-arg function is called
+      Consequently to assign a no-arg function, use the following syntax:
+	Create an alias with "using <name> = <fn>"
+	Create a forwarding lambda with "let <name> = .<fn>"
+	Assign with no-paren calling disabled (using '@disable(no-parens)')
+  
+  All function calls are eager (ie. non-lazy)
+    Lazy evaluation can be mimiced with streams/generators/captures
+
+Function Overloading
+  Definition:
+    A function is overloaded if there exist 2+ function definitions (with unique signatures) bound to the same name
+      An overload is created by "shadowing" a function with a different type signature
+	Functions and Types have slightly different behavior from normal variables	# NOTE: Experimental
+      This is only true for functions defined in the same scope
+    Functions can be overloaded based on the parameter and return types
+
+  Resolution Process:
+    There are 5 modes of type matching; Exact, Polymorphic, Generic, Implicit, None
+      Exact       <- Exact type match, 'Arg == Param'
+      Polymoprhic <- Subtype relationship, 'Arg :: Param'
+      Generic     <- Generic matching, '[Param]'			# NOTE: See 'types.txt' for more
+      Implicit    <- Construct from the arg, 'Param:new(Arg)'
+      None        <- Failure state
+      NOTE: These are written in order of ranking (ie. Exact > Polymorphic ...)
+
+    Implicit Conversions
+      If a function takes a parameter of type T, it can be called with any types V, where T:new(V) is defined
+	Only direct, non-explicit constructors are considered in Implicit resolution
+	  ie. Implicit constructions aren't considered when resolving Implicit constructors
+	  NOTE: Experimental
+      The entire argument set may be considered for overloads with only 1 parameter
+	Tuples of type (V..) can be used to construct a type T, if T:new(V..)
+
+    From the overload set, choose the best function, f, such that
+      The match on f.return is better than any other overload
+      The worst match on f.params is no worse than the match on any other function
+	NOTE: Look at C++ for a better wording of this
+      If 2 functions, f1 and f2, exist such that f1.ret > f2.ret and f1.params < f2.params
+	Then the function with the better return type is considered the better match
+	NOTE: Experimental (might make a dispatch error)
+
+    A dispatch error occurs if...
+      No function is chosen from the overload set
+      2+ functions are chosen with the same arg and ret
+      2+ construction paths for a chosen Implicit match is found (iff the function is selected)
+
+    Pointers and Mutability
+      Mutability is only used to differentiate between 2 overloads of equal match
+      T& and T* can only accept a pointer and view respectively (ie. they are different types from a T)
+
+Dot-Flipping
+  Grammar:
+    <atomic>.<fncall>		# atomic is the "caller"
+  
+  Definition:
+    Non-operator functions may be "infixed" by prepending a '.' to their name
+      This allows the first argument to be put "in-front" of the function (ala. OOP)
+      When the function is invoked, the caller argument is inserted before the other arguments
+        So "T.fn(...)" => "fn(T, ...)"
+    
+    Operator functions have their precedence upgraded with the '.' (to fncall)
+      Operators are implicitly infix, so dot-flipping has no inherent effect
+        It is possible to use operators in a prefix fashion by treating them as functions
+      So "5 * 3 .+ 3" => "5 * (3 + 3)"
+        NOTE: The "no-paren" syntax is experimental
+
+    If the "caller" argument is a n-ary tuple, tuple application may apply
+      So "(T...V).fn(...)" => "fn(T..V...)" or "fn((T..V)...)"
+
+  Name Resolution:
+    Given an expession of the form "T.fn(...)"
+    The resolution search first considers in T's methods for a definition
+      The search then considers the current scope for a definition
+    Once a definition location is found, overload resolution rules apply
+
+  Type Methods:
+    Non-static type methods have an implicit "self" parameter as the first parameter
+      Therefore, type methods are implicitly handled by dot-flipping procedures
+
+  Precedence/Binding:
+    Dot flipping binds to the nearest atom of the grammar (where not used for dot-forwarding)
+      So "n - 1.factorial" == "n - (1.factorial)" not "(n - 1).factorial" as "n - 1" is not an atom
+
+Dot-forwarding
+  This syntax enables directly "forwarding" function arguments to the function body
+    This allows the argument tuple definition to be optionally "dropped" for tacit programming
+
+  Any function body that begins with a '.' is subject to dot-forwarding
+    If no argument tuple is provided, then the acceptable arguments are inferred from the body
+      The overload set of the created function is the maximal overload set of the forwarded function that produces a valid return in the context of the function body
+        ie. Which results in a type that makes the function body valid
+      The inferred return type depends on the specific execution flow
+    An argument tuple can be provided to manually restrict the types
+      However, '->' and '{}' syntax will need to be used in this case
+
+  Dot-forwarding is analagous to an implicit cut-copy-paste using dot-flipping
+    ie. Cut the function name and then paste the function body after the arguments
+    NOTE: Actual implementation does not follow this pattern
+
+Vararg Functions
+  A function that takes a T* as the final parameter can accept 0+ T's at the call site
+    The arguments are implicitly converted into an Array[T, n]
+      f(1, 2, 3) => f([1, 2, 3])
+    A T* is a syntactical sugar for an Iterable[T]
+
+Partial Application
+  A function call reduces to a partial application iff
+    The function is called with too few arguments
+    A possibly valid overload exists from the given arguments
+    The resulting function is stored/used (variable/argument/return)
+
+  A partial application produces a function bound to the given arguments
+    This function inherits the overload set of the parent
+    When calling, the bound arguments are applied first (infix excepted)
+      Infix application maintains positioning (so "/ 5" != "5 /")
+
+  Disable through '@disable(curry)' on function definition
+    NOTE: Experiemental (might change name)
+
+Experimental Ideas:
+  Define '+' for functions, so "f + g" creates a function 'h', "h(...) = f(...) + g(...)"

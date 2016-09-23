@@ -1,0 +1,76 @@
+
+Assignment
+  Grammar:
+    <vcontext><binding><contract>? = <expr>
+    vcontext = let|def|static
+    binding = <type>|<var>|<op>
+    contract = (:: <type>)?<gen>
+
+  Context:
+    The keyword representing the binding's visibility (ie. public/private)
+      let	<- protected visibility
+      def	<- public visibility
+      static	<- static visibility
+
+  Contract:
+    Type Binding (:: T)
+      For when type inference can't produce a type or produces a less restrictive type
+    Generics ([T])
+      See types.txt for more
+
+  Expression:
+    The series of instructions that will be bound to the name
+    Multiple lines (ala types/fuctions) can be bound by wrapping in '{}'
+
+  Shadowing (ala Rust):
+    Variables can be re-declared (shadowed) by making an assignment with the same name in the current scope
+    Unless the varaible is aliased, the shadowing "drops" the old value
+    This can also be used to perform mutability, with "t = mut t"
+
+Indexing
+  A '.' is used to access a type/method/var from an instance/type
+    This option takes precedence over dot-flipping in name-resolution
+    If used on a type (ie. T), a '.' can access static members
+  A ':' is used to access a type/method/var from a module
+     It can also access static members from an instance object
+
+Keywords
+  Keywords have two general modes of operation, "static" and "normal"
+    normal keywords have a higher degree of language compatibility (ie. dot-flipping, etc.)
+      not required to use parentheses and associations may be different
+    static keywords are more a more terminal part of the language
+
+  Grammar:
+    normal = match | if | while
+    static = mod | use | <vcontext>
+    Uncertain
+      else
+
+  Keywords:
+    mod			<- declare module name for the current context
+    use			<- module import and type inheritance (not in the same context)
+    match		<- perform pattern matching on the arguments
+    if | else | while	<- standard usage
+
+TODO: Explain Better
+Safety
+  Like most languages, Spero aims to provide programmer safety
+    However, the safety of some code (particularly implementation) cannot be statically verified by the language
+    These segments would normally cause the compiler to raise errors
+      But not if the relevant checks are turned off for the compiler
+
+  Safety Propogation:
+    A function is considered to be unsafe if
+      At any point in the function definition, an unsafe expression is evaluated and
+      The unsafe expression is not wrapped within a '@safe' declaration
+    Main must be considered safe in final analysis for compilation to succeed
+      NOTE: This applies to any entrypoint the program may have, main is the most common one
+    It is possible to hand-mark some functions/etc. as unsafe through '@unsafe'
+
+  Unsafe Operations:
+    TODO: Determine what operations make a segment unsafe
+
+TODO:
+  Figure out monads
+  Resolve 'use' ambiguity
+  Make sure that 'T.method(t)' can't translate to 'method(T, t)'

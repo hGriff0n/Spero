@@ -1,0 +1,48 @@
+
+Grammar
+  @<variable><fn_call_args>
+
+@pure:
+  This annotation promises that the function is "pure"
+    Might also indicate that the function is compile-time computible
+
+  For now, leave it as a simple promise
+  	It may be possible to add in some basic checking in the compiler
+
+@mutable:
+  Restrict a method/type to only be available on mutable instances
+  TODO: Decide if '@mutable { ... }' should export '...' into the parent scope
+
+@disable(...):
+  Turn off language features for a given expression
+    Currently supports mutability and currying
+
+@primary(...):
+  Apply annotations to the primary constructor (and not the type)
+
+@explicit:
+
+@safe(...):
+  Mark a block of unsafe code as "safe"
+  Note: Maybe provide an optional argument for specifying the invariants for why it's safe
+
+@unsafe:
+  Mark a safe block of code as "unsafe"
+  Note: Experimental
+
+@todo:
+  The compiler will raise a warning on any todos (and comments as well)
+
+Annotation
+  Modes:
+    Global
+      These annotations apply to the entire module/project
+    Applicative
+      These annotations apply to the next expression/block/function/type
+    Querying
+      Some annotations are usable in querying modes for conditional compilations
+	NOTE: Experimental
+
+Ideas
+  mem_limit  <- restrict the amount of memory a type/module/etc can own
+  precedence <- set operator precedence

@@ -1,0 +1,23 @@
+
+
+Testing for definition
+  The '?' operator can be used to test whether a public member is defined
+    For types: <type> ? <name>
+    For scope: ... ? <name>
+
+Type Interactions
+  All types inherit from the supertype, Type
+  [T] <- A type-list
+  (T) <- A type tuple (no "->" or "{" so not an arg tuple)
+
+  Check for a method:
+    <type> ? <method>
+    <type>.hasMethod("<method>")
+    <type>.methods.find(m.name == "split")
+
+  Check for signature:
+    .? <method> :: <sig>
+    :: <sig>
+
+TODO:
+  Find a good way of querying the current scope

@@ -1,0 +1,49 @@
+
+Manual Memory Management
+  The Problem:
+    Manual Memory Management (ie. pointers) is a key source of many programming issues
+      Many languages restrict or hide the use of pointers to the programmer
+    However, Spero is designed to be a safe, systems-style language
+      As such it needs to have the ability to directly interface with hardware memory
+
+  The Solution:
+    Spero provides three Memory "types": Pointer(T&), mem:Addr, and mem:Chunk
+      Addr represents a single location in memory
+	Most operations with Addr are inherently unsafe (Addr can be anything)
+      Chunk represents an owned heap segment
+	Chunks must be mutable and are slightly safer than Addr (due to ownership)
+	  Mutability may be restricted if Chunk is polymorphic on a type
+	A chunk's ownership is released when it's destructor is called
+      Addr and Chunk can be used to implement pointers (Pointers provide type safety ensurance)
+
+    The 'mem' module provides implementations for many other memory operations
+      Most of these operations are needed to implement other standard modules
+
+  Pointers (T&):
+    A pointer is basically a Chunk[T] with reference counting and syntactical sugar
+      TODO: Look into whether reference counting can be statically determined
+      When a pointer is freed (no references), the types destructor is called before the memory is released
+    Pointers are dereferenced by binding a '&' before an expression
+      A '&' binds before any '.', so parens are necessary for some complex constructions
+      Some pointers may define '&' operators that
+        NOTE: Experimental (I don't have a way of defining the operators per type)
+    Mutability (ie. 'mut T&') does not apply to the pointer, but to the reference type
+      So 'mut T&' /> 'mut (T&)' but instead -> '(mut T)&'
+	This means that pointer arithmetic, etc. is not possible on pointer types
+	It is possible on Addr (and maybe Chunk), but it is an unsafe operation
+      Pointers additionally enforce another restriction in the presence of multiple pointers to a single location
+        Two such pointers cannot exist such that one is mutable and the other is immutable
+
+  Safety:
+    Due to lifetime resolution reasons, it's not possible to safely make a local pointer
+      Rust solves this with lifetime resolution, but that might only be possible through additional syntax
+	This is something I want to allow in safe code, but I'm not sure it's possible to analyze yet
+      Safe pointers are restricted to 'mem:alloc' calls
+    Local pointers can be created with the 'mem:ref' function, however 'mem:ref' is an unsafe operation
+
+Views (T*) and Collections
+  Views are a lightweight and general way of accepting varargs and collections in the same function
+    Types must implement Iterable[T] in order to match a T* for assignment/argument matching
+  '[..]' is a syntactical sugar for creating an Array[T, n]
+  Varargs are also a sugar for an Array[T, n]
+    Varargs can only be used as the last parameter of a function

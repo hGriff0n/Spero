@@ -1,0 +1,12 @@
+
+
+Modules
+  Grammar:
+    mod list<var, ':'>
+
+Importing
+  Grammar:
+    use list<import, ':'>
+    import = <var|type>|\{list<var|type>\}
+
+TODO: Explain modules

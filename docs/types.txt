@@ -1,0 +1,210 @@
+Types
+  Grammar:
+    type = <let|def> <type><gen> = list<adt_con, '|', 1>?(list<arg>)?<inherit>?{ <body> }
+    adt_con = <type>(list<type>)?
+    interface = <vcontext> <var|op><gen>? <sig>		# NOTE: Experimental
+	# An "interface" function definition (implementations must meet the signature)
+    inherit = <type><gen>?
+
+  Interfaces:
+    An interface is any type that has an undefined (unassigned) method
+      Subtypes must provide a definition for these methods (or become interfaces themeselves)
+    An interface cannot be directly instantiated, but it can be an argument/generic type bound
+      A lambda type can be created by "completing" the interface (see construction for more)
+
+  Inheritance:
+    Currently, Spero uses multiple inheritance
+      There is no distinct difference between interfaces and types
+        NOTE: Experimental
+    Inheritance is specified through "use" directives (ala module imports)
+      The "inherited" definitions are imported into the class		# Conceptually speaking
+      This specifies an implementation ('::') relationship
+      Note: This means that import directives can't work locally in a class definition
+    Syntactical Sugar for Primary/Singular Inheritance
+      Same syntax as "Completing the type" style, ie. "T { ... }"
+	Note: The inherited type is being "completed", though it's actually being extended
+      This is basically syntactical sugar for a "{ use T ... }"
+
+  Inference:
+    Types of variables are inferred by default from the compiler
+      TODO: Learn about type inference
+    Type hints can be provided by the programmer using ':: T' syntax
+      These hints perform two main functions; overload return and derivation
+	Type inference may select a less specific base type when a derived is produced
+      A ':: T' may be bound to a name/generic or to an expression
+        Both positions perform largely the same functions
+        NOTE: Experimental
+    Casting is done through explicit/implicit constructions or dedicated cast methods
+      So a "T -> String" is performed with the 'toStr' method
+
+  Construction:
+    There are three kinds of type constructors; primary, named, and secondary
+      Type instances always remember which constructor they were built with
+      A type may only contain 1 primary constructor, but it may have multiple named/secondary
+    The primary constructor merges the type body with the function body (ala Scala)
+      All variables declared in the primary constructor are type members
+      Annotations are applied to the primary constructor through the '@primary(..)' annotation
+	Annotations would need to be placed above the type definition -> apply to the type
+    Secondary constructors is implemented by overloading the static "new" method
+      There are 2 general ways of implementing a secondary constructor
+	Create and modify a mutable instance (uses another constructor)
+	"Complete" the type definition (replaces the primary constructor)
+	  The syntax is "<type> { <bindings> }" ala Abstract Types
+	  See 'types.spqr' for a better representation of this
+      The primary constructor is implicitly implemented in these terms
+    Named constructors are the way of implementing Algebraic Data Types (ADTs)
+      Match statements can distinguish between named and primary/secondary constructors
+      If a named constructor is provided, the type can not be created with a 'T(...)'
+	Unless an additional primary/secondary constructor is implemented
+    Constructors can be marked with '@explicit' to prevent usage in implicit resolution
+      Named constructors are always explicit
+
+  Destruction:
+    Destructors are implemented by overriding the static 'drop' method
+      This method must take a singular 'mut T' as its argument (maybe a 'mut T&' in the future)
+    Destructor calls are implicitly inserted by the compiler
+      Insertions are done in 2 locations; scope exit and an enclosing type's 'drop' method
+      These insertions are done in reverse order of declaration
+    Destructors can be explicitly called if desired/necessary
+      The variable is marked as "dropped" and is invalid until reassignment/shadowing
+        It is valid to still "own" the memory for optimization purposes
+      Implicit destructor calls are not inserted for explicitly dropped variables
+
+  TODO: Explain Better
+  OOP:
+    Type methods (declared inside of the type context) all have an implicit "self" parameter
+      Using self is not necessary for accessing type members (scope search: local -> type -> global)
+      The compiler will produce an error/warning if self is shadowed/reassigned
+
+TODO: Explain Better
+Generics
+  Syntax:
+    gen = \[list<gen_arg, 1>\]
+    gen_arg = <type_gen>|<var_gen>
+    type_gen = <type>((::|!:|<|>)<type>)?(+|-)?
+    var_gen = <var>(:: <type>|= <val>)?
+    
+  Explanation:
+    Types and values can both be used inside of generic parameters
+      Whether a generic parameter takes a type or value is determined by the name
+      Types implicitly add a ':: Type' (values, ':: Size') if no '::' is given
+	The '::' is more a "implements" operator than "subtype of"
+	NOTE: Experimental
+    Generics have some special syntax for subtyping
+      !: <- The parameter can't be a subtype
+      <  <- The parameter must be a subtype		# NOTE: Experimental
+      >  <- The parameter must be a supertype		# NOTE: Experimental
+
+  NOTE: Experimental
+  Co-/contravariance:
+    The syntax for co/contra-variance (if it's included) would be [T+]/[T-] ala Scala
+
+  Value Restrictions:
+    Restrict to basic types for now
+      The key thing, is that the used values must be known at compile time
+    
+    NOTE: Experimental
+    In order for types to be used in generics, 2 conditions must be met
+      The type's "eq" method has the @pure annoation (is computable at compile time)
+      The instantiation's value is known at compile-time
+
+  Instantiation:
+    Explicit Instantiation is performed by providing a concrete type/value for a generic context
+      It is only considered for expressions (specializations are for lhs of assignments)
+    Explicit instantiation of functions/types is not needed
+      The compiler will infer the correct overload if possible
+      NOTE: Experimental
+
+  Specialization:
+    Generic definitions can be specialized for specific types/conditions
+      This is done by providing concrete values for generic parameters (same syntax as instantiation)
+	However, specialization is done inside of a definition context (ie. lhs of assignment)
+	Functions can also be "specialized" by providing an explicit argument tuple
+	  However, this is considered a part of function overloading
+      The complete type/function body must be provided to create a specialization
+	This can be slightly shortcut for types through inheritance/imports
+    A "base" type (no generics) can also be defined with the same name (minus '[]')
+      Note: These are all unique "types", there is no aliasing/magic occuring
+      NOTE: Experimental, as this implies C++ style generics (ie. T[V] can't operate on private members of a T[W])
+	This might be a very good idea given "complete the definition" syntax/semantics (ie. private members aren't guaranteed to exist, only public members)
+
+  Instance Resolution:
+    Definitions
+      Instance - The requested frame that is being matched
+      Declaration - The generic "frame" that is being matched
+      Definition - The concrete implementation for a given declaration
+    There are 3 modes of generic declarations
+      Specialized <- [Int]
+      Subtyped    <- [T :: Num]
+      Generic     <- [T]
+    Resolution process
+      Instance resolution follows the same process as overload resolution
+	For every argument in the instantiation, no match can be worse than another instantiation
+	A compiler error is produced if no declaration could be found
+	  A valid declaration will always be found if a generic case exists
+	  Note: The generic case can be "subsumed" by the Subtyped case
+	If two matching declaration are found, a compiler error is produced
+	  Otherwise the resolution is well-formed
+
+Mutability
+  Immutable by Default:
+    All variables/arguments are immutable by default
+      That is, type inferrence will select an immutable type instance unless 'mut' is bound to the expression
+	The inferred type will be 'mut T', where 'T' is the inferred type of the bound expression
+      Mutability is not maintained in shadowing/assignment, 'mut' must be used
+    Types are half-mutable/half-immutable (see Typing Interaction for more)
+      Immutable types have restricted access (ie. none) to mutable methods
+
+  Typing Interaction:
+    Mutability is a part of the type system (ala C++'s 'const')
+      'T' is immutable, 'mut T' is mutable
+      A 'mut' must be bound to a type			<- can't write "def foo = (f :: mut) -> {}"
+	NOTE: Experimental
+    Mutable methods (the '@mutable' annotation)
+      Mutable methods (ie. methods that mutate internal state) must be annotated with '@mutable'
+        These methods are inaccessable from immutable instances (still exist for resolution)
+        It is a compiler error to mutate internal state (ie. call mutable methods) from an immutable method
+      Mutability querying
+	'@mutable' can be used in boolean contexts to query the types mutability
+	This enables conditional method behavior based on mutability of the object
+	NOTE: Experimental
+      Mutable-only types
+	Applying the '@mutable' annotation to the type makes that type mutable-only
+	  It is a compiler error to create an immutable instance/alias of a mutable-only type
+	Additionally, '@disable(mut)' makes the type immutable-only
+	  NOTE: Experimental
+    Member Mutability
+      Members may be marked as mutable/immutable (same syntax as variables)
+      Mutable members "inherit" the enclosing type's mutability
+
+  Assignment/Arguments:					# Note: 'T' includes 'mut T', 'T&', and 'T*' unless specified
+    If an assignment/argument usage of the following form appears, take the linked action
+
+    Assignment
+      t = v|t		<- Reuse if no aliases, otherwise copy
+      t = mut t		<- Reuse if no aliases, otherwise copy
+      v = t		<- Copy
+      v = mut t		<- Copy
+
+    Argument
+      f(T)		<- Reuse
+      f(mut T)		<- Reuse if no aliases, otherwise copy
+
+  Compiler Behavior:
+    A warning is produced if any type members are shadowed (esp. if mutability)
+    An error is produced if any type members are modified in a non-mutable method
+
+Tuples
+  Grammar: \(list<T>\)
+  Accessors are automatically created for accessing tuple members
+    The created accessors are _<n>, where 'n' is the index of the element in the tuple
+  Functions can be applied to tuples due to dot-flipping
+
+TODO:
+  Figure out how to specify standard generics on custom types
+  Start designing the type system
+  Look into typeclasses
+  Look into building in variant types ("T | V")
+  Look into higher-kinded types
+  Look into variable generics
+  Maybe find a way to allow local (non-inheritance) importing in class definitions
