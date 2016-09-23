@@ -21,12 +21,14 @@ static = mod | use
 uncertain = else
 keyword = <vkeyword> | <dynamic> | <static> | <uncertain>
 
-# Atoms
+# Literals
 boolean = true | false
 decimal = [0-9]*
 hex = x[0-9A-Fa-f]*
 binary = b[01]*
-float = <decimal>?\.<decimal>
-string = "(.|/")*"				# Need to make sure you can escape quotations
+float = <decimal>\.<decimal>?
+string = "(\\"|.)*"				# Need to make sure you can escape quotations
+char = '\\.|.'
 
+# Atoms
 atom = { list<atoms, '\n'> }

@@ -3,10 +3,50 @@
 Modules
   Grammar:
     mod list<var, ':'>
+  
+  A module is a collection of declarations that provides interface level encapsulation
+    It is basically a type, but without the instantiation requirement and ability (and static = private)
+    Visibility contexts determine which stuff is exported into the interface
+      'def' makes the object a part of the modules public interface
+      'static' makes the object part of the module "implementation" (ie. package level in java)
+      'let' makes the object "file-local" (not expored in any sense)
+        Note: I might switch/merge 'let' and 'static' for modules (I already switched them once)
+      Modules are always public
+
+  A module declaration is a single high-level statement (similar to Java packages)
+    All following code is considered to be part of the module's scope
+    The module scope ends when the file ends or another module declaration is encountered
+      NOTE: Experimental
+      Submodules are defined through ':' chains, with the parent module on the left
+    Modules are always public (forced, since the 'mod' takes the place of visibility context)
+
+  NOTE: Experimental
+  Main is not required to declare a module
 
 Importing
   Grammar:
-    use list<import, ':'>
-    import = <var|type>|\{list<var|type>\}
+    use <parent>:(<import>|\*)
+    parent = list<import, ':'>
+    binding = <var>|<type>(as <var|type>)?
+    import = binding|\{list<binding>\}
+  
+  All public bindings can be accessed through the qualified name
+    The qualified name consists of the module name and the binding with a ':' in between
+    No ':' or qualified name is needed to access bindings in the current module (or any imported module)
 
-TODO: Explain modules
+  Importing levels the binding into the context of the current scope
+    This leveling removes the module name from the qualified name required to access the binding
+      NOTE: Module names may be the binding, which shortens the qualified name for any exported items
+    A '*' imports everything declared in the module
+
+  Imports can be "rebound" to different names using 'as' syntax
+    The 'as' syntax introduces a new binding into the current module
+      The right-hand side binding now refers to the left-hand side in future occurances
+    Note: This can be used on local types too
+    Note: 'as' is only a keyword in this context, It's possible to make 'as' a var
+      So 'use std:wtf:as as why_not' is a valid import (don't think there's parsing ambiguity)
+
+TODO:
+  Determine how module resolution is performed (ie. how are modules found)
+    Map to a file heirarchy | map to a module file (allow for downloading/etc)
+    Can I infer module names from the file heirarchy ???

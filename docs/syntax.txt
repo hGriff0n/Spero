@@ -11,6 +11,7 @@ Assignment
       let	<- protected visibility
       def	<- public visibility
       static	<- static visibility
+    This keyword really only has an effect in two locations: type and module definitions
 
   Contract:
     Type Binding (:: T)

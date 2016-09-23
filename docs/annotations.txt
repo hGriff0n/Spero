@@ -46,3 +46,12 @@ Annotation
 Ideas
   mem_limit  <- restrict the amount of memory a type/module/etc can own
   precedence <- set operator precedence
+  dead_code  <- warning if unused code is found in the compiler (disables)
+  cfg	     <- stronger conditional compilation
+  
+
+Syntax ideas
+  @annotation
+  @annotation(<args>)
+  @annotation = value		<- Experimental
+  @annotation { ... }		<- Experimental
