@@ -4,7 +4,7 @@ Assignment
     <vcontext><binding><contract>? = <expr>
     vcontext = let|def|static
     binding = <type>|<var>|<op>
-    contract = (:: <type>)?<gen>
+    contract = <gen>?(:: <type>)
 
   Context:
     The keyword representing the binding's visibility (ie. public/private)
@@ -15,25 +15,26 @@ Assignment
 
   Contract:
     Type Binding (:: T)
-      For when type inference can't produce a type or produces a less restrictive type
     Generics ([T])
       See types.txt for more
 
   Expression:
     The series of instructions that will be bound to the name
     Multiple lines (ala types/fuctions) can be bound by wrapping in '{}'
+      This evaluates to the last evaluated expression for normal usage
+      When assigned to functions/types, the entire body is left "unevaluated"
 
   Shadowing (ala Rust):
     Variables can be re-declared (shadowed) by making an assignment with the same name in the current scope
     Unless the varaible is aliased, the shadowing "drops" the old value
     This can also be used to perform mutability, with "t = mut t"
 
-Indexing
-  A '.' is used to access a type/method/var from an instance/type
+Indexing (NOTE: In flux at the moment
+  A '.' is used to access a field from an object instance
+    For variables and types, this field is a 'def'/'let' binding in the element's type definition
+      For types, this field is a 'static' binding in the type definition
     This option takes precedence over dot-flipping in name-resolution
-    If used on a type (ie. T), a '.' can access static members
-  A ':' is used to access a type/method/var from a module
-     It can also access static members from an instance object
+  A ':' is used to find a qualified binding (see modules.txt more)
 
 Keywords
   Keywords have two general modes of operation, "static" and "normal"
@@ -49,20 +50,25 @@ Keywords
 
   Keywords:
     mod			<- declare module name for the current context
-    use			<- module import and type inheritance (not in the same context)
+    use			<- module importing and rebinding/aliasing
     match		<- perform pattern matching on the arguments
     if | else | while	<- standard usage
+    for	| break		<- standard usage
+    continue		<- standard usage
+    def | let | static	<- visibility keywords
+    mut			<- mark the resulting value as mutable for the moment
+    impls		<- type inheritance/extension
 
 TODO: Explain Better
 Safety
   Like most languages, Spero aims to provide programmer safety
-    However, the safety of some code (particularly implementation) cannot be statically verified by the language
+    However, the safety of some code (particularly low-level/implementation) can't be verified by the language
     These segments would normally cause the compiler to raise errors
       But not if the relevant checks are turned off for the compiler
 
   Safety Propogation:
-    A function is considered to be unsafe if
-      At any point in the function definition, an unsafe expression is evaluated and
+    A function is considered to be unsafe iff
+      At any point in the function definition, an unsafe expression is evaluated
       The unsafe expression is not wrapped within a '@safe' declaration
     Main must be considered safe in final analysis for compilation to succeed
       NOTE: This applies to any entrypoint the program may have, main is the most common one
@@ -71,7 +77,45 @@ Safety
   Unsafe Operations:
     TODO: Determine what operations make a segment unsafe
 
+Generic Variables
+  Generics can be applied to non-function bindings the same as any other type
+    This allows the variable to be accepted in any context that it's value can be constructed to
+      The bound value should have the form, 'T(...)' but it is not required (yet)
+    NOTE: This is basically implicit construction
+
+  The variable can be "instantiated" to a specific type in one of three ways
+    Implicit conversion, ie. for functions, etc.
+    Instantiation with an explicit template parameter
+    Inference (ie. ':: T'), this basically follows from implicit conversion
+
+Control Flow
+  If-Elsif-Else
+    if <expr> <expr> (elsif <expr> <expr>)* (else <expr>)?
+
+  Loop
+    loop <expr>
+    Performs an infinite loop (until a break/return is hit)
+    NOTE: A good way of implementing an infinite generator "loop yield <expr>"
+
+  While
+    while <expr> <expr>
+
+    Compiler will produce a warning if the expression will always be true or false
+      Warning for true because 'loop' performs the same functionality
+
+  For
+    for <pattern> in <expr> <expr>
+
+  There's additional keywords for loops, break and continue
+    break exits the immediate loop (the statement after the end)
+    continue skips the rest of the iteration (goes back to the beginning)
+
+  There might be two additional keywords, return and yield
+    return will immediately exit the function (after evaluating it's expression)
+    yield has similar semantics, but allows for resuming at a later time (ie. coroutines)
+
 TODO:
   Figure out monads
   Resolve 'use' ambiguity
-  Make sure that 'T.method(t)' can't translate to 'method(T, t)'
+  What should the behavior of 'static' be in local scopes 
+  Determine what the default "unsafe" expressions should be

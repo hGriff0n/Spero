@@ -17,9 +17,8 @@ Functions
   Omitting Parentheses:
     Function parentheses can be omitted when a no-arg function is called
       Consequently to assign a no-arg function, use the following syntax:
-	Create an alias with "using <name> = <fn>"
 	Create a forwarding lambda with "let <name> = .<fn>"
-	Assign with no-paren calling disabled (using '@disable(no-parens)')
+	Assign with no-paren calling disabled (using '@disable(no_parens)')
   
   All function calls are eager (ie. non-lazy)
     Lazy evaluation can be mimiced with streams/generators/captures
@@ -28,6 +27,7 @@ Function Overloading
   Definition:
     A function is overloaded if there exist 2+ function definitions (with unique signatures) bound to the same name
       An overload is created by "shadowing" a function with a different type signature
+        It is illegal to "shadow" a function in the global scope
 	Functions and Types have slightly different behavior from normal variables	# NOTE: Experimental
       This is only true for functions defined in the same scope
     Functions can be overloaded based on the parameter and return types
@@ -87,8 +87,8 @@ Dot-Flipping
 
   Name Resolution:
     Given an expession of the form "T.fn(...)"
-    The resolution search first considers in T's methods for a definition
-      The search then considers the current scope for a definition
+    The resolution search first looks in T's method list for a definition that matches
+      The search then follows scoped lookup rules for if a definition is not found in the former step
     Once a definition location is found, overload resolution rules apply
 
   Type Methods:
@@ -113,26 +113,25 @@ Dot-forwarding
 
   Dot-forwarding is analagous to an implicit cut-copy-paste using dot-flipping
     ie. Cut the function name and then paste the function body after the arguments
-    NOTE: Actual implementation does not follow this pattern
+    NOTE: Actual implementation should not follow this pattern
 
 Vararg Functions
   A function that takes a T* as the final parameter can accept 0+ T's at the call site
+    The vararg parameter must be the final paramter in the function list
     The arguments are implicitly converted into an Array[T, n]
-      f(1, 2, 3) => f([1, 2, 3])
-    A T* is a syntactical sugar for an Iterable[T]
 
 Partial Application
   A function call reduces to a partial application iff
-    The function is called with too few arguments
-    A possibly valid overload exists from the given arguments
+    Overload resolution fails because of a too small input
+    A possibly valid overload exists, given the current arguments
     The resulting function is stored/used (variable/argument/return)
 
   A partial application produces a function bound to the given arguments
     This function inherits the overload set of the parent
-    When calling, the bound arguments are applied first (infix excepted)
+    When calling, the bound arguments are applied first
       Infix application maintains positioning (so "/ 5" != "5 /")
 
-  Disable through '@disable(curry)' on function definition
+  Can be disabled through the '@disable(curry)' annotation
     NOTE: Experiemental (might change name)
 
 Experimental Ideas:

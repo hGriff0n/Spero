@@ -6,16 +6,16 @@ def Array[T, n :: Size] = {
     let ptr = mut alloc[T.size * n]
 
     @safe
-    def at = (i :: Size) {
+    def at = (i :: Size) => {
         @todo("Add range checking behavior. Possibly add in annotation querying?")
         
         Ok(ptr.sub[T](i))
     }
 
-    use {Mappable, Indexable}
+    impls Mappable, Inexable
 
     @mutable
-    def map! = (f :: (T) -> T) {
+    def map! = (f :: (T) -> T) -> {
         let i = mut 0
         
         while i < n {
@@ -24,7 +24,7 @@ def Array[T, n :: Size] = {
         }
     }
 
-    def map[V] = (f :: (T) -> V) {
+    def map[V] = (f :: (T) -> V) -> {
         let (ret, i) = mut (Array[V, n], 0)
 
         {
@@ -42,7 +42,7 @@ def VecArray[T] = {
     let (size, cap) = mut (0, 10)
 
     @safe
-    def at = (i :: Size) {
+    def at = (i :: Size) -> {
         if i < size
             Ok(ptr(i))
         else
@@ -50,7 +50,7 @@ def VecArray[T] = {
     }
 
     @mutable
-    def push_back = (val :: T) {
+    def push_back = (val :: T) -> {
         if size == cap {
             cap = 20
             let cur = ptr
@@ -70,7 +70,7 @@ def Vector[T] = {
     let ptr = mut alloc(cap)
 
     @mutable
-    def push_back = (val :: T) {
+    def push_back = (val :: T) -> {
         if size == cap {
             cap *= 2
             let cur = ptr
@@ -88,18 +88,19 @@ def Foo = () {
     let f = mut "f.txt".File
     "Default open at {}".writeln(f, std:sys:now)
 
-    def new = (foo :: mut Foo) {
-        f = foo.f.copy
-        "Duplicate at {}".writeln(f, std:sys:now)
+    # This isn't copyable yet (I think)
+    def new = (foo :: mut Foo) -> {
+        "Duplicated at {}".writeln(foo.f, std:sys:now)
+        Foo{ let f = foo.f.copy }
     }
 
-    static delete = (foo :: mut Foo&) {
-        "Closed at {}".writeln(f, std:sys:now)
+    static delete = (foo :: mut Foo) -> {
+        "Closed at {}".writeln(foo.f, std:sys:now)
     }
 }
 
-def main = () {
-    Foo
+def main = () -> {
+    Foo         # Don't know when drop will get called
 
     # These all get the 2nd element in the 'cnk' "array"
     using T = Int

@@ -1,0 +1,116 @@
+mod type_test
+use std:{io, fs}:println as puts
+
+##
+Inheritance and Anonymous Types
+##
+def Option[T+ :: Copy] = None | Some(T) {
+    static new = () -> None
+    static new = (T) -> .Some
+
+    impls std:util:Copy                 # Implements 'std:util:Copy'
+    def copy = () -> self.match {
+        None -> None
+        Some(v) -> v.copy.Some
+    }
+
+    # Import everything from the std:io module into this class
+    use std:io:_
+
+    # implement the 'std:io:Printable' interface
+    impls Printable
+    def toStr = () -> self.match {
+        None -> "None"
+        Some(v) -> "Some({})".std:lang:String:fmt(v)
+    }
+}
+
+def HelloWorld = {
+    def greet :: () -> ()
+    def talk :: (String) -> ()
+
+    static test = () -> "Hello, World!".puts
+
+    impls std:io:Printable
+    def toStr = .greet
+}
+def Num = {}
+
+##
+It makes no sense to use '::' after a type constructor (outside of generics)
+  The only logical results are to give a less-derived type, which is restricts meaning
+  Or to give an unrelated type, which breaks program correctness (overload resolution fails)
+##
+# def BigInt = Num :: {}        <- This is also valid, though it may be less readable with constructors
+def BigInt :: Num = {           # If you think about it, all types have an implicit ':: Type' here
+    super                       # Call the parent constructor (this call (with no args) is implicitly inserted if the first line is not 'super...')
+                                # The parent constructor must be the first line (or it will raise a compiler error, attempt to call parent constructor twice)
+}
+
+def main = () -> {
+    let french = mut HelloWorld :: {
+        def greet = () -> "tout le monde".puts
+        def talk = (n :: String) -> "Salut, {}".puts(n)
+        def name = mut ""
+    }
+    french.name = "Michael"
+
+    # Note that Anonymous Types still "devolve" to no-paren constructions
+    # It's only when binding to types that this behavior is avoided
+    converse(french, HelloWorld :: {
+            def greet = () -> "mundo".puts
+            def talk = (n :: String) -> "Hola, {}".puts(n)
+        })
+
+    # Experimenting with unifying access semantics
+        # Thought: Good idea, needs work on the specifics of translation and extension (tuples need to be statically checked for one)
+    let vec = [0, 1, 2].std:util:Vector
+    vec.0       # translates to 'vec(0)'    <- Type has dynamic size
+
+    let tup = (0, 1, 2)
+    tup.0       # translates to 'tup[0]'    <- Type has static size
+}
+
+# Look at 'http://docs.groovy-lang.org/latest/html/documentation/index.html' and 'https://doc.rust-lang.org/book/' for example documentation
+
+
+##
+Metaprogramming and ':'/'.'
+##
+def converse = (a :: HelloWorld, b :: HelloWorld) -> {
+    # Perform initial introductions
+    HelloWorld:greet(a)
+    b.greet
+
+    # '?' performed the meta-indexing (returns an Option[T] of the value of the field)
+        # Fields can use "Generics" to only get the field if it has a specific type (???)
+
+    b.talk(a?name[String].or("Fred"))
+    let b_name = b?name :: String             # Should this also work for filtering by type
+    HelloWorld:talk(a, b_name.or("Fred"))
+
+    # b:test                    <- item test of the b module
+    # HelloWorld.test           <- call static member test
+    # HelloWorld:test           <- item test of the HelloWorld type
+}
+
+# Disable no-paren calling to prevent 'T' from constructing a T instance
+@disable(no_parens)
+def meta_test = () -> "{}".puts([Float, Int, String, Array[Int]].filter(_ ?: Num).map(_.new())
+
+
+##
+Variable generics
+##
+let pi[T] = T(3.14152759)
+def idi = (i :: Int) -> i            # (Int) -> .    Would this be usable ??
+#def id = (f :: Float) -> f         <- This would cause an error if uncommented (pi's type can't be determined)
+
+##
+It is an error to use a variable generic where it's specific type can't be determined
+The specific type can be determined in one of three general ways
+    ':: T' type annotations
+    Explicit template instantiation
+    Type Completion (ie. Function argurment matching)
+##
+def fn = () -> "{} - {} - {}".println(pi :: Int, pi[Float], pi.idi)

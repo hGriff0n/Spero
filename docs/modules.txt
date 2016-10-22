@@ -11,7 +11,6 @@ Modules
       'static' makes the object part of the module "implementation" (ie. package level in java)
       'let' makes the object "file-local" (not expored in any sense)
         Note: I might switch/merge 'let' and 'static' for modules (I already switched them once)
-      Modules are always public
 
   A module declaration is a single high-level statement (similar to Java packages)
     All following code is considered to be part of the module's scope
@@ -23,28 +22,41 @@ Modules
   NOTE: Experimental
   Main is not required to declare a module
 
+Qualified Names
+  Grammar:
+    module_path = (<var>:)*
+    type_path = (<type>:)*
+    qual_name = module_path type_path (<var>|<type>|<op>)
+
+  The qualified name is the full organizational path that the binding falls under
+    So the "std:io:println" qualified name refers to the "println" binding in the "std:io" module
+  
+  Interpretation
+    All variable names within the qual_field are automatically interpreted as modules
+      In other words, a ':' serves to access the module described by the variable 
+    Types are interpreted as is (as type bindings in the current module)
+      The ':' allows access to all public fields, local or static bound
+      Local ('let'/'def') methods must be called with an instance as the first argument
+  
 Importing
   Grammar:
-    use <parent>:(<import>|\*)
-    parent = list<import, ':'>
-    binding = <var>|<type>(as <var|type>)?
+    use module_path (<import>|(_(:_)?))
+    binding = (<var> (as <var>)?)|(<type> (as <type>)?)
     import = binding|\{list<binding>\}
-  
-  All public bindings can be accessed through the qualified name
-    The qualified name consists of the module name and the binding with a ':' in between
-    No ':' or qualified name is needed to access bindings in the current module (or any imported module)
-
-  Importing levels the binding into the context of the current scope
-    This leveling removes the module name from the qualified name required to access the binding
-      NOTE: Module names may be the binding, which shortens the qualified name for any exported items
-    A '*' imports everything declared in the module
+ 
+  Importing levels the named bindings (in the import section) into the context of the current scope (for accessing)
+    This leveling basically removes the requirement to specify the full qualified name to access the binding
+      NOTE: An import may just serve to shorten the qualified names (as in "use std:io")
+    A '_' serves as a 'take all' operation, importing everything declared in the module
+      This import is not recursive (use '_:_' to recursively import everything)
 
   Imports can be "rebound" to different names using 'as' syntax
-    The 'as' syntax introduces a new binding into the current module
-      The right-hand side binding now refers to the left-hand side in future occurances
-    Note: This can be used on local types too
-    Note: 'as' is only a keyword in this context, It's possible to make 'as' a var
+    The right-hand side binding now refers to the left-hand side in future occurances
+    NOTE: 'as' is only a keyword in this context, It's possible to make 'as' a var
       So 'use std:wtf:as as why_not' is a valid import (don't think there's parsing ambiguity)
+    The left-hand binding can't be accessed without the full qualified name (it's not imported)
+      NOTE: If there is no "qualified" path to the left binding, it can still be used by name
+        So 'use LocalType as BoundType' still allows using LocalType
 
 TODO:
   Determine how module resolution is performed (ie. how are modules found)

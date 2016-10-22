@@ -1,7 +1,8 @@
 mod opt
+use std:io:println as puts
 
 def Option[T] = Some(T) | None {
-    def get = self.match {
+    def get = () -> self.match {
         Some(v) -> v
     }
 
@@ -15,10 +16,10 @@ def Option[T] = Some(T) | None {
     def new = (T) -> .Some
 }
 
-def main = {
+def main = () -> {
     let val = Some(3)
-    let tst = Option[Int]
+    let tst = None
 
-    "{}".println(val.get)
-    "{}".println(tst.or_else(3))
+    "{}".puts(val.get)
+    "{}".puts(tst.or_else(3))
 }

@@ -12,31 +12,32 @@ Manual Memory Management
 	Most operations with Addr are inherently unsafe (Addr can be anything)
       Chunk represents an owned heap segment
 	Chunks must be mutable and are slightly safer than Addr (due to ownership)
-	  Mutability may be restricted if Chunk is polymorphic on a type
-	A chunk's ownership is released when it's destructor is called
+	  A chunk's memory is freed when it's destructor gets called
       Addr and Chunk can be used to implement pointers (Pointers provide type safety ensurance)
 
     The 'mem' module provides implementations for many other memory operations
       Most of these operations are needed to implement other standard modules
 
   Pointers (T&):
-    A pointer is basically a Chunk[T] with reference counting and syntactical sugar
+    A pointer is basically a Chunk[T.size] with some syntactic sugar
+      A Chunk represents a sequence of bits, a pointer represents that sequence as a value of a given type
       TODO: Look into whether reference counting can be statically determined
       When a pointer is freed (no references), the types destructor is called before the memory is released
     Pointers are dereferenced by binding a '&' before an expression
       A '&' binds before any '.', so parens are necessary for some complex constructions
-      Some pointers may define '&' operators that
+      Pointers may define '&' operators (based on operator existence for the pointed type)
         NOTE: Experimental (I don't have a way of defining the operators per type)
     Mutability (ie. 'mut T&') does not apply to the pointer, but to the reference type
       So 'mut T&' /> 'mut (T&)' but instead -> '(mut T)&'
 	This means that pointer arithmetic, etc. is not possible on pointer types
 	It is possible on Addr (and maybe Chunk), but it is an unsafe operation
-      Pointers additionally enforce another restriction in the presence of multiple pointers to a single location
+      Pointers additionally enforce another restriction in in regards to multiple pointers of one object
+        A mutable pointer cannot be made to an immutable object under any circumstances
         Two such pointers cannot exist such that one is mutable and the other is immutable
 
   Safety:
     Due to lifetime resolution reasons, it's not possible to safely make a local pointer
-      Rust solves this with lifetime resolution, but that might only be possible through additional syntax
+      Rust solves this with generics, but that might only be possible through additional syntax
 	This is something I want to allow in safe code, but I'm not sure it's possible to analyze yet
       Safe pointers are restricted to 'mem:alloc' calls
     Local pointers can be created with the 'mem:ref' function, however 'mem:ref' is an unsafe operation

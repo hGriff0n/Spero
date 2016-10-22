@@ -1,70 +1,65 @@
 # Let's start off with a simple "Cipher" trait
 let Cipher = {
-	def encode :: (String) -> String
+	def encode :: (String) -> String		# Note: This syntax is currently experimental (for specifying an interface)
 	def decode :: (String) -> String
 }
 
+# You can write methods and stuff in terms of the interface
+def encrypt = (msgs :: String*, cipher :: Cipher) -> {
+	msgs.map(cipher.encode)
+}
+
+
 # Lets create an instance of our Cipher class
-	# Like Java, we must supply implementations for the abstract methods
-let caeser = Cipher {
-	def encode = .map (c) -> .+ 5		# The types/arguments are inherited from the Cipher
-	def decode = .map (- 5)				# Take advangate of currying
+let caeser = Cipher :: {
+	def encode = .map (c) -> .+ 5			# The types/arguments are inherited from the Cipher
+	def decode = .map (- 5)					# Take advangate of currying
 }
 
-# Lets expand our caeser cipher with a constructor
-	# Technically this actually creates a function that returns a Cipher
-let caeser = (shft :: Char) {
-	use Cipher							# This is the same as "Cipher {" (which is really just sugar for this)
+caeser.encode("hello") == "JGNNQ"
 
-	def encode = .msg (+ shft)
-	def decode = .map (- shft)
-}
+# You don't have to bind anonymous types, you can use them directly too
+["Hello", "World", "It's a me!"].encrypt(Cipher :: {
+	def encode = .map (+ 13)
+	def decode = .map (- 13)
+})
 
-caeser('C').encode("hello") == "JGNNQ"
-caeser('C').decode("JGNNQ") == "hello"
-
-let c_caeser = caeser('C')
-c_caeser.encode("hello") == caeser('C').encode("hello")
 
 ##
-    This works, but what if we want to only accept caeser ciphers
-	Unfortunately caeser is only an instantiation of Cipher, the type isn't workable
-    Luckily the change is incredibly simple, trivial even
+We can work with the Cipher interface and all, but what if we only want to accept caeser ciphers
+Well right now, we only have instantiations of the Cipher type, but not a unique type
+  At least one we can write interfaces in terms of (easily at least)
+Luckily the fix is rather simpl
 ##
 
 # Types are indicated by capital letters, variables by lowercase, and operators by symbols
 	# So by capitalizing the name we can a much more flexible construction
 	# Note that the arg list contract now specifies the constructor for the type 
-let Caeser = (shft :: Char) Cipher {
+let Caeser = (shft :: Char) {
+
+	# Specify an implements relationship (one method of inheritance)
+	impls Cipher
+
+	# Provide the implementations
 	def encode = .msg (c) { c + shft }
 	def decode = .map (- shft)
 }
 
-
-# This is good for our purposes, but if we want to make a cryptography library
-# We need to make our cipher trait a bit more generic over its encryption types
-	# Modern ciphers work on collections of bits and not characters
-
-# The syntax is (currently) borrowed from Scala (though not everything (yet))
+##
+This is all good and well, but if we want to have true encryption we need more
+Specifically we need to make our Cipher trait generic
+  Modern ciphers work on collections of bits, not characters
+The change is simple, just introduce a generic contract to the binding
+##
 let Cipher[T] = {
 	def encode :: (T*) -> T*			# Take a sequence of T's and return such
 	def decode :: (T*) -> T*	
 }
 
-# We can even protect against wrongful conversions through local types
-	# Now you can only decrypt an encrypted message (and vice versa)
-	# This doesn't work correctly yet
-let Cipher[T] = {
-	let EncType = T{}					# Protection's easily lost and it's not composable at all
-	def encode :: (T*) -> EncType*		# I think the relationship's reversed too
-	def decode :: (EncType*) -> T*
-}
-
-# So now how does our Caeser Cipher get modified ?
-	# Not much, just have to modify our inheritance
-let Caeser = (shft :: Char) {
-	use Cipher[Char]
-
+# So how will that modify our Caeser cipher (which does work on characters)
+let Caeser :: Cipher[Char] = (shft :: Char) {
+	# Here we get the other way of specifying inheritance (the ':: Cipher[Char]')
+	
 	def encode = .map (+ shft)
 	def decode = .map (- shft)
 }

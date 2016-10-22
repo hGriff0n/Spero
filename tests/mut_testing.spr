@@ -1,6 +1,8 @@
+mod mut_testing
+use std:{sys, io}
+use std:util:_
 
-
-def foo = (x :: Int) {
+def foo = (x :: Int) -> {
     let x = mut x       # T => mut T. Copy
     x += 3
     let x = x           # mut T => T. Reuse
@@ -8,15 +10,16 @@ def foo = (x :: Int) {
 
 def foo = (x :: mut Int) -> foo(x)
 
-def mfoo = (x :: mut Int) {
+def mfoo = (x :: mut Int) -> {
     x += 2
 }
 
 let Foo = {
+    use sys:now
     let arr = mut [1, 4, 3, 6].Vector[Int]
 
-    if sys:now.hour < 12
-        "WAKE UP!".println
+    if now.hour < 12
+        "WAKE UP!".io:println
 
     # Mutable-only methods
     @mutable
@@ -28,7 +31,7 @@ let Foo = {
 
     # This method has different behavior based on the object's mutability
     def pop = () ->
-        arr.pop_back .if @mutable else "Pop!".println
+        arr.pop_back .if @mutable else "Pop!".io:println
 
     # Immutable methods
     def size = () -> arr.size
@@ -42,14 +45,16 @@ let Foo = {
             arr = mut [1, 4, 3, 6].map(* mult).Vector[Int]
         }
 
-    static new = (mult :: Int) {
+    static new = (mult :: Int) -> {
         let ret = mut Foo               # Piggyback on the default constructor
         ret.arr.map!(* mult)
         ret
     }
 }
 
-def main = () {
+def main = () -> {
+    use io:println
+
     let x = 3
     let x = x               # T => T. Optimize
 

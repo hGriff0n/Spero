@@ -11,29 +11,32 @@ Grammar
 
 @mutable:
   Restrict a method/type to only be available on mutable instances
-  TODO: Decide if '@mutable { ... }' should export '...' into the parent scope
+  TODO: Decide if '@mutable { .. }' should export '..' into the parent scope (NOTE: Not yet)
 
-@disable(...):
+@disable(..):
   Turn off language features for a given expression
     Currently supports mutability and currying
 
-@primary(...):
+@primary(..):
   Apply annotations to the primary constructor (and not the type)
 
 @explicit:
+  Mark a constructor as "invalid" for implicit construction resolution
 
-@safe(...):
+@safe(..):
   Mark a block of unsafe code as "safe"
   Note: Maybe provide an optional argument for specifying the invariants for why it's safe
 
 @unsafe:
   Mark a safe block of code as "unsafe"
-  Note: Experimental
 
-@todo:
+@todo(..):
   The compiler will raise a warning on any todos (and comments as well)
 
-Annotation
+@asm(..):
+  Write the given assembly code
+
+Annotations
   Modes:
     Global
       These annotations apply to the entire module/project
@@ -44,14 +47,19 @@ Annotation
 	NOTE: Experimental
 
 Ideas
+  Expand annotations to be able to make macros with them
+
+Annotation Ideas
   mem_limit  <- restrict the amount of memory a type/module/etc can own
   precedence <- set operator precedence
   dead_code  <- warning if unused code is found in the compiler (disables)
   cfg	     <- stronger conditional compilation
-  
+  error_def  <- ??
+  assert     <- raise a compiler error if the condition evaluates to false
+  bool_conv  <- specify a function used to convert this type into Booleans (for 'if' statements)
+  force	     <- opposite of '@disable'
 
 Syntax ideas
   @annotation
   @annotation(<args>)
-  @annotation = value		<- Experimental
-  @annotation { ... }		<- Experimental
+  @annotation { ... }

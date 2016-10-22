@@ -2,7 +2,7 @@ mod celeb
 
 use std:util:{Array, Set}
 
-def Person = Nobody | Somebody(mut String) {
+def Person = Nobody | Somebody(String) {
     let know_list = mut Set[Person]
 
     @mutable
@@ -14,28 +14,26 @@ def Person = Nobody | Somebody(mut String) {
         _ -> know_list.contains(p)
     }
 
-    static == = (p1 :: Person, p2 :: Person) -> .match {
+    static == = (Person, Person) -> .match {
         Somebody(n1), Somebody(n2) -> n1 == n2
         _, _ -> false
     }
 }
 
-# Could this work as well ???
-def getLocalCeleb = (Nobody, next) -> next
-def getLocalCeleb = (curr :: Person, next :: Person) {
-    if !next.knows(curr) || curr.knows(next) next
-    else curr
-}
-
-def getLocalCeleb = (curr :: Person, next :: Person) -> curr.match {
-    Nobody -> next
-    _ {
-        if (!next.knows(curr) || curr.knows(next)) next
+# Determine if Person a is a celebrity in relation to Person b
+def getLocalCeleb = (Person, Person) -> .match {
+    Nobody, next -> next
+    curr, next -> {
+        if !next.knows(curr) || curr.knows(next) next
         else curr
     }
 }
 
-def celebrity[n] = (group :: Array[Person, n]) {
+##
+Given a collection of People (an Iterable[Person], or Person*)
+Determine whether a celebrity exists
+##
+def celebrity[n] = (group :: Person*) -> {
     let fceleb = group.reduce(Nobody, getLocalCeleb)
     let bceleb = group.reverse.reduce(Nobody, getLocalCeleb)
 

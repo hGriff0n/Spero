@@ -11,7 +11,7 @@ The test program is primarily a basic RPN calculator with some non-rpn functions
 mod rpn
 use std:{io, str}:*
 
-def main = .getln .parse .("={}".println)
+def main = () -> "={}".println(getln.parse)
 
 def Stack[T] = Empty | Cons(T, Stack) {
 	def toStr = self .match {
@@ -34,45 +34,26 @@ let parse = (String) ->
 		s, _                      -> Cons(_.toInt, s) 
 	})
 
-let eval = (Stack[Int]) .match {
-	Cons(i, Empty) -> i.toStr
-	_              -> "nil"
+def test = (log :: Logger) -> {
+	log << ("{} {} +".fmt(3, 4).parse.toStr)
+	log << ("{} {} + {} *".fmt(3, 4, 5).parse.toStr)
 }
 
-let Cipher[T] = {
-	def encode :: (T*) -> T*					# `encode` takes a T sequence and produces a T sequence
-	def decode :: (T*) -> T*
-}
-
-# map[T, V] = (T*, (T) -> V) -> V*
-# map[T] = (T*, (T) -> ()) -> ()
-def Caeser = (shft :: Char) {
-	use Cipher[Char]						# Inheritance/Interfaces
-
-	def encode = .map (+ shft)				# Point-free functions
-	def decode = .map (- shft)				# They inferentially meet the Cipher requirements
-}
-
-def test = (log :: Logger) {					# Can the '{' unpack the arg tuple ??
-	log << ("{} {} +".fmt(3, 4) .parse .eval)
-	log << ("{} {} + {} *".fmt(3, 4, 5) .parse .eval)
-}
-
-def arrayTest = (nums :: Int*) {
+def arrayTest = (nums :: Int*) -> {
 	let view = [1, 2, 3, 4, 5] ++ nums		# The language intrinsic is a view (or sequence)
-	let arr = nums.toArray					# Array is a stdlib feature
+	let arr = nums.Array					# Array is a stdlib feature
 
 	println("The first element is {}", arr(0))
 }
 
-def sortTest[T] = () {
-	let (a, b) = (3, "I")									# Use `<>` if parsing doesn't work out
+def sortTest[T] = () -> {
+	let (a, b) = (3, "I")
 
 	[3, 4, 5, 1, 2].sort((a, b) -> a < b).toStr.println
 }
 
-def functionTest = () {
-	def foo = () "Hello".println
+def functionTest = () -> {
+	def foo = () -> "Hello".println
 	"Goodbye".println						# This is the only thing that should print
 }
 
@@ -81,7 +62,7 @@ def split = (s :: String, i :: Int)	->
 	 .groupWhile(< i)
 	 .map(.snd .mkString)					# How to access a tuple ???
 
-def noargs = () {
+def noargs = () -> {
 	let person = "Enter your name: {}".std:io:getln
 	let age = "Enter your age: {}".std:io:getln
 	let (gen, race) = "Enter your gender: {}\nEnter your race: {}".std:io:getln

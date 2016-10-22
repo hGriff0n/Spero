@@ -4,7 +4,7 @@ Types
     adt_con = <type>(list<type>)?
     interface = <vcontext> <var|op><gen>? <sig>		# NOTE: Experimental
 	# An "interface" function definition (implementations must meet the signature)
-    inherit = <type><gen>?
+    inherit = <type><gen>? '::'
 
   Interfaces:
     An interface is any type that has an undefined (unassigned) method
@@ -13,23 +13,30 @@ Types
       A lambda type can be created by "completing" the interface (see construction for more)
 
   Inheritance:
-    Currently, Spero uses multiple inheritance
-      There is no distinct difference between interfaces and types
-        NOTE: Experimental
-    Inheritance is specified through "use" directives (ala module imports)
-      The "inherited" definitions are imported into the class		# Conceptually speaking
-      This specifies an implementation ('::') relationship
-      Note: This means that import directives can't work locally in a class definition
-    Syntactical Sugar for Primary/Singular Inheritance
-      Same syntax as "Completing the type" style, ie. "T { ... }"
-	Note: The inherited type is being "completed", though it's actually being extended
-      This is basically syntactical sugar for a "{ use T ... }"
+    Spero provides two syntaxes to specify inheritance
+      There's no semantic difference between the two at the moment
+      However, they should be used for very different conceptual means
+
+    Currently Spero uses multiple inheritance
+      This is mainly because I have no way of distinquishing between interfaces and types
+      Right now, you can basically think of "raw inheritance" as being sugar for "interface inheritance"
+
+    Raw inheritance (as in 'child-parent') is specified through the '::' keyword
+      This can be done on either the left or the right of the '=' in the assignment
+        NOTE: The ordering is slightly different based on the side
+      On the right of the '=', the syntax follows the Anonynous Types ('T ::')
+      On the left, syntax follows the type inference restrictions (ie. ':: T')
+
+    Interface inheritance (or implementation) is specified through the 'impls' keyword
+      This basically serves to 'import' any definitions into the current class
+      All 'interface' methods must have a definition provided
+        NOTE: Otherwise, the type itself becomes an interface (might add a warning and annotation for this)
 
   Inference:
     Types of variables are inferred by default from the compiler
       TODO: Learn about type inference
     Type hints can be provided by the programmer using ':: T' syntax
-      These hints perform two main functions; overload return and derivation
+      These hints perform two main functions; return overloading and upcasting
 	Type inference may select a less specific base type when a derived is produced
       A ':: T' may be bound to a name/generic or to an expression
         Both positions perform largely the same functions
@@ -39,7 +46,7 @@ Types
 
   Construction:
     There are three kinds of type constructors; primary, named, and secondary
-      Type instances always remember which constructor they were built with
+      Type instances always remember which (named) constructor they were built with
       A type may only contain 1 primary constructor, but it may have multiple named/secondary
     The primary constructor merges the type body with the function body (ala Scala)
       All variables declared in the primary constructor are type members
@@ -49,13 +56,13 @@ Types
       There are 2 general ways of implementing a secondary constructor
 	Create and modify a mutable instance (uses another constructor)
 	"Complete" the type definition (replaces the primary constructor)
-	  The syntax is "<type> { <bindings> }" ala Abstract Types
+	  The syntax is "<type> :: { <bindings> }" ala Anonymous Types
 	  See 'types.spqr' for a better representation of this
       The primary constructor is implicitly implemented in these terms
     Named constructors are the way of implementing Algebraic Data Types (ADTs)
       Match statements can distinguish between named and primary/secondary constructors
       If a named constructor is provided, the type can not be created with a 'T(...)'
-	Unless an additional primary/secondary constructor is implemented
+	An implicit primary constructor will not be automatically generated for the class
     Constructors can be marked with '@explicit' to prevent usage in implicit resolution
       Named constructors are always explicit
 
@@ -81,14 +88,13 @@ Generics
   Syntax:
     gen = \[list<gen_arg, 1>\]
     gen_arg = <type_gen>|<var_gen>
-    type_gen = <type>((::|!:|<|>)<type>)?(+|-)?
+    type_gen = <type>(+|-)?((::|!:|<|>)<type>)?
     var_gen = <var>(:: <type>|= <val>)?
     
   Explanation:
     Types and values can both be used inside of generic parameters
-      Whether a generic parameter takes a type or value is determined by the name
-      Types implicitly add a ':: Type' (values, ':: Size') if no '::' is given
-	The '::' is more a "implements" operator than "subtype of"
+      Whether a generic parameter takes a type or value is determined by the name (like in bindings)
+      Types implicitly add a ':: Type' (values, ':: Size') if no ':: T' is given
 	NOTE: Experimental
     Generics have some special syntax for subtyping
       !: <- The parameter can't be a subtype
@@ -101,7 +107,7 @@ Generics
 
   Value Restrictions:
     Restrict to basic types for now
-      The key thing, is that the used values must be known at compile time
+      The key thing, is that equality must be computable at compile time
     
     NOTE: Experimental
     In order for types to be used in generics, 2 conditions must be met
@@ -120,7 +126,7 @@ Generics
       This is done by providing concrete values for generic parameters (same syntax as instantiation)
 	However, specialization is done inside of a definition context (ie. lhs of assignment)
 	Functions can also be "specialized" by providing an explicit argument tuple
-	  However, this is considered a part of function overloading
+	  However, this is considered a part of function overloading (or adding a match statement)
       The complete type/function body must be provided to create a specialization
 	This can be slightly shortcut for types through inheritance/imports
     A "base" type (no generics) can also be defined with the same name (minus '[]')
@@ -135,8 +141,8 @@ Generics
       Definition - The concrete implementation for a given declaration
     There are 3 modes of generic declarations
       Specialized <- [Int]
-      Subtyped    <- [T :: Num]
-      Generic     <- [T]
+      Subtyped    <- [T :: Num] | [v :: Num]
+      Default	  <- [T]        | [v]		<- Defaults are Subtyped with 'Type' and 'Size' respectively
     Resolution process
       Instance resolution follows the same process as overload resolution
 	For every argument in the instantiation, no match can be worse than another instantiation
@@ -162,7 +168,7 @@ Mutability
 	NOTE: Experimental
     Mutable methods (the '@mutable' annotation)
       Mutable methods (ie. methods that mutate internal state) must be annotated with '@mutable'
-        These methods are inaccessable from immutable instances (still exist for resolution)
+	Calling these methods produces a compiler error if the object is immutable
         It is a compiler error to mutate internal state (ie. call mutable methods) from an immutable method
       Mutability querying
 	'@mutable' can be used in boolean contexts to query the types mutability
@@ -175,20 +181,20 @@ Mutability
 	  NOTE: Experimental
     Member Mutability
       Members may be marked as mutable/immutable (same syntax as variables)
-      Mutable members "inherit" the enclosing type's mutability
+      It is a compiler error to call mutable methods on these members within an "immutable" method (not '@mutable')
 
   Assignment/Arguments:					# Note: 'T' includes 'mut T', 'T&', and 'T*' unless specified
     If an assignment/argument usage of the following form appears, take the linked action
 
     Assignment
-      t = v|t		<- Reuse if no aliases, otherwise copy
-      t = mut t		<- Reuse if no aliases, otherwise copy
+      t = v|t		<- Reuse memory if possible, otherwise copy
+      t = mut t		<- Reuse memory if possible, otherwise copy
       v = t		<- Copy
       v = mut t		<- Copy
 
     Argument
-      f(T)		<- Reuse
-      f(mut T)		<- Reuse if no aliases, otherwise copy
+      f(T)		<- Reuse memory if possible
+      f(mut T)		<- Reuse memory if possible, otherwise copy
 
   Compiler Behavior:
     A warning is produced if any type members are shadowed (esp. if mutability)
@@ -196,15 +202,26 @@ Mutability
 
 Tuples
   Grammar: \(list<T>\)
-  Accessors are automatically created for accessing tuple members
-    The created accessors are _<n>, where 'n' is the index of the element in the tuple
+  Tuples somewhat follow the indexable interface
+    Tuple elements can be accessed with .<n> syntax, where 'n' is a int literal
+      However, tuple's forward this to a different function (or none at all)
+      This is to enable better compile time messages (sizeof tuples is known statically)
+    
   Functions can be applied to tuples due to dot-flipping
 
+Anonymous Types
+  Grammar: <type> :: <scope> <tuple>?
+  
+  Anonymous types enable instantiating/extending types at the use site
+    When bound to a type, this basically creates a child class
+    Otherwise, the implicit 'new' constructor is called
+      Since these anonymous types, have access to the enclosing scope (ie. closure), no args are needed
+
 TODO:
-  Figure out how to specify standard generics on custom types
   Start designing the type system
   Look into typeclasses
   Look into building in variant types ("T | V")
   Look into higher-kinded types
   Look into variable generics
-  Maybe find a way to allow local (non-inheritance) importing in class definitions
+  If I can throw an error if a method is not marked '@mutable', I can throw an error if any method is used
+    Why am I making the programmer write the annotation then? IDE support, helpful explicitness
