@@ -15,49 +15,81 @@ Assignment
 
   Contract:
     Type Binding (:: T)
+      This binding specifies an upper limit to the inferred type of the binding
+        The minimum interface that any value held by the binding must satisfy
+        Note: I may end up adding a special behavior for Functions in this respect
+      For Types, this syntax is one way of specifying an inheritance relationship 
     Generics ([T])
-      See types.txt for more
+      Some degree of generic polymorphism for types and variables can be achieved with '[T]' syntax
+      Non-Function variable bindings can also take advantage of Generics to cast their value based on typing needs
+        See "Generic Variables" for more
 
   Expression:
     The series of instructions that will be bound to the name
-    Multiple lines (ala types/fuctions) can be bound by wrapping in '{}'
-      This evaluates to the last evaluated expression for normal usage
-      When assigned to functions/types, the entire body is left "unevaluated"
+      Note: Language rules automatically allow the placement of 'mut'
+    Multiple lines (ala types/fuctions) can be bound by wrapping in scope
 
   Shadowing (ala Rust):
     Variables can be re-declared (shadowed) by making an assignment with the same name in the current scope
     Unless the varaible is aliased, the shadowing "drops" the old value
     This can also be used to perform mutability, with "t = mut t"
 
-Indexing (NOTE: In flux at the moment
-  A '.' is used to access a field from an object instance
-    For variables and types, this field is a 'def'/'let' binding in the element's type definition
-      For types, this field is a 'static' binding in the type definition
-    This option takes precedence over dot-flipping in name-resolution
-  A ':' is used to find a qualified binding (see modules.txt more)
+  Interfaces / Contracts
+    It is permissible to not provide a value to assign to the binding in certain cases
+      Provided a type signature (using the inference syntax) is provided in its place
+      This is mostly used in type bodys (likely an error otherwise)
+    The presence of an interface method in a type body makes the type abstract
+      Unless an implementation is provided, any child types will also be abstract
+        Note that an implementation can be provided later in the same type body (not abstract)
+
+  Tuple Decomposition
+    Normal Assignment allows for decomposing a tuple into it's component parts
+      This can be done by matching the expression tuple with a variable tuple of equal arity
+      Note: This decomposition is recursive, you can decompose tuples inside of tuples
+
+  Pattern Matching (for loop and match statement)
+    Assignment can be viewed as a restricted form of the pattern matching syntax
+      Pattern Matching extends the Assignment semantics with ADT decomposition
+      Pattern Matching also necessitates a unique placement of the 'mut' keyword
+    ADT Decomposition applies to any ADT type of the form '<typ>(<vals>)' 
+      Proivding a similar ADT of the form '<typ>(<vars>)' binds the values of the original ADT to the variables
+      Note: This can be explained better
+    Mut keyword placement
+      The 'mut' keyword in pattern matching must be placed before the variable which will be mutable
+        This is due to pattern matching not having the direct '=' relation
+
+Ranges
+  syntax: <index>(, <index>)?..<index>
+          <start>,  <step> ..  <end>
+
+  Spero supports a quick and simple way of defining Ranges
+    The values in the range can be found through the following process
+      Choose an operator, '<' or '>' such that "<start> <op> <end>" -> true
+      Repeatedly add '<step>' to '<start>' until "<start> <op> <end>" -> false
+      Any intermediate values for '<start>' are in the range (plus initial)
+    Note: The actual type system enforcement is still in the air at the moment
 
 Keywords
-  Keywords have two general modes of operation, "static" and "normal"
+  Keywords have two general modes of operation, "descript" and "normal"
     normal keywords have a higher degree of language compatibility (ie. dot-flipping, etc.)
       not required to use parentheses and associations may be different
-    static keywords are more a more terminal part of the language
+    descript keywords are more a more terminal part of the language
 
   Grammar:
-    normal = match | if | while
-    static = mod | use | <vcontext>
-    Uncertain
-      else
+    normal = match | if | while | loop | for | elsif ?
+    descript = mod | use | let | def | static | else
 
   Keywords:
-    mod			<- declare module name for the current context
-    use			<- module importing and rebinding/aliasing
-    match		<- perform pattern matching on the arguments
+    mod			        <- declare module name for the current context
+    use			        <- module importing and rebinding/aliasing
+    match		        <- perform pattern matching on the arguments
     if | else | while	<- standard usage
-    for	| break		<- standard usage
-    continue		<- standard usage
+    for	| break		  <- standard usage
+    continue		    <- standard usage
     def | let | static	<- visibility keywords
-    mut			<- mark the resulting value as mutable for the moment
-    impls		<- type inheritance/extension
+    mut			        <- mark the resulting value as mutable for the moment
+    impls		        <- type inheritance/extension
+    yield | return  <- standard usage
 
 TODO: Explain Better
 Safety
@@ -90,32 +122,106 @@ Generic Variables
 
 Control Flow
   If-Elsif-Else
-    if <expr> <expr> (elsif <expr> <expr>)* (else <expr>)?
+    if <expr> do? <expr> (elsif <expr> do? <expr>)* (else <expr>)?
+
+    Dot flipping performance
+      The "calling" expression will take the place of the branch body for 'if' and 'elseif' branches
+        The test case will still be bound to the right of the if statement
 
   Loop
     loop <expr>
     Performs an infinite loop (until a break/return is hit)
-    NOTE: A good way of implementing an infinite generator "loop yield <expr>"
+      NOTE: A good way of implementing an infinite generator "loop yield <expr>"
+
+    Dot flipping performance
+      loop will apply to the previous encountered expression (the "calling" expression) 
 
   While
-    while <expr> <expr>
+    syntax: while <expr> do? <expr>
 
     Compiler will produce a warning if the expression will always be true or false
       Warning for true because 'loop' performs the same functionality
+      
+    Dot flipping performance
+      The "calling" expression will take the place of the loop body
 
   For
-    for <pattern> in <expr> <expr>
+    syntax: for <pattern> in <expr> do? <expr>
 
-  There's additional keywords for loops, break and continue
-    break exits the immediate loop (the statement after the end)
-    continue skips the rest of the iteration (goes back to the beginning)
+    For loops can accept values of three general types; Iterable[T], Iterator[T], Generators
+      A generator is tentatively any function that contains a reachable yield expression
+        Note: This might be generalized in the future
+        Note: I might make it so that default arguments can be given to generators as well
+      The types can be translated according to the following patterns
+        Iterable[T]: "for <pattern> in <iterable> ..." => "for <pattern> in <iterable>.iter ..."
+        Iterator[T]: "for <pattern> in <iterator> ..."
+          "let iter = mut <iterator>      # Force the iterator to be mutable
+          while iter.hasNext match iter.next {
+            <pattern> -> { ... }
+          }"
+        Generator: "for <pattern> in <generator>(..) ..." =>
+          "match wait <generator>(..) {
+            None -> break;
+            Some(<pattern>) -> { ... }
+          }.loop"
+      Note: It is allowable to extend the pattern with throwaways at the end to satisfy type-checking
+      
+    Dot flipping performance
+      The "calling" expression will take the place of the loop body
 
-  There might be two additional keywords, return and yield
-    return will immediately exit the function (after evaluating it's expression)
-    yield has similar semantics, but allows for resuming at a later time (ie. coroutines)
+  Jumps
+    The language also provides several forms of controlled goto
+      break, continue, return   <- Semantics follow established behavior
+    Each form can be followed by a single expression
+      This expression serves as the "expression" value of the control structure where required
+
+  Coroutines
+    In addition to return, Spero also provides the 'yield' keyword for function
+      yield allows the function to be resumed at a later time (ie. coroutine)
+    Yield is matched with the wait keyword on the callers end
+      wait wraps the coroutine call into an Option[T]
+        A regular return corresponds to a None value
+        A yield return corresponds to a Some value
+      Note: wait might have some behavior on code gen
+        What is the behavior of a yield without a wait (return?)
+
+  Do Keywords
+    A 'do' keyword can proceed any statement in the language
+      Can also be placed right before the body of a branch/while/for structure
+    This keyword only helps to improve readability of control structures
+      The grammar can make it slightly confusing with two one-liners
+      The "any statement" placement follows from dot flipping of the structures
+
+Statements
+  A Spero source file consists of a sequence of 0 or more statements within the language
+    Each statement may consist of one or more sub-expressions
+
+  A ';' character can be used to force a split between two language statements
+    ',' may be allowed in this capability due to it's usage in tuples and arrays
+      However, it is not considered official (more confusing to read)
+
+  Order of Evaluation can be forced by wrapping the expression in '{}'
+    Spero reserves the more common '()' syntax for tuples
+      Specifically, "(<expr>)" is considered to be a 1-tuple whose only value is <expr>
+    Scopes have the same semantics as the desired behavior
+      Just have to be sure that there's no additional bookkeeping
+
+Scopes
+  A scope is any sequence of expressions wrapped within a '{}'
+    Note: This syntax also applies to types and "parenthesized" expressions
+      These syntaxes can be viewed as a special case of the scope principle
+    A scope makes it easy to perform RAII style management of resources
+      Also works at keeping the namespace decluttered of bindings
+
+  On Evaluation Completion
+    The value of the final expression is returned to the "calling" context
+      Note: "Indexing" a scope is equivalent to indexing this value
+        Note: This means that visibility has no real meaning at the moment aside from modules/types
+    All variables declared/defined within the scope are dropped
+      Variables needed for the "expression" value are moved into the calling context
 
 TODO:
   Figure out monads
-  Resolve 'use' ambiguity
   What should the behavior of 'static' be in local scopes 
   Determine what the default "unsafe" expressions should be
+  Find a way to make def/let/static meaningful locally

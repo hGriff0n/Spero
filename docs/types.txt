@@ -2,9 +2,8 @@ Types
   Grammar:
     type = <let|def> <type><gen> = list<adt_con, '|', 1>?(list<arg>)?<inherit>?{ <body> }
     adt_con = <type>(list<type>)?
-    interface = <vcontext> <var|op><gen>? <sig>		# NOTE: Experimental
-	# An "interface" function definition (implementations must meet the signature)
-    inherit = <type><gen>? '::'
+    interface = <vcontext> <var|op><gen>? <sig>
+    inherit = <type><gen>? ':: '
 
   Interfaces:
     An interface is any type that has an undefined (unassigned) method
@@ -13,7 +12,7 @@ Types
       A lambda type can be created by "completing" the interface (see construction for more)
 
   Inheritance:
-    Spero provides two syntaxes to specify inheritance
+    Spero provides two basic syntaxes to specify inheritance
       There's no semantic difference between the two at the moment
       However, they should be used for very different conceptual means
 
@@ -24,8 +23,10 @@ Types
     Raw inheritance (as in 'child-parent') is specified through the '::' keyword
       This can be done on either the left or the right of the '=' in the assignment
         NOTE: The ordering is slightly different based on the side
-      On the right of the '=', the syntax follows the Anonynous Types ('T ::')
-      On the left, syntax follows the type inference restrictions (ie. ':: T')
+        On the right of the '=', the syntax follows the Anonynous Types ('T ::')
+        On the left, syntax follows the type inference restrictions (ie. ':: T')
+      Base Class constructors of the parent type can be invoked through the 'super' keyword
+        A call to 'super' must be the first expression in the type body (a no-arg call will be inserted)
 
     Interface inheritance (or implementation) is specified through the 'impls' keyword
       This basically serves to 'import' any definitions into the current class
@@ -156,6 +157,9 @@ Mutability
   Immutable by Default:
     All variables/arguments are immutable by default
       That is, type inferrence will select an immutable type instance unless 'mut' is bound to the expression
+      Note: The 'mut' keyword can be prepended to any "valexpr" to mark the evaluating variable as mutable
+        Note: The exact rules are a bit tricky for where this placement is valid, best to only use in assignment
+
 	The inferred type will be 'mut T', where 'T' is the inferred type of the bound expression
       Mutability is not maintained in shadowing/assignment, 'mut' must be used
     Types are half-mutable/half-immutable (see Typing Interaction for more)
@@ -168,16 +172,20 @@ Mutability
 	NOTE: Experimental
     Mutable methods (the '@mutable' annotation)
       Mutable methods (ie. methods that mutate internal state) must be annotated with '@mutable'
-	Calling these methods produces a compiler error if the object is immutable
+	
+  Calling these methods produces a compiler error if the object is immutable
         It is a compiler error to mutate internal state (ie. call mutable methods) from an immutable method
       Mutability querying
 	'@mutable' can be used in boolean contexts to query the types mutability
-	This enables conditional method behavior based on mutability of the object
+	
+  This enables conditional method behavior based on mutability of the object
 	NOTE: Experimental
       Mutable-only types
-	Applying the '@mutable' annotation to the type makes that type mutable-only
+	
+  Applying the '@mutable' annotation to the type makes that type mutable-only
 	  It is a compiler error to create an immutable instance/alias of a mutable-only type
-	Additionally, '@disable(mut)' makes the type immutable-only
+	
+  Additionally, '@disable(mut)' makes the type immutable-only
 	  NOTE: Experimental
     Member Mutability
       Members may be marked as mutable/immutable (same syntax as variables)
@@ -210,12 +218,20 @@ Tuples
   Functions can be applied to tuples due to dot-flipping
 
 Anonymous Types
-  Grammar: <type> :: <scope> <tuple>?
+  Grammar: <type><tuple>? :: <scope> <tuple>?
   
   Anonymous types enable instantiating/extending types at the use site
-    When bound to a type, this basically creates a child class
-    Otherwise, the implicit 'new' constructor is called
-      Since these anonymous types, have access to the enclosing scope (ie. closure), no args are needed
+    When bound to a type, this is the syntax for creating a child type
+    When bound to any other name, this creates an instance of the type
+      These types have access to the surrounding scope (through closures), so no arguments are needed
+        However primary/secondary constructors can be defined and used if desired
+          The constructor is called by placing an argument tuple after the type body
+      These types cannot declare adt constructors (Note: currently)
+  
+  The parent types constructor can be called in one of two ways
+    Through a call to super in the type body
+    Following the parent name by an argument tuple (this can be translated to the former)
+
 
 TODO:
   Start designing the type system

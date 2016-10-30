@@ -4,8 +4,8 @@ Functions
   Grammar:
     function = 		# NOTE: vcontext -> "visibility context" ie. let|def|static
       <vcontext> <var|op><gen|sig>? = <arg_tuple> (-> <type>)? { <body> }
-      <vcontext> <var|op><gen|sig>? = <arg_tuple> -> <statement>
-      <vcontext> <var|op> = .<statement>	# This will need some work
+      <vcontext> <var|op><gen|sig>? = <arg_tuple> -> mut? .?<statement>
+      <vcontext> <var|op> = mut? .<statement>	# This will need some work
     arg_tuple = (list<arg>)
     arg = <binding>(:: mut? <type>)?(= <statement>)?
     fncall = <var|op>(\(list<statement>\))? | <statement><op><statement>? | <op><statement>
@@ -110,6 +110,7 @@ Dot-forwarding
       The inferred return type depends on the specific execution flow
     An argument tuple can be provided to manually restrict the types
       However, '->' and '{}' syntax will need to be used in this case
+    Note: 'mut' can appear after the dot to mark the return as mutable, semantics is otherwise the same
 
   Dot-forwarding is analagous to an implicit cut-copy-paste using dot-flipping
     ie. Cut the function name and then paste the function body after the arguments

@@ -57,6 +57,10 @@ Importing
     The left-hand binding can't be accessed without the full qualified name (it's not imported)
       NOTE: If there is no "qualified" path to the left binding, it can still be used by name
         So 'use LocalType as BoundType' still allows using LocalType
+  
+  Importing follows the same rules as regular bindings
+    Evaluating an import that would have two types bound to the same name in the same scope is an error
+      Note: It is currently possible to have local bindings of types     
 
 TODO:
   Determine how module resolution is performed (ie. how are modules found)

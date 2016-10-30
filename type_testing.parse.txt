@@ -1,0 +1,295 @@
+Program
+  module -> type_test
+  import
+    module std
+      module io
+        binding -> println
+          rebind -> puts
+  import
+    module -> std
+      module -> fs
+  assignment -> Type
+    visibility -> public
+    binding -> Option
+    generics
+      type_generic -> covariant
+        binding -> T
+        restriction
+          implements -> Copy
+    constructors
+      adt_constructor
+        binding -> Some
+        types -> T
+      adt_constructor
+        binding -> None
+    type_body
+      assignment -> Variable
+        visibility -> static
+        binding -> new
+        value -> Function
+          arguments -> ()
+          fn_body
+            fncall -> None
+      assignment -> Variable
+        visibility -> static
+        binding -> new
+        value -> Function
+          arguments -> (T)
+          fn_body
+            forward
+              fncall -> Some
+      implements -> std:util:Copy
+      assignment -> Variable
+        visibility -> public
+        binding -> Copy
+        value -> Function
+          arguments -> Self
+          fn_body
+            match_stmt -> self
+              case -> None
+                None
+              case -> Some(v)
+                fncall -> v.copy.Some
+      imports -> std:io:_
+      implements -> Printable         // I should be able to move these around
+      assignment -> Variable
+        visibility -> public
+        binding -> toStr
+        value -> Function
+          arguments -> Self
+          fn_body
+            match_stmt -> self
+              case -> None
+                "None"
+              case -> Some(v)
+                fncall
+                  binding -> std:lang:String:fmt
+                  arguments
+                    "Some({})"
+                    v
+  assignment -> Type
+    visibility -> public
+    binding -> HelloWorld
+    constructors
+      primary
+        binding -> lang
+          type -> String
+    type_body
+      interface -> Variable
+        visibility -> public
+        binding -> greet
+        arguments -> ()
+        return -> ()
+      interface -> Variable
+        visibility -> public
+        binding -> talk
+        arguments -> (String)
+        return -> ()
+      assignment -> Variable
+        visibility -> static
+        binding -> test
+        value -> Function
+          arguments -> ()
+          fn_body
+            fncall -> "Hello, World!".puts
+      implements -> std:io:Printable
+      assignment -> Variable
+        visibility -> public
+        binding -> toStr
+        value -> Function
+          forward -> greet
+  assignment -> Type
+    visiblity -> public
+    binding -> Num
+  assignment -> Type
+    visibility -> public
+    binding -> BigInt
+    inherits -> Num
+    type_body
+      fncall -> super
+  assignment -> Variable
+    visibility -> public
+    binding -> main
+    value -> Function
+      arguments -> ()
+      fn_body
+        assignment -> Variable
+          visibility -> protected
+          binding -> french
+          value -> mutable fncall
+            binding -> HelloWorld
+            arguments -> "French"
+            type_extension
+              assignment -> Variable
+                visibility -> public
+                binding -> greet
+                value -> Function
+                  arguments -> ()
+                  fn_body -> fncall
+                    binding -> puts
+                    arguments -> "tout le monde"
+              assignment -> Variable
+                visibility -> public
+                binding -> talk
+                value -> Function
+                  arguments
+                    binding -> n
+                      type -> String
+                  fn_body -> fncall
+                    binding -> puts
+                    arguments
+                      "Salut, {}"
+                      n
+              assignment -> Variable
+                visibility -> public
+                binding -> name
+                value -> mutable
+                  ""
+        binary -> "="
+          lhs
+            index -> "french.name"
+          rhs -> "Michael"
+        fncall
+          binding -> converse
+          arguments
+            binding -> french
+            value -> fncall
+              binding -> HelloWorld
+              arguments -> "Spanish"
+              type_extension
+                assignment -> Variable
+                  visibility -> public
+                  binding -> greet
+                  value -> Function
+                    arguments -> ()
+                    fn_body -> fncall
+                      binding -> puts
+                      arguments -> "mundo"
+                assignment -> Variable
+                  visibility -> public
+                  binding -> talk
+                  value -> Function
+                    arguments
+                      binding -> n
+                        type -> String
+                    fn_body -> fncall
+                      binding -> puts
+                      arguments
+                        "Hola, {}"
+                        n
+        assignment -> Variable
+          visibility -> protected
+          binding -> vec
+          value -> fncall
+            binding -> std:util:Vector
+            arguments
+              array -> [0, 1, 2]
+        index -> "vec.0"
+        assignment -> Variable
+          visibility -> protected
+          binding -> tup
+          value -> (0, 1, 2)
+        index -> "tup.0"
+  assignment -> Variable
+    visibility -> public
+    binding -> converse
+    value -> Function
+      arguments
+        binding -> a
+          type -> HelloWorld
+        binding -> b
+          type -> HelloWorld
+      fn_body
+        fncall
+          binding -> HelloWorld:greet
+          arguments -> a
+        fncall
+          binding -> greet
+          arguments -> b
+        fncall
+          binding -> talk
+          arguments
+            b
+            fncall
+              binding -> or
+              arguments
+                method_query
+                  binding -> a
+                  binding -> name
+                    type -> String
+                "Fred"
+        assignment -> Variable
+          visibility -> protected
+          binding -> b_name
+          value -> method_query
+            binding -> b
+            binding -> name
+            inference -> String
+        fncall
+          binding -> HelloWorld:talk
+          arguments
+            a
+            fn_call
+              binding -> or
+              arguments
+                b
+                "Fred"
+  assignment -> Variable
+    visibility -> public
+    binding -> meta_test
+    value -> Function
+      arguments -> ()
+      fn_body -> fncall
+        binding -> map
+        arguments
+          fncall
+            binding -> filter
+            arguments
+              fncall
+                binding -> puts
+                arguments
+                  "{}"
+                  array -> [Float, Int, String, Array[Int]]
+              type_query
+                lhs -> any
+                rhs -> Num
+          Function
+            arguments -> any
+            fn_body -> fncall
+              binding -> new
+              arguments -> any
+    annotation -> @disable(no_parens)
+  assignment -> Variable
+    visibility -> protected
+    binding -> pi
+    generics
+      type_generic
+        binding -> T
+    value -> fncall
+      binding -> T
+      arguments -> 3.14152759
+  assignment -> Variable
+    visibility -> public
+    binding -> idi
+    value -> Function
+      arguments
+        binding -> i
+          type -> Int
+      fn_body -> i
+  assignment -> Variable
+    visibility -> public
+    binding -> fn
+    value -> Function
+      arguments -> ()
+      fn_body -> fncall
+        binding -> std:io:println
+        arguments
+          "{} - {} - {}"
+          binding -> pi
+            inference -> Int
+          binding -> pi
+            generic -> instance
+              type -> Float
+          fncall
+            binding -> idi
+            arguments -> pi

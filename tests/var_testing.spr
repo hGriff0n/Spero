@@ -1,0 +1,92 @@
+mod vartest
+
+use std:mem
+
+def new[T] = () -> mem:alloc[T]
+
+# Disabling no parens is unnecessary
+def forward[f :: Function] = () -> f
+
+# Define classes for pointer dereference testing
+def Baz = {
+    def val = mut mem:alloc(5 :: Int)
+}
+
+@truthy(gtz)
+def Bar = {
+    def baz = mem:alloc(Baz)
+    def val = mut mem:alloc[Int](3)
+
+    def gtz = () -> val &> 0    
+}
+
+def Foo = {
+    def bar = Bar
+}
+
+# Define a generator for yield demonstration
+def rev_gen[T] = (elems :: T*) -> {
+    let rev_stack = std:util:Stack[T]
+
+    for elem in elems
+        rev_stack.push(elem);
+
+    while rev_stack.size > 0
+        yield rev_stack.pop;
+}
+
+def main = () -> {
+    let foo = Foo
+    let bar = Bar
+
+    do std:io:println("Truthiness works!") .if bar
+
+    &{ if bar do bar.baz else bar.val }
+
+    let foo = mut Some(5)
+    match foo {
+        Some(mut var) -> var += 3           # Doesn't modify to foo's value
+        None -> 5
+    }
+    
+    let Some(bar) = foo                     # ADTs can be decomposed in bindings (Experimental)
+    let (foo, bar) = mut (3, 4)
+
+    use std:io:{print, println}
+
+    # Current syntax (& binds to the largest index sequence)
+    "{}".println(&foo.bar.val)
+    "{}".println(&{ &foo.bar.baz }.val)
+
+    ##
+    Dereferencing Behavior in regards to functions and type constructors
+    ##
+    let i_ptr = mem:alloc((Int) -> "Hello".print)
+    let v_ptr = mem:alloc(() -> " World".print)
+    let p_ptr = mem:alloc((Int) -> mut .mem:alloc)          # You'd write 'mut i.mem:alloc'
+
+    
+    &i_ptr(3)           # '&' binds to 'i_ptr(3)', which is a compiler error (can't call a pointer)
+    {&i_ptr}(3)         # '&' binds to 'i_ptr', producing a function that accepts a 3
+
+    &v_ptr              # Dereferences the pointer
+    {&v_ptr}()          # Calls the function
+
+    &new[String]        # '&' binds to 'new[String]', which gives a String&
+    {&new}[String]      # '&' binds to 'new', which is a compiler error (can't dereference a function)
+
+    # Create an array of 10 Ints and Floats
+    let int_arr = mut mem:allocn(Int, 10)               # Allocate n with fill
+    let gen_arr = mut mem:allocg((Size) -> .Float, 10)  # Allocate n with generator "(idx :: Size) -> T"
+
+    let tst = { () -> 3 }       # tst :: () -> Size
+    let tst = { () -> 3 }()     # tst :: Size
+
+    ##
+    ##
+    let val = forward[Int]          # Is val an Int or the Int constructor ???
+    #forward returns a function that evaluates 'Int'
+
+    for elem in rev_gen(1, 2, 3, 4) do
+        "{} ".print(elem)          # Prints "4 3 2 1 "
+}

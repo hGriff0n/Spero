@@ -15,7 +15,6 @@ Grammar
 
 @disable(..):
   Turn off language features for a given expression
-    Currently supports mutability and currying
 
 @primary(..):
   Apply annotations to the primary constructor (and not the type)
@@ -25,10 +24,12 @@ Grammar
 
 @safe(..):
   Mark a block of unsafe code as "safe"
-  Note: Maybe provide an optional argument for specifying the invariants for why it's safe
+  The programmer can supply a string literal clarifying why the code segment is "safe"
+    A compiler warning will be produced otherwise
+  Idea: May allow for "invariant functions", static code that must be true for the segment to be safe
 
-@unsafe:
-  Mark a safe block of code as "unsafe"
+@unsafe(..):
+  Similar behavior to '@safe', but marks the following section as "unsafe"
 
 @todo(..):
   The compiler will raise a warning on any todos (and comments as well)
@@ -36,28 +37,40 @@ Grammar
 @asm(..):
   Write the given assembly code
 
+@truthy(fn):
+  Specifies a method to be used for converting this type into Booleans (mostly for if/while statements)
+  Function must take no arguments and return a Bool or its a compiler error (ie. signature = "() -> Bool")
+
 Annotations
   Modes:
     Global
-      These annotations apply to the entire module/project
-    Applicative
+      These annotations apply to the current modules
+        Third-party code cannot be changed through in-language annotations
+      Annotations with a '!' at the end of the name are automatically global
+    Local
       These annotations apply to the next expression/block/function/type
     Querying
       Some annotations are usable in querying modes for conditional compilations
 	NOTE: Experimental
+  Support:
+    Some annotations may support global and local operations but it is not required
+      It's also possible to have global annotations be unique (ie. '@safe' != '@safe!')
 
 Ideas
   Expand annotations to be able to make macros with them
 
 Annotation Ideas
-  mem_limit  <- restrict the amount of memory a type/module/etc can own
-  precedence <- set operator precedence
-  dead_code  <- warning if unused code is found in the compiler (disables)
-  cfg	     <- stronger conditional compilation
-  error_def  <- ??
-  assert     <- raise a compiler error if the condition evaluates to false
-  bool_conv  <- specify a function used to convert this type into Booleans (for 'if' statements)
-  force	     <- opposite of '@disable'
+  mem_limit   <- restrict the amount of memory a type/module/etc can own
+  precedence  <- set operator precedence
+  dead_code   <- warning if unused code is found in the compiler (disables)
+  cfg	        <- stronger conditional compilation
+  error_def   <- ??
+  assert      <- raise a compiler error if the condition evaluates to false
+  force       <- analagous to '@disable', requires language features for evaluation 
+  enable      <- opposite of '@disable'
+
+  Need way to turn off compiler warnings for specific segments
+    @disable works for names, but need a more general solution
 
 Syntax ideas
   @annotation

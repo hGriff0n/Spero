@@ -103,7 +103,8 @@ def main = () -> {
     Foo         # Don't know when drop will get called
 
     # These all get the 2nd element in the 'cnk' "array"
-    using T = Int
+    use Int as T
+    
     let cnk = mut alloc[Int.size * 5]
     cnk.sub[Int, 1]
     cnk.sub[Int](1)                             # unsafe '(1)'

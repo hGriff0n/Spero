@@ -1,5 +1,6 @@
 mod type_test
-use std:{io, fs}:println as puts
+use std:io:println as puts
+use std:fs
 
 ##
 Inheritance and Anonymous Types
@@ -25,14 +26,14 @@ def Option[T+ :: Copy] = None | Some(T) {
     }
 }
 
-def HelloWorld = {
+def HelloWorld = (lang :: String) {
     def greet :: () -> ()
     def talk :: (String) -> ()
 
     static test = () -> "Hello, World!".puts
 
     impls std:io:Printable
-    def toStr = .greet
+    def toStr = .mut greet
 }
 def Num = {}
 
@@ -41,6 +42,7 @@ It makes no sense to use '::' after a type constructor (outside of generics)
   The only logical results are to give a less-derived type, which is restricts meaning
   Or to give an unrelated type, which breaks program correctness (overload resolution fails)
 ##
+
 # def BigInt = Num :: {}        <- This is also valid, though it may be less readable with constructors
 def BigInt :: Num = {           # If you think about it, all types have an implicit ':: Type' here
     super                       # Call the parent constructor (this call (with no args) is implicitly inserted if the first line is not 'super...')
@@ -49,15 +51,16 @@ def BigInt :: Num = {           # If you think about it, all types have an impli
 
 def main = () -> {
     let french = mut HelloWorld :: {
+        super("French")
         def greet = () -> "tout le monde".puts
-        def talk = (n :: String) -> "Salut, {}".puts(n)
+        def talk = (n :: String) -> "Salut, {}".puts(n);
         def name = mut ""
     }
     french.name = "Michael"
 
     # Note that Anonymous Types still "devolve" to no-paren constructions
     # It's only when binding to types that this behavior is avoided
-    converse(french, HelloWorld :: {
+    converse(french, HelloWorld("Spanish") :: {
             def greet = () -> "mundo".puts
             def talk = (n :: String) -> "Hola, {}".puts(n)
         })
@@ -72,7 +75,6 @@ def main = () -> {
 }
 
 # Look at 'http://docs.groovy-lang.org/latest/html/documentation/index.html' and 'https://doc.rust-lang.org/book/' for example documentation
-
 
 ##
 Metaprogramming and ':'/'.'
@@ -113,4 +115,4 @@ The specific type can be determined in one of three general ways
     Explicit template instantiation
     Type Completion (ie. Function argurment matching)
 ##
-def fn = () -> "{} - {} - {}".println(pi :: Int, pi[Float], pi.idi)
+def fn = () -> "{} - {} - {}".std:io:println(pi :: Int, pi[Float], pi.idi)

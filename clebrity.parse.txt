@@ -1,0 +1,126 @@
+mod_dec -> celeb
+import
+  module -> std
+    module -> io
+      binding -> Array
+      binding -> Set
+assignment -> Type
+  visibility -> public
+  binding -> Person
+  constructors
+    adt
+      binding -> Nobody
+    adt
+      binding -> Somebody
+      type -> String
+  type_body
+    assignment -> Variable
+      visibility -> protected
+      binding -> know_list
+      value -> mutable
+        fncall -> Set
+          generic -> instance
+            type -> Person
+    assignment -> Variable
+      visibility -> public
+      binding -> setKnowList
+      value -> Function
+        arguments
+          binding -> s
+            type -> Set
+              generic -> instance
+                type -> Person
+        fn_body -> binary -> "="
+          lhs -> know_list
+          rhs -> s
+      annotation -> @mutable
+    assignment -> Variable
+      visibility -> public
+      binding -> knows
+      value -> Function
+        arguments
+          binding -> p
+            type -> Person
+        fn_body
+          match_stmt -> (self, p)
+            case -> Nobody, any
+              false
+            case -> any, Nobody
+              false
+            case -> any
+              fncall
+                binding -> contains
+                arguments
+                  know_list
+                  p
+    assignment -> Operator
+      visibility -> static
+      binding -> ==
+      value -> Function
+        arguments -> (Person, Person)
+        fn_body -> forward
+          match_stmt
+            case -> Somebody(n1), Somebody(n2)
+              binary -> "=="
+                lhs -> n1
+                rhs -> n2
+            case -> any, any
+              false
+assignment -> Variable
+  visibility -> public
+  binding -> getLocalCeleb
+  value -> Function
+    arguments -> (Person, Person)
+    fn_body -> forward
+      match_stmt
+        case -> Nobody, next
+          next
+        case -> curr, next
+          branch
+            test -> binary -> "||"
+              not -> fncall
+                binding -> knows
+                arguments
+                  next
+                  curr
+              fncall
+                binding -> knows
+                arguments
+                  curr
+                  next
+            if -> next
+            else -> curr
+assignment -> Variable
+  visibility -> public
+  binding -> celebrity
+  generics -> value_generic
+    binding -> n
+  value -> Function
+    arguments
+      binding -> group
+        type -> Person
+          view -> true
+    fn_body
+      assignment -> Variable
+        visibility -> protected
+        binding -> fceleb
+        value -> fncall
+          binding -> reduce
+          arguments
+            group
+            Nobody
+            getLocalCeleb
+      assignment -> Variable
+        visibility -> protected
+        binding -> bceleb
+        value -> fncall
+          binding -> reduce
+          arguments
+            fncall
+              binding -> reverse
+              arguments -> group
+            Nobody
+            getLocalCeleb
+      binary -> "=="
+        lhs -> fceleb
+        rhs -> bceleb
