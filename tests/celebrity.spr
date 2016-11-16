@@ -1,6 +1,6 @@
 mod celeb
 
-use std:util:{Array, Set}
+use std:util:Array as Set
 
 def Person = Nobody | Somebody(String) {
     let know_list = mut Set[Person]

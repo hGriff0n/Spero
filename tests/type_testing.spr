@@ -74,6 +74,11 @@ def main = () -> {
     tup.0       # translates to 'tup[0]'    <- Type has static size
 }
 
+@disable(no_parens)
+def fncall_problem[T] = (T) -> Type {
+    T
+}
+
 # Look at 'http://docs.groovy-lang.org/latest/html/documentation/index.html' and 'https://doc.rust-lang.org/book/' for example documentation
 
 ##
