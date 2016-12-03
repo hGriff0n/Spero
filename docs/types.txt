@@ -218,7 +218,7 @@ Tuples
   Functions can be applied to tuples due to dot-flipping
 
 Anonymous Types
-  Grammar: <type><tuple>? :: <scope> <tuple>?
+  Grammar: <type><tuple>? ::: <cons>? <scope> <tuple>?
   
   Anonymous types enable instantiating/extending types at the use site
     When bound to a type, this is the syntax for creating a child type
