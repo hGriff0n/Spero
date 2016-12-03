@@ -1,0 +1,163 @@
+mod exercises
+
+use std:{io, rand}:_
+
+##
+A collection of introductory programming solutions in spero
+Problems taken from https://adriann.github.io/programming_problems.html
+##
+
+# How can I write generic lambdas ???
+def list_strings[T] = [
+    (T*) -> {
+        @todo("Write function that returns the largest element in a list")
+    },
+    (T*) -> {
+        @todo("Write function that reverses a list, preferably in-place")
+    },
+    (T*, T) -> {
+        @todo("Write function that checks whether an element occurs in a list")
+    },
+    (T*) -> .zipWithIndex.filter((elem) -> elem.1 % 2 == 1).map!(_.0),       # I'm using filter to keep elements
+    (T*) -> {
+        @todo("Write function that computes the running total of the list")
+    },
+    (String) -> {
+        @todo("Write function that tests whether a string is a palindrome")
+    },
+    (T*) -> {
+        @todo("Write three functions that sum a list, (for, while, recursion)")
+    },
+    (T*) -> {
+        @todo("Write 'map' and use it to print the first twenty perfect squares")
+    },
+    (T*, T*) -> {
+        @todo("Write function that concatenates two lists")
+    },
+    (T*, T*) -> {
+        @todo("Write function that combines two lists by alternatingly taking elements")
+    },
+    (T*, T*) -> {
+        @todo("Write function that merges two sorted lists")
+    },
+    (T*, k) -> {
+        @todo("Write function that rotates a list by k elements")
+    },
+    () -> {
+        @todo("Write function that computes the first 100 Fibonacci elements")
+    },
+    (Num) -> {
+        @todo("Write function that takes a number and returns a list of it's digits")
+    },
+    (Num*, Num*) -> {
+        @todo("Write function to add/subtract/multiply numbers in digit-list representation")
+        @todo("Maybe implement Karatsuba multiplication and different bases")
+    },
+    (Num*, Num, Num) -> {
+        @todo("Write function to interpret digit-list in base b1 and convert to digit-list in base b2")
+    },
+    (T*) -> {
+        @todo("Implement selection sort, insertion sort, merge sort, quick sort, stooge sort")
+    },
+    (T*) -> {
+        @todo("Implement binary search")
+    },
+    (String*) -> {
+        @todo("Write a function that prints a list of strings one per line in a frame")
+    },
+    (String) -> {
+        @todo("Write a function that translates to Pig Latin and back")
+    }
+]
+
+def intermediate = [
+    () -> {
+        @todo("Write function that outputs all possibilities to put '+' or '-' in 1..9 to equal 100")
+    },
+    () -> {
+        @todo("Write function that, given year length in fraction days, computes leap year to minimize solar difference")
+    },
+    () -> {
+        @todo("Create a graph data structure that allows for modifications and storage of values on edges and nodes")
+    },
+    () -> {
+        @todo("Write a functionn that generates a DOT representation of a graph")
+    },
+    () -> {
+        @todo("Write a program that automatically generates essays for you")
+    },
+    () -> {
+        @todo("Write a program that converts english text to morse code and vice versa")
+    },
+    () -> {
+        @todo("Write a program to find the longest palindromic substring of a given string")
+    },
+    () -> {
+        @todo("Design a list type")
+    },
+    () -> {
+        @todo("Design an array type")
+    },
+    () -> {
+        @todo("Design a vector type")
+    },
+    () -> {
+        @todo("Design a std::deque type")
+    },
+    () -> {
+        @todo("Design a binary heap type and use it to implement heap-sort")
+    },
+    () -> {
+        @todo("Design a binary tree type")
+    },
+    () -> {
+        @todo("Design a balanced binary tree type")
+    },
+]
+
+def advanced = [
+    () -> {
+        @todo("Given two strings, write a program that efficiently finds the longest common substring")
+    },
+    () -> {
+        @todo("Given a list of numbers, write a program to efficiently answer 'What is the nearest larger value from the number at i?'")
+        @todo("[1, 4, 3, 2 5, 7], 4 -> 5")
+    },
+    () -> {
+        @todo("Given two strings, write a program that outputs the shortest sequence of insertions/deletions",
+              "Needed to turn one string into the other")
+    },
+    () -> {
+        @todo("WRite a function that multiplies two matrices together", "Bonus for efficiency")
+    },
+    () -> {
+        @todo("Design a van Emde Boas tree type")
+    },
+    () -> {
+        @todo("Given a set of d-dimensional boxes, write a program that computes the volume of their union")
+    }
+]
+
+def gui = [
+    () -> {
+        @todo("Write a program that displays a bouncing ball")
+    },
+    () -> {
+        @todo("Write a memory game")
+    },
+    () -> {
+        @todo("Write tetris")
+    }
+]
+
+def open = [
+    () -> {
+        @todo("Write an ai that plays hangman as best as possible")
+    },
+    () -> {
+        @todo("Write an ai that can beat humans at RPS")
+    },
+    () -> {
+        @todo("Write an ai that can play battleship")
+    }
+]
