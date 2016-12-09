@@ -24,10 +24,9 @@ def binarySort[T :: Comparable] = (set :: mut Indexable[T]&, l = :: Size, r :: S
 
     # perform partitioning
     let j = mut l
-    # if set(m) >= set(l) {             # Can I just use '()' on straight pointers ???
-    if {&set}(m) >= {&set}(l) {
-        j += 1
-        util:swap(set, j, m)
+    if set(m) >= set(l) {                   # Testing out semantics idea for pointers
+        j += 1                              # The '&' indicates that the variable should follow "Java" style semantics
+        util:swap(set, j, m)                # So that modifications to the element can be propogated
     }.for m in {l + 1}..r
 
     # Reset the algorithm invariant and recurse

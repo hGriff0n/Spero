@@ -1,15 +1,15 @@
 mod exercises:elementary
 
-use std:{io, math}:_
+use std:{io, math, util}:_
 
 def hello = () -> "Hello World".println
 
 def who = () -> {
-    let name = "Who are you? {}".getln                  # getln can be used to display prompts
+    let name = "Who are you? {}".get                    # getln eisplays the prompt string then reads until a new line
     "Hello, {}!".println(name)                          # Don't need to restrict name to a type (println doesn't need it)
 }
 
-def alibob = () -> match "Who are you? {}".getln :: String {
+def alibob = () -> match "Who are you? {}".getln {
     "Alice" -> "Hello, Alice!".println                  # Do I need to restrict the type that getln returns here?
     "Bob" -> "Hello, Bob!".println                      # Matching should be able to handle this automatically
     _ -> ()
@@ -26,40 +26,73 @@ def modsum = () -> {
 }
 
 def choice = () -> {
-    "Enter a number: {}".getln :: Size
+    "Enter a number: {}".getln :: Size                  # What should getln return on multiple "{}"s (or should there be another function for that) ???
     getln("Do you want to calculate the product or the sum: ")
 }
 
 def printTable = () -> for i in 0..12 do {
-    {0..12}.foreach((j) -> "{:4}".print(i * j))
-    println
+    {0..12}.foreach((j) -> "{:4}".print(i * j))         # Print 'i*j' using a minimum of 4 spaces (formatting)
+    println                                             # Print a newline character
 }
 
-@todo("write this function")
+@noexit                                                 # Annotation that the function never exits
 def allprimes = () -> {
+    static primes = mut [2].Vector[Size]
+    for elem in primes yield elem                       # Yield the known values first
+
+    loop {
+        let cur_prime = mut primes.back.+(1)
+
+        # Find the next prime using sieve of erasthosenes (naively)
+        while primes.reduce((b, p) -> b || cur_prime % p == 0, false) do cur_prime += 1;
+        yield cur_prime
+
+        # Perform setup for the next iteration
+        primes.pushBack(cur_prime)                      # Types = UpperCamel, Methods = lowerCamel, Vars = snake_case
+    }
 }
 
 def guessingGame = () -> {
     let secret = rand :: Int
     let num_tries = mut 0
 
-    {
+    loop {
         num_tries += 1
-        let guess = "Enter a number: {}".getln :: Int
+        let guess = "Enter a number: {}".getln :: Int   # Should getln return a Optional[T] or equivalent ??
+                                                        # Be sure to update code once I decide this
 
         # Preliminary conditional match syntax
         match guess {
-            x .if x == secret -> break;
-            x .if x < secret -> "Sorry. The secret number is higher than {}".println(x)
+            x if x == secret -> break;                 # Probably should get around to adding conditional match syntax
+            x if x < secret -> "Sorry. The secret number is higher than {}".println(x)
             x -> ("Sorry. The secret number is lower than {}", x).println
         }
-    }.loop
+    }
 
     "Congratulations! It took you {} guesses".println(num_tries)
 }
 
 @todo("write function to calculate next 20 leap years")
-def leapyears = () -> {}
+def leapyears = () -> {
+
+}
 
 @todo("Write function that computes '4\cdot \sum_{k=1}^{10^6} \frac{(-1)^{k+1}}{2k-1} = 4\cdot(1-1/3+1/5-1/7+1/9-1/11|dots)")
 def compute = () -> {}
+
+
+mod std:io
+
+# A wrong way of defining println, doesn't account for the "variadic" arguments
+def println = (s :: String) -> "{}\n".print(s)
+
+# example for why it's wrong
+"Hello, {}".println("Bob")              # transforms into
+"{}\n".print("Hello, {}")("Bob")
+
+# A correct way of defining println, doesn't explicity account for "variadic" arguments
+@todo("Figure out whether my translation would be correct (or feasible to perform)")
+def println = (s :: String) -> {s + '\n'}.print
+
+"Hello, {}".println("Bob")
+{"Hello, {}" + '\n'}.print("Bob")

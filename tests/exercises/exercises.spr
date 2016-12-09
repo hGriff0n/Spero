@@ -1,6 +1,6 @@
 mod exercises
 
-use std:{io, rand}:_
+use std:{io, math, util}:_
 
 ##
 A collection of introductory programming solutions in spero
@@ -8,156 +8,64 @@ Problems taken from https://adriann.github.io/programming_problems.html
 ##
 
 # How can I write generic lambdas ???
-def list_strings[T] = [
-    (T*) -> {
-        @todo("Write function that returns the largest element in a list")
-    },
-    (T*) -> {
-        @todo("Write function that reverses a list, preferably in-place")
-    },
-    (T*, T) -> {
-        @todo("Write function that checks whether an element occurs in a list")
-    },
-    (T*) -> .zipWithIndex.filter((elem) -> elem.1 % 2 == 1).map!(_.0),       # I'm using filter to keep elements
-    (T*) -> {
-        @todo("Write function that computes the running total of the list")
-    },
-    (String) -> {
-        @todo("Write function that tests whether a string is a palindrome")
-    },
-    (T*) -> {
-        @todo("Write three functions that sum a list, (for, while, recursion)")
-    },
-    (T*) -> {
-        @todo("Write 'map' and use it to print the first twenty perfect squares")
-    },
-    (T*, T*) -> {
-        @todo("Write function that concatenates two lists")
-    },
-    (T*, T*) -> {
-        @todo("Write function that combines two lists by alternatingly taking elements")
-    },
-    (T*, T*) -> {
-        @todo("Write function that merges two sorted lists")
-    },
-    (T*, k) -> {
-        @todo("Write function that rotates a list by k elements")
-    },
-    () -> {
-        @todo("Write function that computes the first 100 Fibonacci elements")
-    },
-    (Num) -> {
-        @todo("Write function that takes a number and returns a list of it's digits")
-    },
-    (Num*, Num*) -> {
-        @todo("Write function to add/subtract/multiply numbers in digit-list representation")
-        @todo("Maybe implement Karatsuba multiplication and different bases")
-    },
-    (Num*, Num, Num) -> {
-        @todo("Write function to interpret digit-list in base b1 and convert to digit-list in base b2")
-    },
-    (T*) -> {
-        @todo("Implement selection sort, insertion sort, merge sort, quick sort, stooge sort")
-    },
-    (T*) -> {
-        @todo("Implement binary search")
-    },
-    (String*) -> {
-        @todo("Write a function that prints a list of strings one per line in a frame")
-    },
-    (String) -> {
-        @todo("Write a function that translates to Pig Latin and back")
-    }
-]
 
-def intermediate = [
-    () -> {
-        @todo("Write function that outputs all possibilities to put '+' or '-' in 1..9 to equal 100")
-    },
-    () -> {
-        @todo("Write function that, given year length in fraction days, computes leap year to minimize solar difference")
-    },
-    () -> {
-        @todo("Create a graph data structure that allows for modifications and storage of values on edges and nodes")
-    },
-    () -> {
-        @todo("Write a functionn that generates a DOT representation of a graph")
-    },
-    () -> {
-        @todo("Write a program that automatically generates essays for you")
-    },
-    () -> {
-        @todo("Write a program that converts english text to morse code and vice versa")
-    },
-    () -> {
-        @todo("Write a program to find the longest palindromic substring of a given string")
-    },
-    () -> {
-        @todo("Design a list type")
-    },
-    () -> {
-        @todo("Design an array type")
-    },
-    () -> {
-        @todo("Design a vector type")
-    },
-    () -> {
-        @todo("Design a std::deque type")
-    },
-    () -> {
-        @todo("Design a binary heap type and use it to implement heap-sort")
-    },
-    () -> {
-        @todo("Design a binary tree type")
-    },
-    () -> {
-        @todo("Design a balanced binary tree type")
-    },
-]
+def lcs = (s1 :: String, s2 :: String) -> {
+    let dyn = Matrix[Size](s1.size + 1, s2.size + 1)                    # Default initializes to 0
 
-def advanced = [
-    () -> {
-        @todo("Given two strings, write a program that efficiently finds the longest common substring")
-    },
-    () -> {
-        @todo("Given a list of numbers, write a program to efficiently answer 'What is the nearest larger value from the number at i?'")
-        @todo("[1, 4, 3, 2 5, 7], 4 -> 5")
-    },
-    () -> {
-        @todo("Given two strings, write a program that outputs the shortest sequence of insertions/deletions",
-              "Needed to turn one string into the other")
-    },
-    () -> {
-        @todo("WRite a function that multiplies two matrices together", "Bonus for efficiency")
-    },
-    () -> {
-        @todo("Design a van Emde Boas tree type")
-    },
-    () -> {
-        @todo("Given a set of d-dimensional boxes, write a program that computes the volume of their union")
-    }
-]
+    for (c, i) in s2.zipWithIndex {
+        let j = i + 1
+        if s1(i) == c do
+            dyn(j, j) = dyn(i, i) + 1
 
-def gui = [
-    () -> {
-        @todo("Write a program that displays a bouncing ball")
-    },
-    () -> {
-        @todo("Write a memory game")
-    },
-    () -> {
-        @todo("Write tetris")
+        dyn(j, j) = max(dyn(j, j), dyn(i, j), dyn(j, i))                # Not sure whether this is right
     }
-]
 
-def open = [
-    () -> {
-        @todo("Write an ai that plays hangman as best as possible")
-    },
-    () -> {
-        @todo("Write an ai that can beat humans at RPS")
-    },
-    () -> {
-        @todo("Write an ai that can play battleship")
-    }
-]
+    return dyn(s1.size, s2.size)
+}
+
+@todo("Given a list of numbers, write a program to efficiently answer 'What is the nearest larger value from the number at i?'")
+@todo("[1, 4, 3, 2 5, 7], 4 -> 5")
+def nearestLarger = (Int*, Int) -> {}
+
+@todo("Given two strings, write a program that outputs the shortest sequence of insertions/deletions",
+        "Needed to turn one string into the other")
+def minimalTransform = (String, String) -> {}
+
+def Matrix[T] = (n :: Size, m :: Size) {
+
+}
+def Matrix[T, n, m] = :: Matrix[T] { super(n, m) }
+@todo("Write a function that multiplies two matrices together", "Bonus for efficiency")
+def multiply[T, n, m, p] = (Matrix[T, n, m], Matrix[T, m, p]) -> {
+    let retval = mut Matrix[T, n, p]
+}
+@todo("Add better error messages")
+def multiply[T] = (Matrix[T], Matrix[T]) -> @error!("Cannot multiply together matrices where sizes do not match")
+
+@todo("Design a van Emde Boas tree type")
+def VebTree[T] = {}
+
+def Box[d] = {}
+@todo("Given a set of d-dimensional boxes, write a program that computes the volume of their union")
+def unionVolume[d] = (Box[d]*) -> {}
+
+
+@todo("Get a gui library")
+@todo("Write a program that displays a bouncing ball")
+def bouncingBall = () -> {}
+
+@todo("Write a memory game")
+def memory = () -> {}
+
+@todo("Write tetris")
+def tetris = () -> {}
+
+
+@todo("Write an ai that plays hangman as best as possible")
+def playHangman = () -> {}
+
+@todo("Write an ai that can beat humans at RPS")
+def rockPaperScissor = () -> {}
+
+@todo("Write an ai that can play battleship")
+def playBattleship = () -> {}

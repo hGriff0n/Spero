@@ -1,0 +1,234 @@
+mod exercises:intermediate
+
+use std:{io, math}:_
+use std:util
+
+@todo("Write function that outputs all possibilities to put '+' or '-' in 1..9 to equal 100")
+def eq100 = () -> {}
+
+@todo("Write function that, given year length in fraction days, computes leap year to minimize solar difference")
+def leapSchedule = () -> {}
+
+@todo("Create a graph data structure that allows for modifications and storage of values on edges and nodes")
+def Graph[T] = {
+
+}
+
+@todo("Write a functionn that generates a DOT representation of a graph")
+def toDot[T] = (Graph[T]) -> {}
+
+@todo("Write a program that automatically generates essays for you")
+def genEssay = () -> {}
+
+# It would be nice if I can set visibility of constructor arguments in the tuple
+def MorseSignal = (lett :: Char, code :: String) {
+    def code = code
+    def lett = lett
+}
+static morse_symbols = makeMorseCodeMap              # let's just assume I have a valid morse code mapping
+def convert = (String) ->
+    .map((lett) -> morse_symbols(0)(lett).code)
+def convert = (MorseSignal*) ->
+    .map((sym) -> morse_symbols(1)(sym).lett).join
+
+@todo("Write a program to find the longest palindromic substring of a given string")
+def longestPalindrome = (String) -> {}
+
+@todo("Design a list type")
+@disable(mut)
+def List[T] = Empty | Cons(T, List) {}
+
+@todo("Design an array type")
+def Array[T, n] = util:Iterable[T] :: {
+    @todo("Figure out how to allocate the necessary space")
+    let store = mut mem:nalloc[mut T](n)            # How to allocate a chunk of n mutable elements ???
+                                                    # I'm using mut twice but I don't know what that means
+
+    @todo!("Figure out how to perform these translations within the AST")
+
+    # Enable indexing semantics for Arrays
+    impls Indexable[T]
+    @mutable
+    def set = (Size, T) -> .match {                 # Array[T, n](i) = e -> Array[T, n].set(i, e)
+        i, e if i < n -> {}
+        _ -> @error!(3241, i, n)
+    }
+    def get = (Size) -> .match {                    # Array[T, n](i)     -> Array[T, n].get(i).get    (has to work for functors and functions as well)
+        i if i < n -> Some({})
+        _ -> @error!(3242, i, n)                    # How to do error handling ???
+    }
+
+
+    # Enable iterator support
+    let Iterator = util:Iterator[T] :: {
+        let curr_idx = mut 0
+        let size = n
+
+        @mutable
+        def next = () -> if curr_idx < size {       # Need to settle on the iterator interface
+            curr_idx += 1
+            Some(store(curr_idx - 1))
+        } else
+            None
+    }
+    def iter = () -> Iterator
+    @mutable def mut_iter = () -> mut Iterator      # Don't know how I'm going to enable modifiable iterators yet
+
+    def size = () -> n
+}
+
+@todo("Design a vector type")
+def Vector[T] = util:Iterable[T] :: {
+    let num_elems = mut 0
+    let room_size = mut 10
+
+    let store = mut mem:nalloc[mut T](10)
+
+    impls Indexable[T]
+    @mutable def set = (Size, T) -> .match {
+        i, e if i < num_elems -> {}
+        _ -> @error!(3241, i, num_elems)
+    }
+    def get = (Size) -> .match {
+        i if i < num_elems -> {}
+        _ -> @error!(3242, i, num_elems)
+    }
+
+    @mutable
+    def pushBack = (e :: T) -> {}
+
+    @mutable
+    def popBack = (e :: T) -> {}
+
+    def size = () -> num_elems
+    def capacity = () -> room_size 
+}
+
+@todo("Design a std::deque type")
+def Deque[T] = util:Iterable[T] :: {                # Specifies deque interface
+}
+def Deque[T, block] = Deque[T] :: {                 # Implements so that deques are interchangable
+                                                    # I want to provide a default block size (just to try)
+                                                    # But that would mean that Deque[Int] has two types
+}
+
+# comparator(l, r) must return true if l should be popped before r
+@todo("Figure out how to implement iterator and serializable support")
+def BinaryHeap[T :: Comparable] = (comparator :: (T, T) -> Bool) {
+    let store = mut util:Vector[T]
+
+    @mutable
+    let bubbleUp = () -> {
+        static parent = (i :: Size) -> i / 2
+        let index = mut store.size
+
+        while index > 0 {
+            let idx = index.parent
+            break .if comparator(store(idx), store(index))
+
+            store.swap(idx, index)
+            index = idx
+        }
+    }
+
+    @mutable
+    let bubbleDown = () -> {
+        static left = (i :: Size) -> i * 2
+        let index = mut 0
+
+        match (store.get(index.left), store.get(index.left + 1)) {
+            Some(l), Some(r) if comparator(l, r) -> {
+                break.if comparator(store(index), r)
+
+                store.swap(index, index.left + 1)
+                index = index.left + 1
+            }
+            Some(l), Some(r) -> {
+                break.if comparator(store(index), l)
+
+                store.swap(index, index.left)
+                index = index.left
+            }
+            Some(l), None -> {
+                store.swap(index, index.left) .if comparator(l, store(index))
+                break
+            }
+            _ -> break
+        }.loop
+    }
+
+    @mutable
+    def push = (elem :: T) -> {
+        store.pushBack(elem)
+        bubbleUp
+    }
+    @mutable
+    def push = (T*) -> .foreach(self.push)          # I think I need the 'self.' here to ensure correct lookup
+
+    @mutable
+    def pop = () -> {
+        let retval = store(0)                       # Should this return an Optional[T] ???
+        store(0) = store.popBack
+
+        bubbleDown
+    }
+
+    def peek = () -> store(0)
+    def size = () -> store.size
+
+    @todo!("Add iterator methods?")
+
+    # Alternate way of adding specific behavior for if T is Serializable
+    # Benefits greatly from allowing impls to be followed by a block of code
+    @todo("Find a better way to do 'enable_if' stuff")
+    @enable_if(T :: Serializable)
+    impls Serializable[T] {
+        static toString = () -> ""
+        static fromString = (s :: String) -> {}
+    }
+
+    # Constructor for initializing with a set sequence
+    static new = (elems :: T*, comparator :: (T, T) -> Bool) -> {
+        let heap = mut BinaryHeap(comparator)
+        heap.store = elems                          # Vector[T] should define '=' for Iterable[T]
+        heap
+    }
+}
+
+# Note: This can create a infinite loop (need to "strip" T of Serializable typing)
+@todo("Find a better way to do 'enable_if' stuff")
+def BinaryHeap[T :: Serializable] = BinaryHeap[T - Serializable] :: {       # "remove" Serializable typing from T for the purposes of selection
+    impls Serializable[T]
+    static toString = () -> ""
+    static fromString = (s :: String) -> {}
+}
+
+# Need an easy way to create typedefs
+def MinHeap[T] = (list :: T*) -> BinaryHeap(list, <)
+def heapSort[T :: Comparable] = (list :: T*) -> {
+    # let heap = MinHeap(list)
+    let heap = BinaryHeap[T](list, <)               # Create a minimum heap
+    
+    let list = Vector[T]                            # I want to return the type passed in
+    for i in 0..heap.size do
+        list.pushBack(heap.pop)
+
+    list
+}
+
+@todo("Design a binary tree type")
+def BTree[T] = Stub, Leaf(T), Branch(BTree, T, BTree) {
+    # This doesn't look like it works to well
+    def height = () -> self.match {
+        Branch(t1, _, t2) -> max(t1.height, t2.height) + 1
+        _ -> 0
+    }
+
+    @mutable
+    def insert = (elem :: T) -> {}
+    @mutable
+    def remove = (elem :: T) -> {}
+}
+
+@todo("Design a balanced binary tree type")
+def TwoThreeTree[T] = {}
