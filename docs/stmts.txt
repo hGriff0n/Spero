@@ -1,0 +1,150 @@
+# This file is a collection of all statements and expressions in Spero
+Statements
+  A spero source file consists of a sequence of 0+ high-level statements
+    Each high-level statement may consist of may sub-expressions
+
+  A ';' character may be used to force a split between two language statements
+    This should only be used in cases where the parsing would fail to reconcile the syntax
+
+  Order of Evaluation can be forced by wrapping sub-expressions in '{}'
+    This is needed because Spero treats all '()' as tuples, but '{}' as scopes
+    The default semantics of scopes provide the same behavior as desired
+
+Assignment
+  Grammar:
+    <context> <name_ptn><gen><inter>|<asgn_val>
+    inter    -> <sig> (= <type_body>|<valexpr>)?
+    asgn_val -> = <type_body>|<valexpr>
+    context  -> let | def | static
+
+  Context:
+    This keyword specifies the visibility of the following binding
+      let/def/static maps to the traditional protected/public/static visibilities
+      This visibility currently only has an effect in two locations: types and modules
+
+  Signature (:: T)
+    This binding specifies an upper limit to the inferred type of the binding
+      The minimum interface that any value held by the binding must satisfy
+      Note: I may end up adding a special behavior for Functions in this respect
+    For types, this syntax is one way of specifying an inheritance relationship
+  Generics ([T])
+    Some degree of generic polymorphism for types and variables can be achieved with '[T]' syntax
+    Non-Function variable bindings can also take advantage of Generics to cast their value based on typing needs
+      See "Generic Variables" for more
+
+  Assignment works by binding an execution sequence to a known name
+    For types, this must be the type body
+      TODO: Consider allowing 'mut' in type body to signify mutable only types
+    For variables, this must be a value expression
+      A value expression is any statement in Spero that can produce a value
+      Multiple lines can be wrapped in a scope for assignment purposes
+      Placing a 'mut' keyword at the beginning of the valexpr automatically makes the binding mutable
+    It is permissible to not provide a value in certain cases to create an interface
+      In this case, a type signature (using the inference syntax) must be provided in its place
+      A definition that conforms to the interface can be provided at a later time
+        This is mainly useful within the context of types for creating abstract types
+	Any type that has unassigned interfaces is an abstract type and can't be instantiated
+    Bindings can be "shadowed" to hold a different value by re-assigning with the same name
+      Unless the variable is aliased (or declared in a different scope), the shadowing "drops" the old value
+        Shadowing Functions and Types produces an "overloaded" name instead of dropping the old binding
+      This can also be used to perform mutability switching (ala "t = mut t")
+      A compiler warning is produced if members (or self/super) are shadowed in type methods
+
+  Pattern Matching (for loop and match statement)
+    Assignment can be viewed as a restricted form of the pattern matching syntax
+      Adds ADT decomposition and value matching (tuple decomposition is in assignment however)
+      Also necessitates a unique placement of 'mut' to generate mutable bindings
+    Tuple Decomposition
+      Tuple values can be extracted into individual variables by matching against a variable tuple of equal arity
+      NOTE: This decomposition process is recursive
+    Mut keyword placement
+      The 'mut' keyword in pattern matching must be placed before the variable which will be mutable
+      If placed before a tuple/ADT, all extracted variables are considered to be "mutable"
+
+Control Flow Expressions
+  If-Elsif-Else
+    if <test> do? <expr> (elsif <test> do? <expr>)* (else <expr>)?
+    do? <expr> .if <test> (elsif <test> do? <expr>)* (else <expr>)?
+
+  Loop
+    loop <expr>
+    <expr> .loop
+
+    Performs an infinite loop (until a break/return is hit)
+      NOTE: A good way of implementing an infinite generator "loop yield <expr>"
+
+  While
+    while <test> do? <expr>
+    do? <expr> .while <test>
+
+    TODO: Figure out how to have 'do-while' semantics
+    Compiler will produce a warning if the expression will always be true or false
+      Warning for true because 'loop' performs the same functionality
+
+  For
+    for <pattern> in <expr> do? <expr>
+    do? <expr> .for <pattern> in <expr>
+
+    For loops can accept values of three general types; Iterable[T], Iterator[T], Generators
+      A generator is tentatively any function that contains a reachable yield expression
+        NOTE: This might be generalized in the future
+        NOTE: I might make it so that default arguments can be given to generators as well
+      The types can be translated according to the following patterns
+        Iterable[T]: "for <pattern> in <iterable> ..." => "for <pattern> in <iterable>.iter ..."
+        Iterator[T]: "for <pattern> in <iterator> ..."
+          "let iter = mut <iterator>      # Force the iterator to be mutable
+          match iter.next {
+            <pattern> -> { ... }
+          }.while iter.hasNext"
+        Generator: "for <pattern> in <generator>(..) ..." =>
+          "match wait <generator>(..) {
+            None -> break;
+            Some(<pattern>) -> { ... }
+          }.loop"
+      NOTE: It is allowable to extend the pattern with throwaways at the end to satisfy type-checking
+
+  Jumps
+    The language also provides several forms of controlled gotos
+      break, continue, return, yield, wait		# Semantics follow established behavior
+
+    Each form can be followed by a single expression
+      This expression serves as the jumps "value" where required by evaluation
+
+    TODO: Figure out how corountines can be implemented
+    The yield and wait keywords perform coroutine control flow handling
+      yield creates a "resumable" return from a function
+        Experimental: The function can only be resumed through a 'wait' call
+	  A regular call converts the yield into a return statement
+      wait wraps the coroutine call into an Option[T]
+        A regular return corresponds to a None value
+        A yield return corresponds to a Some value
+
+  A 'do' keyword can proceed any statement in the language
+    It has no effect on code generation or parsing and exists solely for readibility purposes
+
+Scope
+  Grammar:
+    { <stmt>+ }
+
+  Scopes make it easy to perform RAII management of resources and keep module namespaces free of clutter
+    The value of the final statement executed in the scope is considered as the value of the scope
+      NOTE: Indexing a scope is therefore equivalent to indexing the returned value
+
+Tuples
+  Grammar:
+    \(list<valexpr>\)
+
+  Indexing:
+    n-arry tuples can be indexed with '.<i>' syntax where 'i' is a Size literal < n
+      TODO: Figure out implementation
+      It's possible to implement this with the Indexable interface
+        However, everything with tuples is known statically so better error messages can be reported
+
+Ranges
+  Grammar:
+    <index>..<index>?
+
+  TODO: Expand on this
+  Ranges cover all values between start and stop ("[)")
+    Infinite ranges are creatable by not providing a stop value
+      TODO: Remember whether this is whitespace marked or not

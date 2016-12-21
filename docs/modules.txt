@@ -1,65 +1,64 @@
 
 Modules
-  Grammar:
-    mod list<var, ':'>
-  
-  A module is a collection of declarations that provides interface level encapsulation
-    It is basically a type, but without the instantiation requirement and ability (and static = private)
+  A module is a collection of declarations that provide a degree of interface level encapsulation
     Visibility contexts determine which stuff is exported into the interface
       'def' makes the object a part of the modules public interface
       'static' makes the object part of the module "implementation" (ie. package level in java)
-      'let' makes the object "file-local" (not expored in any sense)
+      'let' makes the object "file-local" (not exported in any sense)
         Note: I might switch/merge 'let' and 'static' for modules (I already switched them once)
+
+  TODO: Figure out how modules are "resolved"
+
+Module Declaration
+  Grammar:
+    mod list<var, ':'>
 
   A module declaration is a single high-level statement (similar to Java packages)
     All following code is considered to be part of the module's scope
     The module scope ends when the file ends or another module declaration is encountered
-      NOTE: Experimental
       Submodules are defined through ':' chains, with the parent module on the left
     Modules are always public (forced, since the 'mod' takes the place of visibility context)
 
-  NOTE: Experimental
-  Main is not required to declare a module
+  Experimental: The entrypoint file (where main is defined) is not required to declare a module
 
 Qualified Names
   Grammar:
-    module_path = (<var>:)*
-    type_path = (<type>:)*
-    qual_name = module_path type_path (<var>|<type>|<op>)
+    module_path type_path (<var>|<type>|<op>)
+    module_path -> (<var>:)*
+    type_path   -> (<type>:)*
 
   The qualified name is the full organizational path that the binding falls under
     So the "std:io:println" qualified name refers to the "println" binding in the "std:io" module
   
   Interpretation
     All variable names within the qual_field are automatically interpreted as modules
-      In other words, a ':' serves to access the module described by the variable 
     Types are interpreted as is (as type bindings in the current module)
       The ':' allows access to all public fields, local or static bound
-      Local ('let'/'def') methods must be called with an instance as the first argument
   
-Importing
+Module Import
   Grammar:
-    use module_path (<import>|(_(:_)?))
-    binding = (<var> (as <var>)?)|(<type> (as <type>)?)
-    import = binding|\{list<binding>\}
+    use module_path (binding|\{list<binding>\}|_) (:_)?
+    binding -> (<var> (as <var>)?)|(<type> (as <type>)?)
  
-  Importing levels the named bindings (in the import section) into the context of the current scope (for accessing)
+  Importing levels the specified bindings into the context of the current scope (for accessing)
     This leveling basically removes the requirement to specify the full qualified name to access the binding
       NOTE: An import may just serve to shorten the qualified names (as in "use std:io")
-    A '_' serves as a 'take all' operation, importing everything declared in the module
-      This import is not recursive (use '_:_' to recursively import everything)
+      NOTE: This does not "include" the imports so that any code automatically has the same modules
+    A '_' serves as a 'take all' operation, importing everything declared at the current level
+      '_:_' can be used to import everything recursively into the current level
 
   Imports can be "rebound" to different names using 'as' syntax
-    The right-hand side binding now refers to the left-hand side in future occurances
-    NOTE: 'as' is only a keyword in this context, It's possible to make 'as' a var
-      So 'use std:wtf:as as why_not' is a valid import (don't think there's parsing ambiguity)
-    The left-hand binding can't be accessed without the full qualified name (it's not imported)
+    The right-hand side binding now refers to the left-hand side in all future occurances
+    NOTE: 'as' is only a keyword in this context, It's possible to make 'as' a variable
+      So 'use std:wtf:as as why_not' is a valid import (there's no ambiguity in parsing)
+    The left-hand binding can't be accessed without the full qualified name
       NOTE: If there is no "qualified" path to the left binding, it can still be used by name
-        So 'use LocalType as BoundType' still allows using LocalType
+        So 'use LocalType as BoundType' still allows using LocalType to refer to itself
   
   Importing follows the same rules as regular bindings
     Evaluating an import that would have two types bound to the same name in the same scope is an error
-      Note: It is currently possible to have local bindings of types     
+      NOTE: It is currently possible to have local bindings of types
+      TODO: Resolve this with assignment shadowing
 
 TODO:
   Determine how module resolution is performed (ie. how are modules found)

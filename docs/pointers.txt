@@ -1,3 +1,9 @@
+NOTE: Most of this is in the air at the moment
+  I've had some discussion of basically turning '&' into Java-style semantics
+    This would allow propogation of changes to arguments outside of the function
+    Normal passing would maintain the same "reference" semantics but not allow propogation
+    NOTE: What is the point of allocation then?
+  I need to have a better idea of how types and objects will be implemented
 
 Manual Memory Management
   The Problem:
@@ -18,6 +24,7 @@ Manual Memory Management
     The 'mem' module provides implementations for many other memory operations
       Most of these operations are needed to implement other standard modules
 
+  TODO: This is in the air
   Pointers (T&):
     A pointer is basically a Chunk[T.size] with some syntactic sugar
       A Chunk represents a sequence of bits, a pointer represents that sequence as a value of a given type
@@ -48,10 +55,10 @@ Manual Memory Management
       calls the given generator function at each index of the "array" to get a value to store in the space
 
   This means that pointer arithmetic, etc. is not possible on pointer types
-	  It is possible on Addr (and maybe Chunk), but it is an unsafe operation
-      Pointers additionally enforce another restriction in in regards to multiple pointers of one object
-        A mutable pointer cannot be made to an immutable object under any circumstances
-        Two such pointers cannot exist such that one is mutable and the other is immutable
+    It is possible on Addr (and maybe Chunk), but it is an unsafe operation
+    Pointers additionally enforce another restriction in in regards to multiple pointers of one object
+      A mutable pointer cannot be made to an immutable object under any circumstances
+      Two such pointers cannot exist such that one is mutable and the other is immutable
 
   Safety:
     Due to lifetime resolution reasons, it's not possible to safely make a local pointer
@@ -68,7 +75,6 @@ Views (T*) and Collections
     Types must implement Iterable[T] in order to match a T* for assignment/argument matching
   '[..]' is a syntactical sugar for creating an Array[T, n]
   Varargs are also a sugar for an Array[T, n]
-    Varargs can only be used as the last parameter of a function
 
 TODO:
   allocn/allocg produce arrays, pointers are situated for single elements

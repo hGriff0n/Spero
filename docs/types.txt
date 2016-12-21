@@ -1,71 +1,50 @@
+TODO: Work on explanations
+  I use interface for '::'
+
 Types
   Grammar:
-    type = <let|def> <type><gen> = list<adt_con, '|', 1>?(list<arg>)?<inherit>?{ <body> }
+    type_body = list<adt_con, '|', 1>?(list<arg>)?<inherit>?{ <body> }
     adt_con = <type>(list<type>)?
-    interface = <vcontext> <var|op><gen>? <sig>
     inherit = <type><gen>? ':: '
-
-  Interfaces:
-    An interface is any type that has an undefined (unassigned) method
-      Subtypes must provide a definition for these methods (or become interfaces themeselves)
-    An interface cannot be directly instantiated, but it can be an argument/generic type bound
-      A lambda type can be created by "completing" the interface (see construction for more)
 
   Inheritance:
     Spero provides two basic syntaxes to specify inheritance
-      There's no semantic difference between the two at the moment
-      However, they should be used for very different conceptual means
+      NOTE: This might change as I develop a more complete understanding of abstract types
+      NOTE: There's no semantic difference between the two at the moment, but they are slightly different conceptually
+      Spero types can only inherit from one "complete" type but can inherit from multiple "abstract" types
 
-    Currently Spero uses multiple inheritance
-      This is mainly because I have no way of distinquishing between interfaces and types
-      Right now, you can basically think of "raw inheritance" as being sugar for "interface inheritance"
+    Child-parent inheritance (ie. of complete types) is specified through '::'
+      The location of the '::' typing can be on either side of the '=' in the assignment
+        If the '::' is on the right, the syntax follows the Anonymous Types (ie. 'T ::')
+	If the '::' is on the left, the syntax follws the type inference (ie. ':: T')
+      Constructors of the parent class can be invoked through the 'super' keyword in the child's body
+        A call to 'super' must be the first expression in the type body (a no-arg call will be inserted if none exists)
+        Members of the parent type can also be accessed by indexing 'super'
 
-    Raw inheritance (as in 'child-parent') is specified through the '::' keyword
-      This can be done on either the left or the right of the '=' in the assignment
-        NOTE: The ordering is slightly different based on the side
-        On the right of the '=', the syntax follows the Anonynous Types ('T ::')
-        On the left, syntax follows the type inference restrictions (ie. ':: T')
-      Base Class constructors of the parent type can be invoked through the 'super' keyword
-        A call to 'super' must be the first expression in the type body (a no-arg call will be inserted)
-
-    Interface inheritance (or implementation) is specified through the 'impls' keyword
+    Interface inheritance (ie. of abstract types) is specified through the 'impls' statement
       This basically serves to 'import' any definitions into the current class
-      All 'interface' methods must have a definition provided
-        NOTE: Otherwise, the type itself becomes an interface (might add a warning and annotation for this)
-
-  Inference:
-    Types of variables are inferred by default from the compiler
-      TODO: Learn about type inference
-    Type hints can be provided by the programmer using ':: T' syntax
-      These hints perform two main functions; return overloading and upcasting
-	Type inference may select a less specific base type when a derived is produced
-      A ':: T' may be bound to a name/generic or to an expression
-        Both positions perform largely the same functions
-        NOTE: Experimental
-    Casting is done through explicit/implicit constructions or dedicated cast methods
-      So a "T -> String" is performed with the 'toStr' method
+      The importing type will become an abstract type if an unimplemented interface remains
 
   Construction:
     There are three kinds of type constructors; primary, named, and secondary
-      Type instances always remember which (named) constructor they were built with
       A type may only contain 1 primary constructor, but it may have multiple named/secondary
     The primary constructor merges the type body with the function body (ala Scala)
       All variables declared in the primary constructor are type members
       Annotations are applied to the primary constructor through the '@primary(..)' annotation
 	Annotations would need to be placed above the type definition -> apply to the type
+      An implicit, no-arg, primary constructor is automatically generated if one isn't provided
     Secondary constructors is implemented by overloading the static "new" method
       There are 2 general ways of implementing a secondary constructor
 	Create and modify a mutable instance (uses another constructor)
-	"Complete" the type definition (replaces the primary constructor)
-	  The syntax is "<type> :: { <bindings> }" ala Anonymous Types
-	  See 'types.spqr' for a better representation of this
-      The primary constructor is implicitly implemented in these terms
-    Named constructors are the way of implementing Algebraic Data Types (ADTs)
+	"Complete" the type definition ala Anonymous Types
+	  This is needed in case the behavior of another "constructor" is not desired
+      NOTE: he primary constructor is implicitly implemented in these terms
+    Named constructors are Spero's way of implementing Algebraic Data Types (ADTs)
       Match statements can distinguish between named and primary/secondary constructors
-      If a named constructor is provided, the type can not be created with a 'T(...)'
-	An implicit primary constructor will not be automatically generated for the class
+        Type instances always remember which (named) constructor they were built with
+      Named constructors disable the implicit creation of a primary constructor
     Constructors can be marked with '@explicit' to prevent usage in implicit resolution
-      Named constructors are always explicit
+      NOTE: Named constructors are always explicit
 
   Destruction:
     Destructors are implemented by overriding the static 'drop' method
@@ -78,166 +57,38 @@ Types
         It is valid to still "own" the memory for optimization purposes
       Implicit destructor calls are not inserted for explicitly dropped variables
 
-  TODO: Explain Better
-  OOP:
-    Type methods (declared inside of the type context) all have an implicit "self" parameter
-      Using self is not necessary for accessing type members (scope search: local -> type -> global)
-      The compiler will produce an error/warning if self is shadowed/reassigned
-
-TODO: Explain Better
-Generics
-  Syntax:
-    gen = \[list<gen_arg, 1>\]
-    gen_arg = <type_gen>|<var_gen>
-    type_gen = <type>(+|-)?((::|!:|<|>)<type>)?
-    var_gen = <var>(:: <type>|= <val>)?
-    
-  Explanation:
-    Types and values can both be used inside of generic parameters
-      Whether a generic parameter takes a type or value is determined by the name (like in bindings)
-      Types implicitly add a ':: Type' (values, ':: Size') if no ':: T' is given
-	NOTE: Experimental
-    Generics have some special syntax for subtyping
-      !: <- The parameter can't be a subtype
-      <  <- The parameter must be a subtype		# NOTE: Experimental
-      >  <- The parameter must be a supertype		# NOTE: Experimental
-
-  NOTE: Experimental
-  Co-/contravariance:
-    The syntax for co/contra-variance (if it's included) would be [T+]/[T-] ala Scala
-
-  Value Restrictions:
-    Restrict to basic types for now
-      The key thing, is that equality must be computable at compile time
-    
-    NOTE: Experimental
-    In order for types to be used in generics, 2 conditions must be met
-      The type's "eq" method has the @pure annoation (is computable at compile time)
-      The instantiation's value is known at compile-time
-
-  Instantiation:
-    Explicit Instantiation is performed by providing a concrete type/value for a generic context
-      It is only considered for expressions (specializations are for lhs of assignments)
-    Explicit instantiation of functions/types is not needed
-      The compiler will infer the correct overload if possible
-      NOTE: Experimental
-
-  Specialization:
-    Generic definitions can be specialized for specific types/conditions
-      This is done by providing concrete values for generic parameters (same syntax as instantiation)
-	However, specialization is done inside of a definition context (ie. lhs of assignment)
-	Functions can also be "specialized" by providing an explicit argument tuple
-	  However, this is considered a part of function overloading (or adding a match statement)
-      The complete type/function body must be provided to create a specialization
-	This can be slightly shortcut for types through inheritance/imports
-    A "base" type (no generics) can also be defined with the same name (minus '[]')
-      Note: These are all unique "types", there is no aliasing/magic occuring
-      NOTE: Experimental, as this implies C++ style generics (ie. T[V] can't operate on private members of a T[W])
-	This might be a very good idea given "complete the definition" syntax/semantics (ie. private members aren't guaranteed to exist, only public members)
-
-  Instance Resolution:
-    Definitions
-      Instance - The requested frame that is being matched
-      Declaration - The generic "frame" that is being matched
-      Definition - The concrete implementation for a given declaration
-    There are 3 modes of generic declarations
-      Specialized <- [Int]
-      Subtyped    <- [T :: Num] | [v :: Num]
-      Default	  <- [T]        | [v]		<- Defaults are Subtyped with 'Type' and 'Size' respectively
-    Resolution process
-      Instance resolution follows the same process as overload resolution
-	For every argument in the instantiation, no match can be worse than another instantiation
-	A compiler error is produced if no declaration could be found
-	  A valid declaration will always be found if a generic case exists
-	  Note: The generic case can be "subsumed" by the Subtyped case
-	If two matching declaration are found, a compiler error is produced
-	  Otherwise the resolution is well-formed
-
-Mutability
-  Immutable by Default:
-    All variables/arguments are immutable by default
-      That is, type inferrence will select an immutable type instance unless 'mut' is bound to the expression
-      Note: The 'mut' keyword can be prepended to any "valexpr" to mark the evaluating variable as mutable
-        Note: The exact rules are a bit tricky for where this placement is valid, best to only use in assignment
-
-	The inferred type will be 'mut T', where 'T' is the inferred type of the bound expression
-      Mutability is not maintained in shadowing/assignment, 'mut' must be used
-    Types are half-mutable/half-immutable (see Typing Interaction for more)
-      Immutable types have restricted access (ie. none) to mutable methods
-
-  Typing Interaction:
-    Mutability is a part of the type system (ala C++'s 'const')
-      'T' is immutable, 'mut T' is mutable
-      A 'mut' must be bound to a type			<- can't write "def foo = (f :: mut) -> {}"
-	NOTE: Experimental
-    Mutable methods (the '@mutable' annotation)
-      Mutable methods (ie. methods that mutate internal state) must be annotated with '@mutable'
-	
-  Calling these methods produces a compiler error if the object is immutable
-        It is a compiler error to mutate internal state (ie. call mutable methods) from an immutable method
-      Mutability querying
-	'@mutable' can be used in boolean contexts to query the types mutability
-	
-  This enables conditional method behavior based on mutability of the object
-	NOTE: Experimental
-      Mutable-only types
-	
-  Applying the '@mutable' annotation to the type makes that type mutable-only
-	  It is a compiler error to create an immutable instance/alias of a mutable-only type
-	
-  Additionally, '@disable(mut)' makes the type immutable-only
-	  NOTE: Experimental
-    Member Mutability
-      Members may be marked as mutable/immutable (same syntax as variables)
-      It is a compiler error to call mutable methods on these members within an "immutable" method (not '@mutable')
-
-  Assignment/Arguments:					# Note: 'T' includes 'mut T', 'T&', and 'T*' unless specified
-    If an assignment/argument usage of the following form appears, take the linked action
-
-    Assignment
-      t = v|t		<- Reuse memory if possible, otherwise copy
-      t = mut t		<- Reuse memory if possible, otherwise copy
-      v = t		<- Copy
-      v = mut t		<- Copy
-
-    Argument
-      f(T)		<- Reuse memory if possible
-      f(mut T)		<- Reuse memory if possible, otherwise copy
-
-  Compiler Behavior:
-    A warning is produced if any type members are shadowed (esp. if mutability)
-    An error is produced if any type members are modified in a non-mutable method
-
-Tuples
-  Grammar: \(list<T>\)
-  Tuples somewhat follow the indexable interface
-    Tuple elements can be accessed with .<n> syntax, where 'n' is a int literal
-      However, tuple's forward this to a different function (or none at all)
-      This is to enable better compile time messages (sizeof tuples is known statically)
-    
-  Functions can be applied to tuples due to dot-flipping
-
 Anonymous Types
-  Grammar: <type><tuple>? ::: <cons>? <scope> <tuple>?
+  Grammar:
+    <type> <tuple>? ::: <cons>? <scope> <tuple>?
   
   Anonymous types enable instantiating/extending types at the use site
     When bound to a type, this is the syntax for creating a child type
     When bound to any other name, this creates an instance of the type
       These types have access to the surrounding scope (through closures), so no arguments are needed
-        However primary/secondary constructors can be defined and used if desired
+        Experimental: However primary/secondary constructors can be defined and used if desired
           The constructor is called by placing an argument tuple after the type body
-      These types cannot declare adt constructors (Note: currently)
+      These types cannot declare named constructors
   
   The parent types constructor can be called in one of two ways
     Through a call to super in the type body
     Following the parent name by an argument tuple (this can be translated to the former)
 
+Inference
+  The typings of variables in Spero is largely inferred by the compiler
+    TODO: Learn about type inference
+  Type hints can be provided by the programmer using ':: T' syntax
+    This is mainly useful for return overloading selection but can also perform up/down-casting
+  Type inference may select a less specific base type when a derived is produced
+    A ':: T' may be bound to a name/generic or to an expression
+      Experimental: Both positions perform largely the same functions
+  Casting is done through explicit/implicit constructions or dedicated cast methods
+    So a "T -> String" is performed with the 'T:toStr' method
 
 TODO:
+  Look into restricting 'impls' to abstract types and '::' to complete types
   Start designing the type system
   Look into typeclasses
   Look into building in variant types ("T | V")
   Look into higher-kinded types
-  Look into variable generics
   If I can throw an error if a method is not marked '@mutable', I can throw an error if any method is used
     Why am I making the programmer write the annotation then? IDE support, helpful explicitness

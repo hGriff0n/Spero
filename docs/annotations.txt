@@ -1,78 +1,44 @@
 
 Grammar
-  @<variable><fn_call_args>
+  @<variable><tuple>?
 
-@pure:
-  This annotation promises that the function is "pure"
-    Might also indicate that the function is compile-time computible
+  A ! at the end of the annotation name marks the annotation as "global"
+    This distinction determines what bodies of code the annotation applies to
+      Normal (local) annotations apply to the next encountered statement
+      Global annotations apply to the entirety of the compilation block
+        TODO: Should this be orderable (ie. only apply to the "rest" of the block)?
 
-  For now, leave it as a simple promise
-  	It may be possible to add in some basic checking in the compiler
+Current recognized annotations:
+  pure     - Promises that the function is "pure"
+    May be used to allow for functions/values in compile-time contexts
+    Compiler checking may be rather basic
+  mutable  - Restrict a method/type availability to mutable instances
+    TODO: Decide if '@mutable { .. }' should export '..' into the parent scope (NOTE: Not yet)
+  disable  - Turn off the language features
+    TODO: Determine which language features are "toggleable"
+  primary  - Apply annotations to the primary constructor
+    TODO: Not sure if this is the best method
+  explicit - Mark a constructor as "invalid" for implicit construction resolution
+  safe     - Mark a block of unsafe code as "safe" to execute
+    Accepts an optional string literal clarifying why the code segment is "safe"
+  unsafe   - Mark a block of safe code as "unsafe"
+  todo     - Raise a warning
+  asm      - Output assembly code for the target architecture
+  truthy   - Specify a method to be used for converting values of a type into Booleans
+    Named function must take no arguments and return a Bool or this annotation produces a compiler error
+      ie. sig(fn) = () -> Bool in "@truthy(fn)
 
-@mutable:
-  Restrict a method/type to only be available on mutable instances
-  TODO: Decide if '@mutable { .. }' should export '..' into the parent scope (NOTE: Not yet)
+Ideas for annotations:
+  mem_limit - restrict the amount of memory a type/module/etc can use
+  allow     - turns off compiler warnings or turns on language features that were disabled
+  cfg       - conditional compilations/definitions
+  error_def - ???
+  assert    - raise a compiler error if a condition evaluates to false
+  force     - requires/disables language features to create environment
+  enable    - opposite of disable
 
-@disable(..):
-  Turn off language features for a given expression
-
-@primary(..):
-  Apply annotations to the primary constructor (and not the type)
-
-@explicit:
-  Mark a constructor as "invalid" for implicit construction resolution
-
-@safe(..):
-  Mark a block of unsafe code as "safe"
-  The programmer can supply a string literal clarifying why the code segment is "safe"
-    A compiler warning will be produced otherwise
-  Idea: May allow for "invariant functions", static code that must be true for the segment to be safe
-
-@unsafe(..):
-  Similar behavior to '@safe', but marks the following section as "unsafe"
-
-@todo(..):
-  The compiler will raise a warning on any todos (and comments as well)
-
-@asm(..):
-  Write the given assembly code
-
-@truthy(fn):
-  Specifies a method to be used for converting this type into Booleans (mostly for if/while statements)
-  Function must take no arguments and return a Bool or its a compiler error (ie. signature = "() -> Bool")
-
-Annotations
-  Modes:
-    Global
-      These annotations apply to the current modules
-        Third-party code cannot be changed through in-language annotations
-      Annotations with a '!' at the end of the name are automatically global
-    Local
-      These annotations apply to the next expression/block/function/type
-    Querying
-      Some annotations are usable in querying modes for conditional compilations
-	NOTE: Experimental
-  Support:
-    Some annotations may support global and local operations but it is not required
-      It's also possible to have global annotations be unique (ie. '@safe' != '@safe!')
-
-Ideas
+Ideas:
   Expand annotations to be able to make macros with them
-
-Annotation Ideas
-  mem_limit   <- restrict the amount of memory a type/module/etc can own
-  precedence  <- set operator precedence
-  dead_code   <- warning if unused code is found in the compiler (disables)
-  cfg	        <- stronger conditional compilation
-  error_def   <- ??
-  assert      <- raise a compiler error if the condition evaluates to false
-  force       <- analagous to '@disable', requires language features for evaluation 
-  enable      <- opposite of '@disable'
-
-  Need way to turn off compiler warnings for specific segments
-    @disable works for names, but need a more general solution
-
-Syntax ideas
-  @annotation
-  @annotation(<args>)
-  @annotation { ... }
+  Find a way to create custom annotations in user code
+  Find a way to create queryable annotations
+  Look into extending safe with "assert", require compile-time code that can evaluate to true/false
