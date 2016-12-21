@@ -121,7 +121,7 @@ def fibonacci = (n :: Size) -> {
     for i in memoize.size..n do
         memoize.pushBack(memoize(i - 1) + memoize(i - 2))
     
-    return memoize(n)
+    return memoize(n - 1)
 }
 
 let DigitList = Deque[Char] :: {}
@@ -163,7 +163,7 @@ def selectionSort[T :: Comparable] = (list :: mut Indexable[T]&) ->
 def insertionSort[T :: Comparable] = (list :: mut Indexable[T]&) -> list.insertionSort(0, list.size)
 
 def insertionSort[T :: Comparable] = (list :: mut Indexable[T]&, l :: Size, r :: Size) ->
-    for i in 1..{list.size - 1} {
+    for i in 1..{r - 1} {
         let j = mut i
         while j > 0 && list(j - 1) > list(j) {
             list.swap(j, j - 1)
@@ -246,9 +246,9 @@ let PigLatinString = (str :: String) {                  # Constructor arguments 
 }
 def translate = (String) -> .split(" ")
     .map!((s) -> s(1..) + s(0) + "ay")                  # Definitely want the "infinite range" syntax
-    .join.PigLatinString
+    .join(" ").PigLatinString
 def translate = (PigLatinString) -> .str.split(" ")
     .map!((s) -> {
         let tail = s(0..{s.len - 3})
         s(s.len - 2) + tail
-    }).join
+    }).join(" ")
