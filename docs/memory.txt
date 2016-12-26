@@ -3,14 +3,50 @@ What do I need?
      Select and reserve a 'n byte' sized chunk of memory
      Allow typesafe modifications to those 'n bytes'
   2. (Opt) A way to enable reference semantics in function calls
-  3. (Opt) A way to use specific sections of memory for implementaion
+  3. A way to use specific sections of memory for implementaion
   4. An easy way of typing a sequence of elements
   5. (Opt) A way of maintaining typing on a sequence of elements of diverse typing (without relying on 'Any')
 
 Current Framework Idea:
-  Addr - Type to represent an address in memory.
+  Addr - Type to represent an address in memory. Addr's must be explicitly created
+    Note: Aside from typing enforcement, the purpose of Addr is slightly unclear
   Chunk - Type to represent a section of memory. Little more than a (Addr, Size, Bool) tuple. Must be mutable?
+    drop - Method to safely deallocate a Chunk and prevent future usage. Also marks the Chunk as free for reallocation.
+      Note: This does not zero-initialize the memory segment (needed for some mmio behavior)
+    forget - Method to prevent drop from marking memory as free for allocation use.
+    view_as[T] - Method to reinterpret the Chunk as a type 'T'. Optional size arg for offset. Returns a 'Chunk1[T]'
+      Note: This interface needs a lot of work and thought
+    apply - Create a sub-chunk with the given offset. Possibly allow an optional 'size'/'end' argument.
+      Note: This is meant to enable '()' semantics for the "Chunk.view_as" model
+  Chunk1[T] - Type to represent a single 'T' in heap memory. Extends Chunk. Allows operations on value
+    Note: Need to decide on how interchangeable a 'Chunk1[T]' is with a 'T'. I'd like to have "Chunk1[T] = T" syntax
   alloc - Function to allocate a chunk of 'n bytes'. Returns a Chunk
   alloc[T] - Function to simplify allocating a known type. defined as "alloc(T.size * n)"
+  valloc - Function to allocate and initialize a single element. Can be defined in terms of "alloc"
+  malloc - Function to allocate and return a 'T&' (usefulness unclear)
+    Note: IFF 'T&' are a seperate type (They would be a reference counted Chunk with better typing and safety)
+  reserve - Function to mark addresses as off limits for allocation. Useful for memory mapped devices and implementation
+    Note: This could be moved as a member of Addr. Semantics not needed however
 
-  malloc - Function to allocate and initialize a single element. 
+Rust std::mem
+  alignof
+  drop
+  forget
+  replace
+  sizeof
+  swap
+  transmute
+  transmute_copy
+  uninitialized
+
+C++ <memory>
+  allocators
+  addrof
+
+Other needs
+  Interactions with Chunk/Addr/Chunk1
+
+TODO:
+  Settle on a memory model for Spero
+  Decide where classes should be allocated (on the stack versus on the heap)
+  Should I provide a method to allocate at a given address ???
