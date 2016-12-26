@@ -1,0 +1,63 @@
+
+mod mem:testing
+
+##
+Design Goals of Memory Management:
+    1) Have a way to mark and use sections of non-stack memory for implementation purposes
+    2) Have a way to use specific sections of memory for implementation purposes
+    3) Have a way to enable reference semantics in function calls (ie. Java semantics)
+        NOTE: Any place where this can be used is replacable with a type method. That solution isn't tenable for user code however.
+    4) Have a way to type a sequence of elements
+    5) Have a way to maintain typing on a sequence of differently-typed elements
+##
+
+##
+TODO:
+  Figure out a "type-safe" interface for 'mem:alloc'
+  Think about moving 'mut' into the binding area
+##
+
+##
+This function should:
+    Allocate a chunk of memory for 4 Ints
+    Set the first Int to 0
+    Set the third Int to 3
+    Sum the array
+    Deallocate the chunk of memory
+##
+def intArrayTest = () -> {
+    let chnk = mut mem:alloc(Int.size * 4)      # Allocate space for 4 Int's. Returning a 'Chunk' allows for more intuitive operations
+
+    # let chnk = mem:alloc[Int](4)              # Same as above. What effect would this have on system safety?
+                                                # IDEA: 'chnk.transmute(0)' would make a variable at the address of the first Int
+
+    # let fst = mut chnk.as[Int](0)             # I get 'transmute' from Rust, maybe a better name is needed for Spero
+    # let fst = mut chnk(0).as[Int]             # How would you know what the offset should be in this case
+    # let fst = mut chnk.view[Int](0)
+    let fst = mut chnk.transmute[Int](0)        # Make 'fst' refer to the first Int in 'chnk's region of memory
+    fst = 0                                     # Would 'chnk' have to be mutable for this operation ???
+                                                # IDEA: 'Chunk' is a mutable-only type
+
+    let thd = mut chnk.transmute[Int](2)        # IDEA: How would I move within chnk?
+    thd = 3                                     # NOTE: {chnk + 1} can't be able access outside of the original 'chnk'
+
+    let sum = mut 0
+    for i in 0..4
+        sum += chnk.transmute[Int](i)
+
+    chunk.dealloc                               # IDEA: Allow for inline 'mut' marking for ease of use
+}
+
+##
+This function should:
+    Allocate a section of memory initialized to 5
+    Allocate a chunk of memory for 2 Ints
+    Fill the chunk of memory with the first memory section
+    Deallocate both chunks
+##
+def initTest = () -> {
+    # First Interface Idea
+    let ptr = mem:malloc(5)                     # This can't be alloc for typing reasons (malloc :: (T) -> Chunk)
+                                                # alloc :: (Size) -> Chunk, so you wouldn't be able to allocate Size chunks
+                                                # malloc[T] = (e :: T) -> { let chnk = mut mem:alloc[T](1); chnk.set[T](0, e); chnk }
+}

@@ -61,6 +61,7 @@ def main = () -> {
     ##
     Dereferencing Behavior in regards to functions and type constructors
     ##
+    let i_ptr = mem:malloc((Int) -> "Hello".println)
     let i_ptr = mem:alloc((Int) -> "Hello".print)
     let v_ptr = mem:alloc(() -> " World".print)
     let p_ptr = mem:alloc((Int) -> mut .mem:alloc)          # You'd write 'mut i.mem:alloc'

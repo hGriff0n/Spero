@@ -50,7 +50,6 @@ def main = () -> {
     for i in {f.start.if true}..f.end {}                    # Might fail type-checking
 
     for i in {f.start..f.end}.filter(_ % 2 == 0) {}
-    for i in {f.start,f.step..f.end} {}
     
     for i in f.start.if f.start > 4 else 5..f.end {}        # Fails type-checking (if and for)
     for i in {f.start.if f.start > 4 else 5}..f.end {}

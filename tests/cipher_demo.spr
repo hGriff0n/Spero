@@ -5,23 +5,22 @@ let Cipher = {
 }
 
 # You can write methods and stuff in terms of the interface
-def encrypt = (msgs :: String*, cipher :: Cipher) -> {
+def encrypt = (msgs :: String*, cipher :: Cipher) ->
 	msgs.map(cipher.encode)
-}
 
 
 # Lets create an instance of our Cipher class
 let caeser = Cipher :: {
-	def encode = .map (c) -> .+ 5			# The types/arguments are inherited from the Cipher
-	def decode = .map (- 5)					# Take advangate of currying
+	def encode = .map((c) -> .+ 5)			# The types/arguments are inherited from the Cipher
+	def decode = .map(.- 5)					# Take advangate of currying
 }
 
 caeser.encode("hello") == "JGNNQ"
 
 # You don't have to bind anonymous types, you can use them directly too
-["Hello", "World", "It's a me!"].encrypt(Cipher :: {
-	def encode = .map (+ 13)
-	def decode = .map (- 13)
+["Hello", "World", "It's a me!"].encrypt(Cipher ::: {
+	def encode = .map(13 +)
+	def decode = .map(.- 13)
 })
 
 
@@ -36,13 +35,12 @@ Luckily the fix is rather simpl
 	# So by capitalizing the name we can a much more flexible construction
 	# Note that the arg list contract now specifies the constructor for the type 
 let Caeser = (shft :: Char) {
-
 	# Specify an implements relationship (one method of inheritance)
 	impls Cipher
 
 	# Provide the implementations
-	def encode = .msg (c) { c + shft }
-	def decode = .map (- shft)
+	def encode = .msg((c) -> c + shft)
+	def decode = .map(.- shft)
 }
 
 ##
@@ -60,6 +58,6 @@ let Cipher[T] = {
 let Caeser :: Cipher[Char] = (shft :: Char) {
 	# Here we get the other way of specifying inheritance (the ':: Cipher[Char]')
 	
-	def encode = .map (+ shft)
-	def decode = .map (- shft)
+	def encode = .map(.+ shft)
+	def decode = .map(.- shft)
 }

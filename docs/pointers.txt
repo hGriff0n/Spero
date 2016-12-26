@@ -1,9 +1,3 @@
-NOTE: Most of this is in the air at the moment
-  I've had some discussion of basically turning '&' into Java-style semantics
-    This would allow propogation of changes to arguments outside of the function
-    Normal passing would maintain the same "reference" semantics but not allow propogation
-    NOTE: What is the point of allocation then?
-  I need to have a better idea of how types and objects will be implemented
 
 Manual Memory Management
   The Problem:

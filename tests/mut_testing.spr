@@ -70,8 +70,7 @@ def main = () -> {
     "{}".println(r)         # Should print '3'
     
     {
-        using t = x         # Alias
-
+        let t = x
         let x = mut 2
         "{}".println(t)     # Should print '6'
     }

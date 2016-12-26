@@ -1,0 +1,62 @@
+mod euler
+
+# Multiples of 3 and 5
+def prob1 = () -> 6..1000.filter((n) -> n % 3 == 0 || n % 5 == 0).reduce(+, 8)
+
+# Even Fibonacci numbers
+def fib = (n :: Size) -> {
+    static mem = [1, 1].Vector
+
+    if (n >= mem.size)
+        mem(n) = fib(n - 2) + fib(n - 1)
+
+    mem(n)
+}
+def prob2 = () -> {1..}.map!(.fib).takeWhile(.< 4000000).filter!(.even?).reduce(+, 0)
+
+# Largest prime factor
+let largestPrimeFactor = (n :: Size) -> {
+    let primes = [3, 5, 7, 11].Vector
+    let size = primes.size
+
+    for i in {13..n.sqrt.ceil}.filter(.odd?) do
+        if !primes.contains((n) -> i % n == 0)            # "i % _ == 0" would make a nicer lambda
+            primes.pushBack(i)
+
+    n.if primes.size == size
+    else primes.back
+}
+def prob3 = largestPrimeFactor(600851475143)
+
+# Largest palindrome product
+def palindrome? = (n :: Size) -> {
+    let n = n.toStr
+    let n = mut n.split(n.len / 2)
+
+    if n(0).size != n(1).size
+        n(0) += n(1)(0)
+
+    n(0).zipWith(n(1).reverse).reduce((b, a) -> b && a.0 == a.1, true)
+}
+def prob4 = () -> {
+    static max = 999 * 999
+    static min = 111 * 111
+
+    {max..min}.findIf(.palindrome?)
+}
+
+# Smallest multiple (smallest multiple of 1..21)
+def prob5 = () -> {
+                  # primes             composites
+    let uniques = [11, 13, 16, 17, 19, 12, 14, 16, 18, 20]
+
+    # ???
+}
+
+def euler = () -> {
+    "{}".println(prob1)
+    "{}".println(prob2)
+    "{}".println(prob3)
+    "{}".println(prob4)
+    "{}".println(prob5)
+}
