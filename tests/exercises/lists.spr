@@ -2,7 +2,7 @@ mod exercises:lists
 
 use std:{io, math, util}:_
 
-def max[T :: Comparable] = (T*) -> .reduce((l, r) -> if l < r do r else l)
+def max[T :: Comparable] = (T..) -> .reduce((l, r) -> if l < r do r else l)
 
 def reverse[T] = (list :: mut Indexable[T]&) -> {
     for i in 0..{list.size / 2}
@@ -11,13 +11,13 @@ def reverse[T] = (list :: mut Indexable[T]&) -> {
     list
 }
 
-def occurs[T :: Comparable] = (list :: T*, elem :: T) ->
+def occurs[T :: Comparable] = (elem :: T, list :: T..) ->
     list.reduce((b :: Boolean, p) -> b || p == elem, false)
 
-def oddIndices[T] = (T*) ->
+def oddIndices[T] = (T..) ->
     .zipWithIndex.filter((elem) -> elem.1 % 2 == 1).map!(_.0)       # I don't think the '_' syntax is settled
 
-def runningTotal[T] = (list :: T*) -> {
+def runningTotal[T] = (list :: T..) -> {
     let col = mut Vector[T]                                         # Need to instantiate a type I know has `pushBack`
 
     for elem in list do
@@ -37,13 +37,13 @@ def isPalindrome = (s :: String) -> {
     halves(0).zipWith(halves(1)).reduce((b, a) -> b && a.0 == a.1, true)
 }
 
-def forSum[T] = (list :: T*) -> {
+def forSum[T] = (list :: T..) -> {
     let acc = mut T
     for elem in list acc += elem
     acc
 }
 
-def whileSum[T] = (list :: T*) -> {
+def whileSum[T] = (list :: T..) -> {
     let acc = mut T
     let iter = mut list.iter
     while iter.hasNext do
@@ -51,14 +51,14 @@ def whileSum[T] = (list :: T*) -> {
     acc
 }
 
-def speroSum[T] = (T*) -> .reduce(+, T)
+def speroSum[T] = (T..) -> .reduce(+, T)
 
 def recurSum[T] = (list :: Iterable[T]) -> {
     if list.empty return T
     list(0) + list(1..).recurSum
 }
 
-def handMap[T, V] = (list :: T*, fn :: (T) -> V) -> {
+def handMap[T, V] = (list :: Iterable[T], fn :: (T) -> V) -> {
     let col = list.type.new
     let pushBack = if !{col .? pushBack} () -> ()               # Goal: Return the same type that was passed in
                                                                 # Without knowing the collection type that was passed
@@ -70,14 +70,14 @@ def handMap[T, V] = (list :: T*, fn :: (T) -> V) -> {
 
 def printSquares = (Size*) -> .handMap((i) -> "{}".println(i ^ 2))
 
-def concate[T] = (l1 :: T*, l2 :: T*) -> {
+def concate[T] = (l1 :: Iterable[T], l2 :: Iterable[T]) -> {
     let ret = l1.copy.Vector[T]                                 # I want there to be a way to implement this to return 
                                                                 # the same type of the list passed in to the function
     for elem in l2 do ret.pushBack(l1)                          # But i need a definition for pushBack to do so
     ret
 }
 
-def alternateCombine[T] = (l1 :: T*, l2 :: T*) -> {
+def alternateCombine[T] = (l1 :: Iterable[T], l2 :: Iterable[T]) -> {
     let ret = mut Vector[T]
     
     let (iter1, iter2) = mut (l1.iter, l2.iter)                 # Used this because size(l1) may not = size(l2)
@@ -92,7 +92,7 @@ def alternateCombine[T] = (l1 :: T*, l2 :: T*) -> {
     ret
 }
 
-def merge[T] = (l1 :: T*, l2 :: T*) -> {
+def merge[T] = (l1 :: Iterable[T], l2 :: Iterable[T]) -> {
     let ret = mut Vector[T]
     let (iter1, iter2) = mut (l1.iter, l2.iter)
 
@@ -230,7 +230,7 @@ def binarySearch[T :: Comparable] = (list :: Indexable[T], elem :: T, left :: Si
 def binarySearch[T :: Comparable] = (list :: Indexable[T], elem :: T) ->
     (list, elem, 0, list.size).binarySearch
 
-def framePrint = (strs :: String*) -> {
+def framePrint = (strs :: String..) -> {
     let siz = strs.reduce((l, s) -> if l < s.len s.len else l, 0) + 4
 
     "{}".println('#'.rep(siz))
@@ -242,13 +242,10 @@ def framePrint = (strs :: String*) -> {
 
 # Simple type to prevent wrong calling of translate function
 let PigLatinString = (str :: String) {                  # Constructor arguments are protected by default
-    def str = str                                       # However we can shadow with our desired visibility
-}
-def translate = (String) -> .split(" ")
-    .map!((s) -> s(1..) + s(0) + "ay")                  # Definitely want the "infinite range" syntax
-    .join(" ").PigLatinString
-def translate = (PigLatinString) -> .str.split(" ")
-    .map!((s) -> {
+    let str = str.split(" ").map!((s) -> s(1..) + s(0) + "ay").join(" ")
+
+    def translate = () -> str.split(" ").map!((s) -> {
         let tail = s(0..{s.len - 3})
-        s(s.len - 2) + tail
+        s(s.len - 2) + tai
     }).join(" ")
+}

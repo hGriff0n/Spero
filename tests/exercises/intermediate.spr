@@ -40,22 +40,18 @@ def List[T] = Empty | Cons(T, List) {}
 
 @todo("Design an array type")
 def Array[T, n] = util:Iterable[T] :: {
-    @todo("Figure out how to allocate the necessary space")
-    let store = mut mem:nalloc[mut T](n)            # How to allocate a chunk of n mutable elements ???
-                                                    # I'm using mut twice but I don't know what that means
-
-    @todo!("Figure out how to perform these translations within the AST")
+    let store = mut mem:alloc[T](n)                 # Allocate a chunk of `n * T.size` bytes
 
     # Enable indexing semantics for Arrays
-    impls Indexable[T]
+    impls Indexable[T]    
     @mutable
     def set = (Size, T) -> .match {                 # Array[T, n](i) = e -> Array[T, n].set(i, e)
-        i, e if i < n -> {}
+        i, e if i < n -> store.view_as[T](i) = e
         _ -> @error!(3241, i, n)
     }
     def get = (Size) -> .match {                    # Array[T, n](i)     -> Array[T, n].get(i).get    (has to work for functors and functions as well)
-        i if i < n -> Some({})
-        _ -> @error!(3242, i, n)                    # How to do error handling ???
+        i if i < n -> Some(store.view_as[T](i).get)                 # This makes no sense if a bad index just gives an error
+        _ -> @error!(3242, i, n)                                    # And how do I handle slicing etc.
     }
 
 
@@ -65,16 +61,17 @@ def Array[T, n] = util:Iterable[T] :: {
         let size = n
 
         @mutable
-        def next = () -> if curr_idx < size {       # Need to settle on the iterator interface
+        def next = () -> {
             curr_idx += 1
-            Some(store(curr_idx - 1))
-        } else
-            None
+            get(curr_idx - 1)
+        }
     }
     def iter = () -> Iterator
     @mutable def mut_iter = () -> mut Iterator      # Don't know how I'm going to enable modifiable iterators yet
 
     def size = () -> n
+
+    static drop = () -> {}
 }
 
 @todo("Design a vector type")
@@ -82,23 +79,49 @@ def Vector[T] = util:Iterable[T] :: {
     let num_elems = mut 0
     let room_size = mut 10
 
-    let store = mut mem:nalloc[mut T](10)
+    let store = mut mem:alloc[T](10)
 
-    impls Indexable[T]
-    @mutable def set = (Size, T) -> .match {
-        i, e if i < num_elems -> {}
-        _ -> @error!(3241, i, num_elems)
-    }
-    def get = (Size) -> .match {
-        i if i < num_elems -> {}
-        _ -> @error!(3242, i, num_elems)
+    # `impls` blocks are a new feature to simplify organization
+    impls Indexable[T] {
+        @mutable def set = (Size, T) -> .match {
+            i, e if i < num_elems -> store.view_as[T](i).set(e)
+            _ -> @error!(3241, i, num_elems)
+        }
+        # get = (Size) -> .match {
+        def get = (Size) -> .match {
+            i if i < num_elems -> Some(store.view_as[T](i).get)
+            _ -> @error!(3242, i, num_elems)
+        }
     }
 
     @mutable
-    def pushBack = (e :: T) -> {}
+    def pushBack = (e :: T) -> {
+        if num_elems == room_size {
+            room_size *= 2
+
+            # Allocate a new chunk and copy the data over
+            let tmp = mut mem:alloc[T](room_size)
+            mem:bcpy(store, store + num_elems * T.size, tmp)                # Byte-wise copy the data over to the new chunk
+
+            # Manually free the original memory for future allocation
+            store.drop
+            store = tmp
+        }
+
+        # Add the new element to the end of the vector
+        store.view_as[T](num_elems) = e
+        num_elems += 1
+    }
 
     @mutable
-    def popBack = (e :: T) -> {}
+    @todo("Figure out how error handling will be done (both compile and run-time)")
+    def popBack = (e :: T) -> match num_elems {
+        0 -> @error!(3240)
+        n -> {
+            num_elems -= 1
+            store.view_as[T](num_elems).drop
+        }
+    }
 
     def size = () -> num_elems
     def capacity = () -> room_size 

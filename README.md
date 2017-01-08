@@ -14,14 +14,13 @@ The Spero project also contains four sub-projects: speroc, spero-std, Spark, and
 
 ## Current Todo List:
 
-    1) Working on the module/import syntax and semantics
-    2) Describing the full grammar
-    3) Designing the type system
-    4) Deciding on concurrency model
-    5) Formalizing language documentation
-    6) Start working on the compiler
-    7) Planning out the standard library
-
+    1) Fix the problems with pointers
+    2) Designing the type system
+    3) Deciding on concurrency model
+    4) Formalizing language documentation
+    5) Figure out how modules will be implemented
+    6) Planning out the standard library
+    
 
 ## Some example programs
 

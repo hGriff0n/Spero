@@ -49,6 +49,7 @@ Types
   Destruction:
     Destructors are implemented by overriding the static 'drop' method
       This method must take a singular 'mut T' as its argument (maybe a 'mut T&' in the future)
+      TODO: Might be better to make this a (special) 'def' method
     Destructor calls are implicitly inserted by the compiler
       Insertions are done in 2 locations; scope exit and an enclosing type's 'drop' method
       These insertions are done in reverse order of declaration

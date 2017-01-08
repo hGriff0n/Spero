@@ -78,7 +78,7 @@ Generics
   Grammar:
     \[list<gen_arg, 1>\]
     gen_arg  -> <type_gen> | <var_gen>
-    type_gen -> <type> (+|-)? ((::|!:|<|>) <type>)?
+    type_gen -> <type> (+|-)? ((::|!:|<|>) <type>)?       # (+|-|..)
     var_gen  -> <var> ((:: <type>) | (= <val>))?
 
   Generics are a way to write code irrespective of the types of arguments
@@ -144,9 +144,15 @@ Generics
       Instantiation with an explicit template parameter
       Inference (ie. ':: T'), this basically follows from implicit conversion
 
+  Variadics and Covariance
+    Generics can also be implemented to accept a sequence of different types by appending a '..' to the generic type
+      TODO: Explain more
+    This variadics take up the syntactical spot for indicating co/contra-variance (ala Scala)
+
 
 TODO:
   Figure out monads
   What should the behavior of 'static' be in local scopes 
   Determine what the default "unsafe" expressions should be
   Find a way to make def/let meaningful in local contexts (ie. not types/modules)
+  Explain variadics and covariance in generics
