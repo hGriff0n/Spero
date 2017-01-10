@@ -12,6 +12,12 @@ Memory:
   Everything is stack-allocated unless otherwise specified
     NOTE: This includes custom types
 
+NOTE: Very preliminary idea, not quite ready to be accepted
+References:
+  References are a simple and lightweight way to pass variables by-reference into functions
+    NOTE: Much of this design is taken from C++ style references
+  If taken by a mutable reference (ie. 'mut T&'), any modifications to the argument are maintained in the calling variable
+
 Views:
   A view is a lightweight sequence of values of any length that can be accepted as the last arguments to a function
   A view is indicated in an argument list by appending the type name with two dots ('..') ala Ranges
@@ -31,6 +37,7 @@ Current Framework Idea:
   Chunk - Type to represent a section of memory. Little more than a (Addr, Size, Bool) tuple. Must be mutable?
     drop - Method to safely deallocate a Chunk and prevent future usage. Also marks the Chunk as free for reallocation.
       Note: This does not zero-initialize the memory segment (needed for some mmio behavior)
+      Note: This does not call any destructors as it has no conception of underlying types
     forget - Method to prevent drop from marking memory as free for allocation use.
     view_as[T] - Method to reinterpret the Chunk as an 'Element[T]' object for more type-ful operations. Optional offset arg.
       Note: This interface needs a lot of work and thought
@@ -39,10 +46,11 @@ Current Framework Idea:
     for_each[T] - Method to iterate over each 'T' in the 'Chunk' (as if it was an array of 'Element[T]')
       Note: Is there a way to enable 'for_each(fn)' and 'for_each.map!(fn)' ??? Perhaps 'iter_each' method
   Element[T] - Type to represent a single 'T' in heap memory. Intermediary between a Chunk and 'T' in typing
-    Note: Current framework has 'Element[T]' extending Chunk. Need to decide on interchangability with Chunk and T
     set - Method for setting the memory segment to the given value of 'T'
     get - Method for getting the memory segment as a raw instance of 'T'
     destroy - Method to call the destructor for 'T' on the memory segment
+    Note: Current framework has 'Element[T]' extending Chunk. Need to decide on interchangability with Chunk and T
+    Note: 'Element[T]' does not have a 'drop' method as that would interfere with 'Chunk:view_as' operation
   alloc - Function to allocate a chunk of 'n bytes'. Returns a Chunk
   alloc[T] - Function to simplify allocating a known type. defined as "alloc(T.size * n)"
   valloc[T] - Function to allocate and initialize a single element. Can be defined in terms of "alloc"

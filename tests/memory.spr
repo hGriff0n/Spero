@@ -23,21 +23,24 @@ Design Goals of Memory Management:
 
 ##
 TODO:
-  Look into adding the ability for "inline mut" (for making a value mutable for function purposes)
+  Look into adding the ability for "inline mut"
     The grammar already accepts it, this just gives meaning to the construction
   Work on the semantics of getting a 'T' from 'Chunk' (`Element[T]`)
-  Update the grammar to match the changes
+  Add in "let .. in .." expressions into the language
+    Simplest to just add a special ast node with a binding and expression`
+  Update the grammar to match recent changes
     Look into adding '_' for creating lambdas (analysis stage ???)
     Look into moving 'mut' into the binding area
     Change "view" from 'T*' to 'T..'
     Add 'T..' variadics support to generics grammar
     Allow for a block after impls statement (for putting in the impls declarations)
-  Look into allowing 'name = val' syntax inside of impls blocks (not require visibility requirement to meet interfaces)
+  Look into allowing 'name = val' syntax inside of impls blocks
+    The visibility of the members is implied by the names, 'impls' is more about giving meaning
   Look into a way to transform a stack value into a memory operable value
   Figure out how drop will be implemented
-    What will Chunk:drop do?
-      It can't call destructors because Chunk doesn't know what it has
   'T..' isn't an exact replacement for 'T*' ???
+  Figure out what to do with 'mem:valloc' (return, deallocation of return)
+    Changed 'Element[T]' to not have a drop method and that possibly introduces a memory leak with 'valloc'
 ##
 
 ##
@@ -77,7 +80,7 @@ def initTest = () -> {
                                                 # IDEA: 'chnk.transmute(0)' would make a variable at the address of the first Int ???
 
     # chnk.set[Int](ptr.view)
-    chnk.view_as[Int] = ptr.get                 # 'malloc' returns an "Element". `view` doesn't need typing
+    chnk.view_as[Int] = ptr.view_as[Int].get    # 'valloc' doesn't return an 'Element[T]' as 'Element[T]' has no 'drop' method
     chnk.set[Int](1, ptr.view_as[Int].get)      # Since 'Element' :: 'Chunk', either method is fine to use
                                                 # I'm not sure of the usefulness and sustainability of 'set'
 }
@@ -91,8 +94,10 @@ This function should, given the address of a MMIO device:
 @safe("Because")
 def wrap = (mmio :: mem:Addr) -> {
     let device = mut mem:Chunk(mmio, 4)     # Chunk needs to have a bound for it's "control"
-    device.view_as[Size] = 35
-    # device.view_as[Size].set(35)
+
+    device.view_as[Size] = 35               # You can use '=' or 'set' for setting an 'Element[T]'
+    # device.view_as[Size].set(35)          # Though I think 'set' may be more idiomatic
+
     device.forget                           # Call 'forget' to prevent 'mmio' from being marked "free" in 'drop'
                                             # This interface makes memory safety the default behavior of Spero
                                             # You have to try to get the memory "unsafe" behavior
@@ -142,26 +147,114 @@ let useFwd = () -> {
 
 
 ##
-The best pointer interface I have
-    Note: This doesn't work at all
+Idea 1: 'Mut'-infused pointers
+    The idea for this interface is that 'mut' determines whether the pointers object is mutable
+    The problem is in simultaneously preventing reassignment of the pointer when not desired
+        Pointers are either mutable+moveable or neither, no in-between
 ##
-def bestPtr = () -> {
+def ptrTest = () -> {
     let ptr = mut mem:malloc(5)                 # Make a mutable pointer
-    let o_ptr = mem:malloc(5)                   # Make an immutable pointer
+    let o_ptr = mem:malloc(7)                   # Make an immutable pointer
                                                 # Note: Pointers are not reassignable
 
-    # IDEA: o_ptr.swap(ptr) for reassigning pointers
+    # Reassigning pointers
+    ptr.swap(mut o_ptr)                         # This switches what 'ptr' and 'o_ptr' point to
+                                                # Wouldn't this imply that '=' is overloaded to assign to the pointed object ???
 
-    # head.into_iter(.next).map!(.value).reduce(+, head.value)
-    # Some pointer methods: borrow, copy, deref (special)
+    # TODO: What should happen here (mutability switching and copying)
+    # let tst = ptr                             # error: Immutable+Mutable pointers to the same locations
+    let tst = ptr.borrow                        # This method prevents using 'ptr' while test is in scope (still holding the borrow)
+                                                # Think a bit of Rust's "ownership" concept in this regards (there's a 'borrow_mut' method too)
+    let tst = o_ptr                             # No problem. Should also drop the previous pointer if any was created (releasing ownership in our case)
+    
+    # TODO: What should happen here ???
+    let t = 5
+    swap(ptr, t)
+    
 
-    # As I've changed views to be 'T..' syntax
-        # Can I use '*' for pointers now ???
-    # T& - ipointer to immutable T
-    # mut T& - ipointer to mutabe T
-    # T* - mpointer to immutable T
-    # mut T* - mpointer to mutable T
+    # Way to create pointers from pre-allocated memory
+    let ptr_pool = mut mem:alloc(8)
+    let ptr1 = mem:mk_ptr_from[Int](ptr_pool)           # 'mk_ptr_from' takes a Chunk and creates a pointer for the given memory and type
+    let ptr2 = mem:mk_ptr_from[Int](ptr_pool(4))        # TODO: Need to figure out memory-ownership
+                                                        # TODO: Also prevent 'null' pointers within this conception 
+
+
+    # IDEA: &-operators perform pointer arithmetic
+    @assert!(ptr1 &+ 1 == ptr2)
+
+    # Modifying the pointed object is simple with the 'deref' special method
+    ptr += 5
+    o_ptr += 3                                  # error: 'attempt to mutate an immutable object'
+                                                # it may be a bit difficult defining 'deref' to enable these semantics
 }
+
+##
+Idea 2: Mutable+Immutable Pointer types
+    The idea is that the distinction between mutable pointed objects and mutable pointers can be enforced through separate types
+    One type would represent immutable pointed objects while the other would allow mutation of the pointed objects, 'mut' remains as is
+    The problem is one of complexity and naming, it's much more difficult to express the idea of two unique pointer types to a learner
+    That may be a benefit, but I also have a difficult time in coming up with correct names and figuring out the interaction between the 2
+##
+def ptrTest = () -> {
+    let ptr = mem:malloc(5)
+    let o_ptr = mut mem:calloc(7)
+
+    # Reassigning pointers (including between mutability)
+    o_ptr.swap(mut ptr)                                 # This should not be an issue unless the pointers have multiple references (mutability clash)
+                                                        # Swapping between pointers of the same mutability should not be an issue, period
+                                                        # Should this be an error among different mutabilities ???
+
+    let tst = o_ptr.borrow_as_mut                       # borrow 'o_ptr' as mutable, error if references isn't 1
+    let tst = ptr                                       # Releases 'o_ptr' borrowing. No typing problem because of the borrowing
+
+
+    # Creating pointers from memory pool (ie. Chunk)
+    let ptr_pool = mut mem:alloc[Int](2)
+    let ptr1 = mem:mk_mptr_from[Int](ptr_pool)          # Special methods to create pointer
+    let ptr2 = mem:mk_ptr_from[Int](4.ptr_pool)
+
+
+    # Modifying pointed objects (and pointer arithmetic)
+    @assert!(ptr1 &+ 1 == ptr2)                         # Would this work as 'ptr1' and 'ptr2' are of different mutabilities? They might be incomparable
+
+    ptr1 += ptr                                         # This may be a bit difficult to type correctly with the implicit 'deref' calls
+    o_ptr += 3                                          # error: 'attempt to mutate an immutable object'
+}
+
+##
+Idea 3: Mutable-only pointers
+    The idea is that the pointed objects of all pointers is mutable, regardless of the mutability of the pointer
+    The problems of this approach are obvious, but it does manage to get around a lot of the issues with pointers
+##
+def ptrTest = () -> {
+    let ptr = mut mem:malloc(5)
+    let o_ptr = mem:malloc(7)
+
+    # Reassigning pointers
+    ptr.swap(mut o_ptr)                                 # It seems the reassignment interface is pretty good among the options
+    let tst = ptr.borrow
+    let tst = o_ptr
+
+
+    # Creating pointers from a memory pool (ie. Chunk)
+    let ptr_pool = mut mem:alloc[Int](2)
+    let ptr1 = mut mem:mk_ptr_from[Int](ptr_pool)
+    let ptr2 = mem:mk_ptr_from[Int](4.ptr_pool)
+
+
+    # Modifying pointed objects (and pointer arithmetic)
+    @assert!(ptr1 &+ 1 == ptr2)
+
+    ptr1 += ptr
+    o_ptr += 3                                          # Allowed as all pointerd objects are "mutable"
+}
+
+##
+Some additional pointer work
+    deref - special method for accessing the pointed object when needed, automatically inserted by the language
+    copy - method to create a new pointer that is a copy of the original (not linked in terms of references, etc.)
+##
+
 
 ##
 This function should:
@@ -169,41 +262,23 @@ This function should:
     From that variable create a Chunk object
     Modify the variable through the Chunk
 ##
-def stackTest = () -> {
-    let tst = 5
-
-    # Get a way to modify tst without touching it
-    mem:Chunk(@addrof!(tst), tst.sizeof)        # Turning to annotations makes safety a bit hard to check (possibly)
-    mem:stackChunk(tst)                         # I don't know how possible this would be to code
-    @stack!(tst)                                
-}
-
-
-def refTest[T] = (tst :: mut T&) {              # Have Java-style semantics of Pointers
-    tst += 5                                    # Or C++ References in some aspects
-}
-
-def tst = () -> {
-    let tst = 5
-    refTest(tst.ref)                            # However, code needs to explicitly release control over the resource
-                                                # For correctness. This also enables some compilation checks
-
-    let ptr = mem:malloc(5)
-    refTest(ptr)                                # Explicit 'malloc' pointers don't necessarily need to have this "borrowing"
-                                                # Though there are some different issues that this may introduce
-}
-
-# Or I could fall back on the 'mut' overloading
-
-def mutator = (i :: mut Int&) -> i *= 3
+def mutator = (i :: mut Int&) -> i *= 3         # 'T&' takes on C++-style reference semantics with largely no changes
 def keeper = (i :: Int&) -> i * 3
 def tst = () -> {
     let me = 5
-    mutator(me)         # error
-    keeper(me)
+    # mutator(me)                               # "error" - attempt to take a mutable reference to an immutable object
+    mutator(mut me)                             # 'inline mut' syntax can get around this issue
+    keeper(me)                                  # But isn't this standard '(T)' behavior? Avoids copying unnecessarily
+                                                # Copying only occurred in using a 'T' for a '(mut T)'
+                                                # I could make that an optimization instead of a requirement
 
-    let me = me
+    let me = mut 5
     mutator(me)
-    keeper(me)
+    let me = keeper(me)                         # 'me == 45'
+
+    # Idea: Allow pointers to be interchangeable with 'T&' (mut pointers with 'mut T&')
 }
-# But how do I ensure that copies are created when they should be (ie. in type constructors)
+# Note: This is currently using the "two pointers" idea
+def ptrRef = (p :: mut IPtr[Int]&) -> {}        # You can take pointers by reference ???
+def mptrRef = (p :: mut Ptr[Int]&) -> {}        # This wouldn't "invoke" reference counting, possibly more efficient
+                                                # The mutability problem remains though
