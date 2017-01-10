@@ -49,7 +49,7 @@ def Array[T, n] = util:Iterable[T] :: {
         i, e if i < n -> store.view_as[T](i) = e
         _ -> @error!(3241, i, n)
     }
-    def get = (Size) -> .match {                    # Array[T, n](i)     -> Array[T, n].get(i).get    (has to work for functors and functions as well)
+    def apply = (Size) -> .match {                    # Array[T, n](i)     -> Array[T, n].get(i).get    (has to work for functors and functions as well)
         i if i < n -> Some(store.view_as[T](i).get)                 # This makes no sense if a bad index just gives an error
         _ -> @error!(3242, i, n)                                    # And how do I handle slicing etc.
     }
@@ -87,8 +87,8 @@ def Vector[T] = util:Iterable[T] :: {
             i, e if i < num_elems -> store.view_as[T](i).set(e)
             _ -> @error!(3241, i, num_elems)
         }
-        # get = (Size) -> .match {
-        def get = (Size) -> .match {
+        # apply = (Size) -> .match {
+        def apply = (Size) -> .match {
             i if i < num_elems -> Some(store.view_as[T](i).get)
             _ -> @error!(3242, i, num_elems)
         }

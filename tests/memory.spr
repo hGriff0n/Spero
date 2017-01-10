@@ -162,7 +162,7 @@ def ptrTest = () -> {
                                                 # Wouldn't this imply that '=' is overloaded to assign to the pointed object ???
 
     # TODO: What should happen here (mutability switching and copying)
-    # let tst = ptr                             # error: Immutable+Mutable pointers to the same locations
+    # let tst = ptr                             # error: Immutable+Mutable pointers to the same locations (how on earth do I determine that ???)
     let tst = ptr.borrow                        # This method prevents using 'ptr' while test is in scope (still holding the borrow)
                                                 # Think a bit of Rust's "ownership" concept in this regards (there's a 'borrow_mut' method too)
     let tst = o_ptr                             # No problem. Should also drop the previous pointer if any was created (releasing ownership in our case)
