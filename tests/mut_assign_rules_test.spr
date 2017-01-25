@@ -1,0 +1,171 @@
+##
+Mut semantical checking:
+    In order to determine how pointers should work, I need to nail down the rules for mutability changes
+    Mutability changes can occur in three places (that we care about): Assignment, Arguments, Deconstruction
+        Assignments are any statements of the form "let t = mut? v" where t and v may be the same
+        Arguments are the transition between function arguments and the expected parameters
+        Deconstruction is the transition from ADTs to variables within match statements
+    These rules must work and consider all possibilities, particularly pointers and references
+##
+def testfoo = () -> {
+    let t = 3               # Standard assignment, no issue
+    let t = mut t           # Mutable reassignment, no links, can reuse memory
+    let t = t               # Non-mutable reassignment, no links, can reuse memory
+    let r = t               # Non-mutable assignment, can maintain link
+    let z = mut t           # Mutable assignment, must copy
+    let t = mut t           # Mutable reassignment, ???
+    let t = mut t + 3       # No issue, z=t+3 is a seperate location (register)
+}
+
+##
+Assignment checking (for normal, ie. non-pointer/reference, values):
+    mut->const, same, _    = change mutability
+    mut->_, diff, _        = copy
+    mut->mut, same, _      = delete, warn
+    const->const, same, _  = delete, warn
+    const->const, diff, _  = alias
+    const->mut, same, _    = copy
+    const->mut, same, 1    = change mutability
+    const->mut, diff, _    = copy
+
+    Tuple deconstruction can be taken as the sum of the checks for it's members
+        The deconstruction is an error iff the assignment of any member is an error
+##
+
+def ptrfoo = () -> {
+    let t = mem:malloc(5)       # :: Size* (use `ralloc` to get a reassignable pointer)
+    let r = t
+    let z = mut t               # :: mut Size* (ie. memory is mutable), error
+    let t = mut t
+}
+
+##
+Assignment checking (for pointers, taking the idea from PointerTestClass.1):
+    mut->const, same, 1   = change mutability
+    mut->const, _, _      = error
+    mut->mut, same, _     = delete, warn
+    mut->mut, diff, _     = error
+    const->const, same, _ = delete, warn
+    const->const, diff, _ = copy
+    const->mut, same, 1   = change mutability
+    const->mut, _, _      = error
+##
+
+def sumList = (l :: List&) -> {
+    let l = mut l                               # error. References cannot be changed from 'const' to 'mut'
+}
+
+def testRef = (l :: mut List&) -> {
+    let l = l                                   # I can definitely remove this sequence in analysis (no side-effects)
+    let l = mut l                               # But should this still produce an error according to reference rules ???
+                                                # The question is "how advanced is this analysis phase?"
+}
+
+##
+Assignment checking (for references):
+    mut->mut, same, _     = delete, warn
+    mut->mut, diff, _     = alias
+    mut->const, same, 1   = change mutability
+    mut->const, same, _   = error
+    mut->const, diff, _   = error
+    const->mut, _, _      = error
+    const->const, same, _ = delete, warn
+    const->const, diff, _ = alias
+##
+
+
+
+def List = {
+    def next = mut None :: Option[mut List*]
+    def val = mut 5
+}
+
+# l is a const-reference to a List object
+# -> mutations on `next` and `val` are disabled (they are treated as const)
+# -> mutations on `t in Some(t)` are disabled if `next is Some(t)`
+# -> `t` must be a `List*` when borrowed from l
+def sumList = (l :: List&) -> match l.next {
+    Some(p) -> val + p.sumList                  # No issue (regardless of ADT deconstruction behavior)
+    # Some(mut p) -> val + p.sumList            # This is an error as l is not mutable, this would allow mutations of 'p'
+                                                # This would be valid if l were mutable as ADT deconstruction borrows
+                                                # TODO: I don't know how to make this an error
+                                                # I could use assignment rules, but I've already made match different
+    None -> 0                                   # Match automatically borrows the values when deconstructing
+                                                # The issue is in `const->mut` borrowing
+                                                # Any solution has to preserve `mut->mut` borrowing
+}
+
+# Problem: What about temporaries? Do I even have a conception of temporaries?
+# mut->mut, ptr     = borrow
+# mut->const, ptr   = borrow
+# const->mut, ptr   = error
+# const->const, ptr = borrow/copy
+
+##
+Other details:
+    ADT deconstruction borrows the values when assigning to the variables
+##
+def Option[mut T*] = Some(mut T*) | None {
+    def get = () -> self.match {
+        Some(mut p) -> mut p.borrow             # TODO: How does borrowing work across boundaries ???
+        Some(p) -> p.borrow                     # Would this work for handling mutability? I don't think so
+    }                                           # But I do need to have a way to handle both cases
+    def isNone = () -> self.match {
+        Some(_) -> false
+        None -> true
+    }
+    def isSome = () -> !isNone
+}
+
+def sumList = (l :: List&) -> match l {
+    Some(p) -> {
+        let p = mut p                           # Current assignment rules can't handle this pointer trickery
+        p.val += 3                              # We can change a borrowed const pointer into a mut pointer
+        l.val + p.sumList                       # TODO: Find a way to prevent this workaround to protect guarantees
+                                                # IDEA: There may be a solution in how borrowing is implemented
+    }
+    None -> 0
+}
+
+##
+IDEA: Regarding errors/warnings in regards to transformable operations
+    Some constructions may produce errors according to the raw rules of the language
+    However, with simple analysis and stable transformations, these constructions can be
+        removed and substituted with a construction that does not produce errors
+    In these conditions, the error should be maintained in the compiler as a warning
+##
+
+##
+Complete Assignment Rules (in regards to statements of the form "let t = v")
+    (delta,name,ptr-ref,#refs)
+    mut->mut, same, _, _       = delete, warn
+    mut->mut, diff, ptr, _     = error
+    mut->mut, diff, ref, _     = alias (+1)
+    mut->mut, diff, na, _      = copy
+    mut->const, same, ptr, >1  = error
+    mut->const, same, ref, >1  = error
+    mut->const, same, _, _     = change mutability
+    mut->const, diff, na, _    = copy
+    mut->const, diff, _, _     = error
+    const->mut, same, ptr, 1   = change mutability
+    const->mut, same, na, 1    = change mutability
+    const->mut, same, na, _    = copy, untangle alias
+    const->mut, same, _, _     = error
+    const->mut, diff, na, _    = copy
+    const->mut, diff, _, _     = error
+    const->const, same, _, _   = delete, warn
+    const->const, diff, ptr, _ = copy (+1)
+    const->const, diff, ref, _ = alias (+1)
+    const->const, diff, na, _  = alias (+1)
+
+    Tuples are deconstructed according to the sum of their members
+        If any member errors, then the entire deconstruction is an error
+##
+
+##
+Complete Deconstruction Rules:
+##
+
+##
+Complete Arguments Rules
+##
