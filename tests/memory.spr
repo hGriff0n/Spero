@@ -33,13 +33,17 @@ Design Goals of Memory Management:
         Add in "inline mut" into the language and be sure the ast recognizes it
             I'm pretty sure the grammar recognizes as a by-product of recognizing `ValExpr`
         Change operator precedence rules so that '&' operators have one precedence
-    
-    Parser TodoList Aditions:
-        Be sure to setup ast and analysis to recognize (and mark) assignments of the form "let t = v"
+        Add ability to destruct ADT values by reference within match statements
+            Requires a grammar and parser change to allow for "Some(mut& p)" and "Some(&p)"
 ##
 
 ##
 TODO:
+  Perform some final touches on the initial work in 'mut_assign_rules_test.spr'
+    Be sure to commit the tables and reasoning into some documentation files
+    Figure out how the ast/grammar/analysis needs to be structured to perform the required checks
+  Update documentation in this file to use the ideas from the 'mut_assign_rules_test'
+
   Work on the semantics of getting a 'T' from 'Chunk' (`Element[T]`)
   Look into moving 'mut' into the binding area
   Look into adding '_' for creating lambdas (analysis stage ???)
@@ -52,8 +56,10 @@ TODO:
   Figure out what to do with 'mem:valloc' (return, deallocation of return)
     Changed 'Element[T]' to not have a drop method and that possibly introduces a memory leak with 'valloc'
   Work on the 'Memory'/'Chunk' interface interaction
-  Add ability to destruct ADTs by reference within match statements (ie. "Some(mut& p)")
   Figure out where references are allowed to exist (my current idea is only in parameter lists)
+    References can't be stored inside of a type/used as generic parameters
+  Extend mut rules to contend with values as well (might be a way of getting around the mut list issue)
+    Also need to figure out function resolution in regards to the 'mut/ref/ptr' distinctions
 ##
 
 
@@ -182,173 +188,25 @@ let useFwd = () -> {
 
 # 3,6: Designing the reference/pointer interface model
 
-##
-Idea 1: 'Mut'-infused pointers
-    The idea for this interface is that 'mut' determines whether the pointers object is mutable
-    The problem is in simultaneously preventing reassignment of the pointer when not desired
-        Pointers are either mutable+moveable or neither, no in-between
-        No way to prevent holding pointers in mutable and immutable modes
-##
-def ptrTest = () -> {
-    let ptr = mut mem:malloc(5)                 # Make a mutable pointer
-    let o_ptr = mem:malloc(7)                   # Make an immutable pointer
-                                                # Note: Pointers are not reassignable
-
-    # Reassigning pointers
-    ptr.swap(mut o_ptr)                         # This switches what 'ptr' and 'o_ptr' point to
-                                                # Wouldn't this imply that '=' is overloaded to assign to the pointed object ???
-
-    # let tst = ptr                             # error: Immutable+Mutable pointers to the same locations (how on earth do I determine that ???)
-                                                # I know of no feature in the language that would catch and prevent this error from compiling
-                                                # Standard 'mut' rules should handle switching, but they do nothing when multiple references are in play
-                                                # 'mut' rules actually do catch this when determining whether to copy or alias a binding (though I don't know if that's still a thing)
-    let tst = ptr.borrow                        # This method prevents using 'ptr' while test is in scope (still holding the borrow)
-                                                # Think a bit of Rust's "ownership" concept in this regards (there's a 'borrow_mut' method too)
-    let tst = o_ptr                             # No problem. Should also drop the previous pointer if any was created (releasing ownership in our case)
-    
-    # TODO: What should happen here ???
-    let t = 5
-    swap(ptr, t)
-    
-
-    # Way to create pointers from pre-allocated memory
-    let ptr_pool = mut mem:alloc(8)
-    let ptr1 = mem:mk_ptr_from[Int](ptr_pool)           # 'mk_ptr_from' takes a Chunk and creates a pointer for the given memory and type
-    let ptr2 = mem:mk_ptr_from[Int](ptr_pool(4))        # TODO: Need to figure out memory-ownership (pointer or chunk, how would I handle pointer?)
-                                                        # TODO: Also prevent 'null' pointers within this conception 
-
-
-    # IDEA: &-operators perform pointer arithmetic
-    @assert!(ptr1 &+ 1 == ptr2)
-
-    # Modifying the pointed object is simple with the 'deref' special method
-    ptr += 5
-    o_ptr += 3                                  # error: 'attempt to mutate an immutable object'
-                                                # it may be a bit difficult defining 'deref' to enable these semantics
-}
-
-##
-Idea 2: Mutable+Immutable Pointer types
-    The idea is that the distinction between mutable pointed objects and mutable pointers can be enforced through separate types
-    One type would represent immutable pointed objects while the other would allow mutation of the pointed objects, 'mut' remains as is
-    The problem is one of complexity and naming, it's much more difficult to express the idea of two unique pointer types to a learner
-    That may be a benefit, but I also have a difficult time in coming up with correct names and figuring out the interaction between the 2
-
-    With this idea you get mutability separation as desired (and the language requires) without any special effort
-        However, this comes at the cost of typing (and possibly name) complexity, especially when trying to convert between the two
-    I'm not actually sure I can prevent the mutability issue, even with this idea
-##
-def ptrTest = () -> {
-    let ptr = mem:malloc(5)
-    let o_ptr = mut mem:calloc(7)
-
-    # Reassigning pointers (including between mutability)
-    o_ptr.swap(mut ptr)                                 # This should not be an issue unless the pointers have multiple references (mutability clash)
-                                                        # Swapping between pointers of the same mutability should not be an issue, period
-                                                        # Should this be an error among different mutabilities ???
-
-    # let tst :: MPtr[Int] = o_ptr
-    let tst = o_ptr.borrow_as_mut                       # borrow 'o_ptr' as mutable, error if references isn't 1
-    let tst = ptr                                       # Releases 'o_ptr' borrowing. No typing problem because of the borrowing
-
-    # Typing of the pointer types
-    let tst :: Ptr[Int] = o_ptr
-    let tst :: MPtr[Int] = ptr                          # I don't like the 'mutable pointer' typing, but these are the best I have at the moment
-
-
-    # Creating pointers from memory pool (ie. Chunk)
-    let ptr_pool = mut mem:alloc[Int](2)
-    let ptr1 = mem:mk_mptr_from[Int](ptr_pool)          # Special methods to create mutable spointer
-    let ptr2 = mem:mk_ptr_from[Int](4.ptr_pool)
-
-
-    # Modifying pointed objects (and pointer arithmetic)
-    @assert!(ptr1 &+ 1 == ptr2)                         # Would this work as 'ptr1' and 'ptr2' are of different mutabilities? They might be incomparable
-
-    ptr1 += ptr                                         # This may be a bit difficult to type correctly with the implicit 'deref' calls
-    o_ptr += 3                                          # error: 'attempt to mutate an immutable object'
-}
-
-def List = {
-    def next :: Option[Ptr[List]] = None
-    def val = mut 5
-}
-
-def workWithList = (l :: List&) -> {
-    match l.next {
-        Some(p) -> p.borrow_as_mut += 3                 # I need to be sure that I can actually prevent this mutability issue
-        None -> return
-    }
-}
-
-##
-Idea 3: Mutable-only pointers
-    The idea is that the pointed objects of all pointers is mutable, regardless of the mutability of the pointer
-    The main problem with this approach is that it just ignores the mutability issue entirely
-        This is a marked departure from the rest of the language and may make some guarantees impossible
-            Namely immutability is right-out if any pointers are used as an implementation detail (without effort)
-        However, it manages to solve the main problem with Idea 1 and mutability, namely the inability to catch issues
-##
-def ptrTest = () -> {
-    let ptr = mut mem:malloc(5)
-    let o_ptr = mem:malloc(7)
-
-    # Reassigning pointers
-    ptr.swap(mut o_ptr)                                 # It seems the reassignment interface is pretty good among the options
-    let tst = ptr.borrow                                # Preventing mutability is not an issue because there everything is mutable
-    let tst = o_ptr                                     # Borrow is just an extra method to prevent using 'ptr' while 'tst' exists (in it's borrowing form)
-
-
-    # Creating pointers from a memory pool (ie. Chunk)
-    let ptr_pool = mut mem:alloc[Int](2)
-    let ptr1 = mut mem:mk_ptr_from[Int](ptr_pool)
-    let ptr2 = mem:mk_ptr_from[Int](4.ptr_pool)
-
-
-    # Modifying pointed objects (and pointer arithmetic)
-    @assert!(ptr1 &+ 1 == ptr2)
-
-    ptr1 += ptr
-    o_ptr += 3                                          # Allowed as all pointerd objects are "mutable"
-}
-
-
-# IDEA 1: use 'malloc/calloc' as differentiators between reassignable pointers
-    # But that means that 't = mut t' no changes mutability status, possible prolbe
-# IDEA 2: use 'malloc/calloc' as differentiators between mutability status of the owned memory
-    # But then 't = mut t' can move the pointer around, that is itself an error state
-def PointerTestClass = {
-    let r = mut mem:malloc(3)       # r :: mut Size mut*
-    let p = mem:calloc(4)           # p :: Size*
-
-    # Prolbems if it returns a 'mut Size*' -> error (at least if non-mutable function returns mutable pointer)
-    def getR = () -> r
-
-    @mutable
-    def getMutR = () -> r           # Should I require a 'mut' here
-}
-
-
-##
-Syntax Idea: Kinda follows a bit from the Rust syntax (I believe)
-##
-def mcfoo = (p :: mut T*) -> ()
-def mmfoo = (p :: mut T mut*) -> {}
-def cmfoo = (p :: T mut*) -> ()
-def ccfoo = (p :: T*) -> {}
+# 'malloc'/'ralloc' are used to differentiate between stable(malloc) and reassignable(ralloc) pointers
+    # mutability of the internal memory is indicated through the 'mut' keyword (plus a set of "Mut Rules")
+    # typing of this system is rather simple, though it currently requires a parser update to implement
+        # 'T*' indicates a stable pointer to an instance of the type 'T'
+        # 'T mut*' indicates a reassignable pointer to an instance of 'T'
+        # 'mut T*' indicates a stable pointer to a mutable instance of 'T'. Guess what "mut T mut*" is?
 def ptrTest = () -> {
     let ptr = mut mem:malloc(5)                 # Make a mutable pointer
     let o_ptr = mem:malloc(7)                   # Make an immutable pointer
                                                 # Note: Pointers created with `ralloc` are reassignable
 
     # Reassigning pointers
-    # ptr.swap(mut o_ptr)                       # Error: Attempt to reassign `ptr` and `o_ptr` obtained from call to `calloc`
+    # ptr.swap(mut o_ptr)                       # Error: Attempt to reassign stable pointers `ptr` and `o_ptr`
 
-    # (mut->const,diff,ptr) reassignment ==> error (current behavior)
+    # AssignRules.(mut->const,diff,ptr,_) ==> error
     # let tst = ptr                             # error: Immutable+Mutable pointers to the same locations (how on earth do I determine that ???)
                                                 # I can use mut-reassignment checking rules, to insert some checking code
     let tst = ptr.borrow                        # This method prevents using 'ptr' while test is in scope (still holding the borrow)
-                                                # Think a bit of Rust's "ownership" concept in this regards (there's a 'borrow_mut' method too)
+                                                # Think a bit of Rust's "ownership" concept in this regard (note: borrow is @mutable)
                                                 # I need to think about it's interaction with number of references
     let tst = o_ptr                             # No problem. Should also drop the borrowing of `ptr`
     
@@ -362,7 +220,7 @@ def ptrTest = () -> {
     let ptr1 = mem:mk_ptr_from[Int](ptr_pool)           # 'mk_ptr_from' takes a Chunk and creates a pointer for the given memory and type
     let ptr2 = mem:mk_ptr_from[Int](ptr_pool(4))        # TODO: Need to figure out memory-ownership (pointer or chunk, how would I handle pointer?)
                                                         # TODO: Also prevent 'null' pointers within this conception
-                                                        # Note: `mk_ptr_from` should to return calloc pointers
+                                                        # Note: `mk_ptr_from` should returns stable pointers (ala. "malloc")
 
 
     # IDEA: &-operators perform pointer arithmetic
@@ -370,7 +228,7 @@ def ptrTest = () -> {
 
     # Modifying the pointed object is simple with the 'deref' special method
     ptr += 5
-    o_ptr += 3                                  # error: 'attempt to mutate an immutable object'
+    # o_ptr += 3                                # error: 'attempt to mutate an immutable object'
                                                 # it may be a bit difficult defining 'deref' to enable these semantics
 }
 
