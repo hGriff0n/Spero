@@ -62,6 +62,7 @@ Mutability
     Experimental: It is possible to mark types as immutable-only with '@disable(mut)'
       Similar to mutable-only, it is a compilation error to create mutable instances
 
+NOTE: Deprecated. See 'mut_rules.txt' for a more complete description of these rules
 Memory Usage in Assignment/Arguments			# Note: 'T' includes 'mut T', 'T&', and 'T*' unless specified
   Assignment
     t = v|t		<- Reuse memory if possible, otherwise copy

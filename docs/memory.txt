@@ -24,6 +24,14 @@ Views:
     TODO: Explain more about this
   NOTE: Needs more explanations
 
+References:
+  Spero adapts the C++ concept of references to enable a lightweight, yet safe, method of performing call-by-reference
+  This is extremely important in the realms of implementing OOP methods, especially mutable methods
+    Member methods take, by default, a 'T&' as the first parameter. This is bound to the 'self' name
+    Mutable methods take a 'mut T&' instead to allow for mutating the internal state
+  References also enable a rather simple method of reducing memory usage and copies
+    A possible optimization is to turn any parameters of 'T' into a 'T&' where the change doesn't affect compilation
+
 Current Framework Idea:
   TypeTraits - Abstract class that all types implement to provide various memory information
     Note: Since all types implement this, I might modify this idea in the future
@@ -45,36 +53,27 @@ Current Framework Idea:
       Note: This is meant to enable '()' semantics for the "Chunk.view_as" model
     for_each[T] - Method to iterate over each 'T' in the 'Chunk' (as if it was an array of 'Element[T]')
       Note: Is there a way to enable 'for_each(fn)' and 'for_each.map!(fn)' ??? Perhaps 'iter_each' method
-  Element[T] - Type to represent a single 'T' in heap memory. Intermediary between a Chunk and 'T' in typing
+  TyChunk[T] - Type to represent a single 'T' in heap memory. Intermediary between a Chunk and 'T' in typing
     set - Method for setting the memory segment to the given value of 'T'
     get - Method for getting the memory segment as a raw instance of 'T'
+    construct - Method that constructs a 'T' in place given the argument list
     destroy - Method to call the destructor for 'T' on the memory segment
-    Note: Current framework has 'Element[T]' extending Chunk. Need to decide on interchangability with Chunk and T
-    Note: 'Element[T]' does not have a 'drop' method as that would interfere with 'Chunk:view_as' operation
+    Note: 'TyChunk[T]' does not have a 'drop' method as that would interfere with 'Chunk:view_as' operation
+  Ptr[T] - Type to represent a smart pointer that can't be reassigned. Typed as 'T*' or 'mut T*' (to indicate mutability)
+    borrow - Mutable method to borrow the pointer for some computations. Prevents usage until borrow is released
+    copy - Method to automatically copy the pointer (not the data)
+    deref - Special method called to extract the data from the pointer if a 'T' or 'T&' is expected
+    drop - Method to safely handle deallocation, releasing borrow, and "smart" status when pointer is destroyed
+  RPtr[T] - Type to represent a smart pointer that can be reassigned. Typed as 'T mut*' or 'mut T mut*'
+    Note: RPtr[T] has all the same methods as Ptr[T] plus the following for reassignment
+    TODO: Determine reassignment functions for RPtr[T]
   alloc - Function to allocate a chunk of 'n bytes'. Returns a Chunk
   alloc[T] - Function to simplify allocating a known type. defined as "alloc(T.size * n)"
-  valloc[T] - Function to allocate and initialize a single element. Can be defined in terms of "alloc"
+  malloc[T] - Function to allocate and return a 'T*' object (Ptr[T])
+  ralloc[T] - Function to allocate and return a 'T mut*' object (RPtr[T])
+  calloc[T] - Function to allocate and initialize a single element. Can be defined in terms of "alloc"
   reserve - Function to mark addresses as off limits for allocation. Useful for memory mapped devices and implementation
     Note: This could be moved as a member of Addr. Semantics not needed however
-
-  Pointer[T] - Type to represent a smart pointer (currently reference counted) to an immutable object
-    borrow - Method to borrow the pointer as a Pointer[T]
-    borrow_mut - Method to borrow the pointer as a Pointer[mut T]
-    make_imut - Method to make a Pointer[T] from the pointer, reusing memory (ie. no copy) if possible
-    make_mut - Method to make a Pointer[mut T] from the pointer, reusing memory if possible
-    copy - Method to force a Pointer[T] by copying the pointed data
-    copy_mut - Method to force a Pointer[mut T] by copying the pointed data
-    deref - Special method called if a method expects a 'T' and a 'Pointer[T]' is provided instead
-    drop - Method to safely handle deallocation and reference counting for pointer types
-  MutPointer[T] - Type to represent a smart pointer to a mutable object. 'deref' returns a mutable X object
-    Note: Syntactical sugar for pointers is provided in the form of "T&" and "mut T&" for argument
-      "T&" -> "Pointer[T], "mut T&" -> "Pointer[mut T]". These pointers are not reassignable
-    Note: Do I need a 'forget' method for pointers ???
-  calloc[T] - Function to allocate and return a 'T&' object.
-    Note: Seperate functions are necessary to enable simple semantics while keeping the syntax and understandability clean
-  malloc[T] - Function to allocate and return a 'mut T&' (usefulness unclear)
-    Note: IFF 'T&' are a seperate type (They would be a reference counted Chunk with better typing and safety)
-    Note: Can I get 'malloc', et al., to have a "forwarding" mode
 
 Rust std::mem
   replace         - replace the memory with a new value, returning the old one

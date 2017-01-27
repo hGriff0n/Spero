@@ -1,0 +1,58 @@
+Mutability Rules
+    Within Spero there is a strong focus on reducing unexpected/undesired behavior by eliminating the areas
+        where such behavior can occur. To the most part, this is performed by simply making variables default
+        to a constant state, where their values cannot change. This status can be changed through the usage of
+        the `mut` keyword, creating a state that does allow internal mutation. The interplay in switching
+        between these two conditions has very important consequences to the language as a whole, especially
+        when considering pointers and references. This sheet lays out the actions the compiler should take
+        when encountering mutability changes of various forms.
+
+    Assignment (any statement of the form "let t = v", where t and v may be the same name)
+        change,       name, ptr/ref, num refs    -> action
+        mut->mut,     same, _,       _           -> delete, warn
+        mut->mut,     diff, ptr,     _           -> error
+        mut->mut,     diff, ref,     _           -> alias (num_refs+1)
+        mut->mut,     diff, na,      _           -> copy
+        mut->const,   same, ptr,     >1          -> error
+        mut->const,   same, ref,     >1          -> error
+        mut->const,   same, _,       _           -> change mutability
+        mut->const,   diff, na,      _           -> copy
+        mut->const,   diff, _,       _           -> error
+        const->mut,   same, ptr,     1           -> change mutability
+        const->mut,   same, na,      1           -> change mutability
+        const->mut,   same, na,      _           -> copy, de-alias (num_refs-1)
+        const->mut,   same, _,       _           -> error
+        const->mut,   diff, na,      _           -> copy
+        const->mut,   diff, _,       _           -> error
+        const->const, same, _,       _           -> delete, warn
+        const->const, diff, ptr,     _           -> copy  (num_refs+1)
+        const->const, diff, ref,     _           -> alias (num_refs+1)
+        const->const, diff, na,      _           -> alias (num_refs+1)
+
+    Tuple Deconstruction (in 'let' or 'match' statements)
+        Tuples follow the simple rule of decomposition into the sum of their members
+        If any the mutability change on any member results in an error, then the entire tuple results in an error
+            Otherwise, the members follow their own rules when binding to the variable/pattern
+
+    ADT Deconstruction (any match case of the form `T(t..)` where t are pattern captures)
+        change,       ptr,   capture    -> action
+        mut->mut,     na,    nom        -> copy
+        mut->mut,     ptr,   nom        -> borrow
+        mut->const,   na,    nom        -> alias (num_refs+1)
+        mut->const,   ptr,   nom        -> borrow
+        const->mut,   na,    nom        -> copy
+        const->mut,   ptr,   nom        -> error
+        const->const, na,    nom        -> alias (num_refs+1)
+        const->const, ptr,   nom        -> copy  (num_refs+1)
+        const->mut,   na,    ref        -> error
+        _->_,         na,    ref        -> reference
+        _->_,         ptr,   ref        -> error
+        
+        NOTE: It's not possible (currently) to store references in a type.
+
+TODO:
+    Expand 'Mut Rules' to encompense values (ie. temporaries) as well
+        This is really just an extension of Assignment rules (Assignment can be subsumed by the new set)
+        I think values will be a bit trickier to fully reason about in all cases
+    Add in rule-set for determining function overloads in regards to mut changes and ptr-ref distinction
+        Forbidding these clashes is also an option to consider

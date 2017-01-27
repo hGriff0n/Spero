@@ -12,8 +12,11 @@ Design Goals of Memory Management:
     3) Have a way to enable reference semantics in function calls
         Solution -> T&, mut T& (C++ style references)
     4) Have a way to type a sequence of elements
+        Solution -> T.. => Iterable[T]
     5) Have a way to maintain typing on a sequence of differently-typed elements
+        Solution -> [T..], (T..)
     6) Have a way to create links to non-stack memory usable at a public level
+        Solution -> mem:malloc, mem:ralloc, T*, T mut*
 
     Development Process:
         Come up with many possibilities
@@ -23,6 +26,10 @@ Design Goals of Memory Management:
 
     Accepted Language Changes:
         Changing "view" typing from 'T*' to 'T..'
+            Also changing pointers from 'T&' to 'T*' and the addition of references
+            Variadics are done with the 'T..' in the generic array
+        Update documentation and ast/grammar to support references
+            Make sure that the current system supports pointers as well
         Adding 'T..' variadic support to generics
         Allow for a '{}' block after an 'impls' statement
             The block contains implementations for the 'impls' type
@@ -35,33 +42,19 @@ Design Goals of Memory Management:
         Change operator precedence rules so that '&' operators have one precedence
         Add ability to destruct ADT values by reference within match statements
             Requires a grammar and parser change to allow for "Some(mut& p)" and "Some(&p)"
+            Also update the grammar/ast to collect information for "Mut Rules" testing
+        'drop' is implemented as a public mutable method with no arguments
+        Combine all language design documents TODO into one location
+            Add "find method for allowing custom annotations"
+            Look into adding in a special 'Self' type for OOP interactions
+            Look into tweaking the 'impls' statement in relation to the '{}' block (requiring the '{}', dropping 'let')
+            Look into moving 'mut' into the binding area (lhs, depends on how tuple deconstruction works with 'mut')
+            Look into allowing the creation of lambdas through the '_' character (may be difficult to implement)
+            Extend "Mut Rules" to include working with values and function calling
+            Figure out how to catch and report an invalid construction caused by variadics
+            Figure out whether references should be capturable by closures
+            Check to see how much of my design relies on implicit lifetime checking
 ##
-
-##
-TODO:
-  Perform some final touches on the initial work in 'mut_assign_rules_test.spr'
-    Be sure to commit the tables and reasoning into some documentation files
-    Figure out how the ast/grammar/analysis needs to be structured to perform the required checks
-  Update documentation in this file to use the ideas from the 'mut_assign_rules_test'
-
-  Work on the semantics of getting a 'T' from 'Chunk' (`Element[T]`)
-  Look into moving 'mut' into the binding area
-  Look into adding '_' for creating lambdas (analysis stage ???)
-  Resolve the issue with 'Memory[T]' and 'Element[T]'
-  Look into tweaks to the 'impls' statements regarding the '{}' addition
-    Requiring the '{}' and that implementations are in the block
-    Dropping the 'def/let/static' keyword for matching implementations (impls is about giving meaning, the visibility is already specified)
-  Figure out how drop will be implemented
-  'T..' isn't an exact replacement for 'T*' ???
-  Figure out what to do with 'mem:valloc' (return, deallocation of return)
-    Changed 'Element[T]' to not have a drop method and that possibly introduces a memory leak with 'valloc'
-  Work on the 'Memory'/'Chunk' interface interaction
-  Figure out where references are allowed to exist (my current idea is only in parameter lists)
-    References can't be stored inside of a type/used as generic parameters
-  Extend mut rules to contend with values as well (might be a way of getting around the mut list issue)
-    Also need to figure out function resolution in regards to the 'mut/ref/ptr' distinctions
-##
-
 
 # 1,2: Designing the raw memory interface
 
@@ -86,29 +79,32 @@ def intArrayTest = () -> {
     thd = 3                                         # How interchangeable a "Element[T]" should be with a "T". This implies very
 
     # Should equal '4' as 'alloc' zero-initializes
-    {0..4}.map!(chnk.view_as[Int](_).get).reduce(+)
+    {0..4}.map!(chnk.view_as[Int](_).get).reduce(+) # How will 'Element[T]:get' be typed ???
 
     # 'Chunk:drop' automatically frees the memory when the function exits
 }
 
 ##
-'std:mem:Memory[T]' interface:
-  `Chunk` has no conception of types by default by design, it is just a collection of contiguous bytes in memory, nothing else
+'std:mem:TyChunk[T]' interface:
+  Chunk has no conception of types by default by design, it is just a collection of contiguous bytes in memory, nothing else
   From a language standpoint however, Spero puts a lot of focus on types and working with them instead of raw bytes in memory
-  To that end, `Chunk` needs a way to interact with it's byte sequence (or sub-sequence) in a type-safe(or -knowledgeable) way
-  That is the purpose of `Memory[T]` (name TBD), one step up the abstraction ladder from `Chunk` (though it's still not good enough)
+  To that end, Chunk needs a way to interact with it's byte sequence (or sub-sequence) in a type-safe/-knowledgeable way
+  That is the purpose of `TyChunk[T]`, an intermediate type between Chunk's raw memory view and Spero's whole type view.
+  TyChunk's are created through various Chunk methods and act a lot like Chunk in several respsects. However, TyChunk trades
+  Off the bitwise operations of Chunk for a more type-ful member list, including constructing an instance in place, etc. 
 ##
+# NOTE: The name of 'TyChunk' (typed chunk) needs some work
 @todo("Update the interface to the current 'Memory[T]' standard")
 @safe("No leakage can happen with Integers and all allocated memory is released")
 def initTest = () -> {
-    let ptr = mem:valloc(5)                     # Note: Seperate function needed in order to allow inference for 'Size' type
+    let ptr = mem:calloc[Size](5)               # "Construction"-alloc. Allocates a chunk, and constructs the type in place
+                                                # Note: 'mem:calloc' returns a 'mem:Chunk', not a 'mem:TyChunk[T]'
     let chnk = mut mem:alloc[Int](2)            # Same as "mem:alloc(Int.size * 2)". What effect does this have on system safety
                                                 # IDEA: 'chnk.transmute(0)' would make a variable at the address of the first Int ???
 
     # chnk.set[Int](ptr.view)
-    chnk.view_as[Int] = ptr.view_as[Int].get    # 'valloc' doesn't return an 'Memory[T]' as 'Memory[T]' has no 'drop' method (return `Element[T]`?)
-    chnk.set[Int](1, ptr.view_as[Int].get)      # Since 'Memory' :: 'Chunk', either method is fine to use
-                                                # I'm not sure of the usefulness and sustainability of 'set'
+    chnk.view_as[Int] = ptr.view_as[Int].get
+    chnk.set[Int](1, ptr.view_as[Int].get)
 }
 
 ##
@@ -150,23 +146,12 @@ Language Atom (variadics):
   However, with the usage of views, we run into issues where the sequence of types is unknown to the programmer
   It may be possible to perform this acceptance pattern using a 'Any'-style view, but that sacrifices type safety
   Variadics are a way of extending the generics system to allow for these views, while maintaining type information
+  However, implementing variadics with the Iterable interface does not really gain us much of anything, instead
+  Better matching tuples. This has some affect on typing as you can see below. The variadic pack, however, still
+  Retains some neat syntax tricks, particularly the ability to "expand" through '..'
+##
+def forward[T, Args..] = (args :: Args) -> args.T
 
-  TODO: Get a better idea of what makes variadics work, how to implement them
-  TODO: Produce a nice compiler error if the usage of variadics cause an invalid construction
-##
-def forward[T, Arg..] = (args :: Arg..) -> .T       # This doesn't read entirely right to me
-    # Requires some tweaks to the generics grammar
-    # Arg = [T1, T2, T3, ...]
-    # args = (t1 :: T1, t2 :: T2, t3 :: T3, ...)
-        # Is 'args' expanded as the whole tuple or an "Iterable[T]"
-        # Will need a simple way to unpack to implement forward for the later
-
-##
-Language Atom (variadics):
-    Variadics are likely to drift from the initial goal of a "typed"-view into a C++-style mechanism
-    This conception allows for forwarding functions in a very compact (but type-safe) typing
-    However, this does bring sum issues as to what variadics are, a Tuple seems to match better than an Iterable
-##
 let TestType = (z :: Int) {
     def isInt = mut true
 
@@ -178,26 +163,32 @@ let TestType = (z :: Int) {
 }
 let useFwd = () -> {
     let t1 = 3.forward[TestType]
-    let t2 = forward[TestType](3.4, 5.2)
+    let t2 = mut forward[TestType](3.4, 5.2)
 
     @assert!(t1.isInt != t2.isInt, "forward doesn't work as expected")
 }
-# TODO: How would a compiler error be produced if T(Arg..) isn't a valid construction
 
 
 
 # 3,6: Designing the reference/pointer interface model
 
-# 'malloc'/'ralloc' are used to differentiate between stable(malloc) and reassignable(ralloc) pointers
-    # mutability of the internal memory is indicated through the 'mut' keyword (plus a set of "Mut Rules")
-    # typing of this system is rather simple, though it currently requires a parser update to implement
-        # 'T*' indicates a stable pointer to an instance of the type 'T'
-        # 'T mut*' indicates a reassignable pointer to an instance of 'T'
-        # 'mut T*' indicates a stable pointer to a mutable instance of 'T'. Guess what "mut T mut*" is?
+##
+Language atom (pointers):
+    The standard spero memory model puts everything on the stack by default. However that is artificially limiting given ram sizes
+    We were able to come up with a framework to perform these access into the heap space, but those interfaces are entirely
+    Unsafe and inherently unusable for most people. Pointers are the intersection between "normal" Spero and the manual memory
+    Module, giving a nice balance of usability and safety for most use cases. Spero makes a distinction between 'stable' pointers,
+    Pointers that cannot be reassigned, and 'reassignable' pointers, which can, within the typing system in order to allow for
+    Straight mutability (that of the heap data) to be changed through the use of the 'mut' keyword.
+
+    Typing (stable): 'T*', 'mut T*', 'Ptr[T]', 'mut Ptr[T]'
+        Stable pointers are generated through a call to 'mem:malloc'
+    Typing (reassignable): 'T mut*', 'mut T mut*', 'RPtr[T]', 'mut RPtr[T]'
+        reassignable pointers are generated through a call to 'mem:ralloc'
+##
 def ptrTest = () -> {
     let ptr = mut mem:malloc(5)                 # Make a mutable pointer
-    let o_ptr = mem:malloc(7)                   # Make an immutable pointer
-                                                # Note: Pointers created with `ralloc` are reassignable
+    let o_ptr = mem:ralloc(7)                   # Make an immutable pointer
 
     # Reassigning pointers
     # ptr.swap(mut o_ptr)                       # Error: Attempt to reassign stable pointers `ptr` and `o_ptr`
@@ -234,13 +225,6 @@ def ptrTest = () -> {
 
 
 ##
-Some additional pointer work
-    deref - special method for accessing the pointed object when needed, automatically inserted by the language
-    copy - method to create a new pointer that is a copy of the original (not linked in terms of references, etc.)
-##
-
-
-##
 Language Atom (references):
   The standard Spero execution model requires an explicit pass-by-value model for arguments, copying where needed
   This disallows some useful ways of programming (with side-effects and memory efficiency), mostly in regards to OOP methods
@@ -248,6 +232,9 @@ Language Atom (references):
   A raw 'T&' is really only good for preventing accidental copying. Compilers may be allowed to add '&' in analysis/optimization for this reason
   Changing to 'mut T&' allows for the same mutability rules as 'mut T', but with the added benefit that changes propogate to the callee
   
+  References are not allowed to be stored within a type, either through member or through ADT
+    TODO: What about captures?
+
   TODO: Figure out what to do with 'mutator(mut 3)'
 ##
 def mutator = (i :: mut Int&) -> i *= 3         # 'T&' takes on C++-style reference semantics with largely no changes
@@ -263,8 +250,6 @@ def tst = () -> {
     let me = mut 5
     mutator(me)
     let me = keeper(me)                         # 'me == 45'
-
-    # Idea: Allow pointers to be interchangeable with 'T&' (mut pointers with 'mut T&')
 }
 # Note: This is currently using the "two pointers" idea (even if there is a "sugary" syntax available)
 def ptrRef = (p :: mut IPtr[Int]&) -> {}        # You can take pointers by reference ???
