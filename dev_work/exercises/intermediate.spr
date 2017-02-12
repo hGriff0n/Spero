@@ -43,17 +43,16 @@ def Array[T, n] = util:Iterable[T] :: {
     let store = mut mem:alloc[T](n)                 # Allocate a chunk of `n * T.size` bytes
 
     # Enable indexing semantics for Arrays
-    impls Indexable[T]    
-    @mutable
-    def set = (Size, T) -> .match {                 # Array[T, n](i) = e -> Array[T, n].set(i, e)
-        i, e if i < n -> store.view_as[T](i) = e
-        _ -> @error!(3241, i, n)
+    impls Indexable[T] {                            # TODO: How to handle slicing
+        @mutable def set = (Size, T) -> .match {
+            i, &e if i < n -> store.view_as[T](i).set(e)
+            i, _ -> @error!(3241, i, n)
+        }
+        def apply = (Size) -> .match {
+            i if i < n -> Some(store.view_as[T].get)
+            i -> @error!(3242, i, n)
+        }
     }
-    def apply = (Size) -> .match {                    # Array[T, n](i)     -> Array[T, n].get(i).get    (has to work for functors and functions as well)
-        i if i < n -> Some(store.view_as[T](i).get)                 # This makes no sense if a bad index just gives an error
-        _ -> @error!(3242, i, n)                                    # And how do I handle slicing etc.
-    }
-
 
     # Enable iterator support
     let Iterator = util:Iterator[T] :: {
@@ -84,7 +83,7 @@ def Vector[T] = util:Iterable[T] :: {
     # `impls` blocks are a new feature to simplify organization
     impls Indexable[T] {
         @mutable def set = (Size, T) -> .match {
-            i, e if i < num_elems -> store.view_as[T](i).set(e)
+            i, &e if i < num_elems -> store.view_as[T](i).set(e)
             _ -> @error!(3241, i, num_elems)
         }
         # apply = (Size) -> .match {

@@ -54,6 +54,7 @@ Design Goals of Memory Management:
             Figure out how to catch and report an invalid construction caused by variadics
             Figure out whether references should be capturable by closures
             Check to see how much of my design relies on implicit lifetime checking
+            Look into removing the ability to have named and primary constructors for a type
 ##
 
 # 1,2: Designing the raw memory interface

@@ -14,7 +14,7 @@ The Spero project also contains four sub-projects: speroc, spero-std, Spark, and
 
 ## Current Todo List:
 
-    1) Fix the problems with pointers
+    1) Create executables with speroc
     2) Designing the type system
     3) Deciding on concurrency model
     4) Formalizing language documentation
@@ -25,7 +25,7 @@ The Spero project also contains four sub-projects: speroc, spero-std, Spark, and
 ## Some example programs
 
     # Hello World
-    def main = () -> "Hello World!".println
+    def main = () -> "Hello World!".std:io:println
 
 
 Icon at ww.iconfinder.com/icons/606025/ancient_antique_historic_roman_rome_helmet_vintage_warrior_icon
