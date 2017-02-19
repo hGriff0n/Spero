@@ -14,7 +14,7 @@ Assignment
   Grammar:
     <context> <name_ptn><gen><inter>|<asgn_val>
     inter    -> <sig> (= <type_body>|<valexpr>)?
-    asgn_val -> = <type_body>|<valexpr>
+    asgn_val -> = <type_body>|<valexpr> (in <valexpr>)?
     context  -> let | def | static
 
   Context:
@@ -60,6 +60,15 @@ Assignment
     Mut keyword placement
       The 'mut' keyword in pattern matching must be placed before the variable which will be mutable
       If placed before a tuple/ADT, all extracted variables are considered to be "mutable"
+    Reference taking
+      Pattern match values can also be captured by reference in some conditions with the '&' character
+        This symbol must be placed before the variable that is being grabbed by reference
+      Some special mutability rules apply to prevent getting around some Spero restrictions
+
+  Scoped bindings (ie. 'in' statements)
+    It is possible to bind a variable for a single statement using 'in' bindings
+    Syntactically it is just an optional "in" after the assignment statement followed by an expression
+      The bound variable will then only be bound within the context of the singular statement
 
 Control Flow Expressions
   If-Elsif-Else

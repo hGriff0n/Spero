@@ -62,7 +62,7 @@ Function Calling
         NOTE: The requirement for parenthesis may be dropped with operators in the future
 
   Var-arg functions
-    If the final argument to a function has the type T*, then 0+ T's can be passed at the end of the function
+    If the final argument to a function has the type T.., then 0+ T's can be passed at the end of the function
       NOTE: The arguments are implicitly converted to an 'Array[T, n]' container/view
 
   Overload Resolution

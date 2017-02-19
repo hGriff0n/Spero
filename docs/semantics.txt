@@ -62,24 +62,12 @@ Mutability
     Experimental: It is possible to mark types as immutable-only with '@disable(mut)'
       Similar to mutable-only, it is a compilation error to create mutable instances
 
-NOTE: Deprecated. See 'mut_rules.txt' for a more complete description of these rules
-Memory Usage in Assignment/Arguments			# Note: 'T' includes 'mut T', 'T&', and 'T*' unless specified
-  Assignment
-    t = v|t		<- Reuse memory if possible, otherwise copy
-    t = mut t		<- Reuse memory if possible, otherwise copy
-    v = t		<- Copy
-    v = mut t		<- Copy
-
-  Arguments
-    f(T)		<- Reuse memory if possible
-    f(mut T)		<- Reuse memory if possible, otherwise copy
-
 TODO: Clear up explanations and definitions
 Generics
   Grammar:
     \[list<gen_arg, 1>\]
     gen_arg  -> <type_gen> | <var_gen>
-    type_gen -> <type> (+|-)? ((::|!:|<|>) <type>)?       # (+|-|..)
+    type_gen -> <type> (+|-|..)? ((::|!:|<|>) <type>)?
     var_gen  -> <var> ((:: <type>) | (= <val>))?
 
   Generics are a way to write code irrespective of the types of arguments
@@ -95,6 +83,14 @@ Generics
       >  -> The instantiation type must be a supertype
     Experimental: Co-/contra- variance can also be indicated on type generics
       The syntax for covariance is to add a '+' after the type parameter (contra = -)
+
+  Variadics within generics
+    Varags are useful when all objects have a specific type in them
+      But to capture any type, we must use the 'Any' type to allow compilation
+    Variadics fixes this by allowing the generics system to capture a sequence of types by name
+      Instead of a sequence of values, a variadic compiles into a tuple (known at compile-time)
+    Variadics are indicated through the same syntax as varargs, the '..' after the type
+      Implementation/etc. restrictions can be indicated after the '..' through the standard means
 
   Value Restrictions:
     Restrict to basic types for now

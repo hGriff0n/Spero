@@ -54,5 +54,6 @@ TODO:
     Expand 'Mut Rules' to encompense values (ie. temporaries) as well
         This is really just an extension of Assignment rules (Assignment can be subsumed by the new set)
         I think values will be a bit trickier to fully reason about in all cases
+          But it's necessary to allow for 'inline mut'
     Add in rule-set for determining function overloads in regards to mut changes and ptr-ref distinction
         Forbidding these clashes is also an option to consider

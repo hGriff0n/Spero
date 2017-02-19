@@ -24,6 +24,9 @@ Types
     Interface inheritance (ie. of abstract types) is specified through the 'impls' statement
       This basically serves to 'import' any definitions into the current class
       The importing type will become an abstract type if an unimplemented interface remains
+      A block, containing the relevant definitions, is allowed after the impls statement
+        TODO: Look into requiring this block to exist
+        TODO: Look into dropping the vcontext keywords for defining inherited functions
 
   Construction:
     There are three kinds of type constructors; primary, named, and secondary
@@ -47,11 +50,11 @@ Types
       NOTE: Named constructors are always explicit
 
   Destruction:
-    Destructors are implemented by overriding the static 'drop' method
-      This method must take a singular 'mut T' as its argument (maybe a 'mut T&' in the future)
-      TODO: Might be better to make this a (special) 'def' method
+    Destructors are implemented by overriding the 'drop' method with no arguments
+      This method is specially recognized by the compiler so we don't need to mark it as '@mutable'
+        The annotation is "implicitly" added by the compiler, so mutation of internal state is allowable
     Destructor calls are implicitly inserted by the compiler
-      Insertions are done in 2 locations; scope exit and an enclosing type's 'drop' method
+      Insertions are done in 2 locations: scope exit and an enclosing type's 'drop' method
       These insertions are done in reverse order of declaration
     Destructors can be explicitly called if desired/necessary
       The variable is marked as "dropped" and is invalid until reassignment/shadowing

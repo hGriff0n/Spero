@@ -17,44 +17,6 @@ Design Goals of Memory Management:
         Solution -> [T..], (T..)
     6) Have a way to create links to non-stack memory usable at a public level
         Solution -> mem:malloc, mem:ralloc, T*, T mut*
-
-    Development Process:
-        Come up with many possibilities
-            There's several ways that an interface can work
-            Pick one, and then develop everything based around that central idea
-            Repeat for each interface before culling them to one form that works the best
-
-    Accepted Language Changes:
-        Changing "view" typing from 'T*' to 'T..'
-            Also changing pointers from 'T&' to 'T*' and the addition of references
-            Variadics are done with the 'T..' in the generic array
-        Update documentation and ast/grammar to support references
-            Make sure that the current system supports pointers as well
-        Adding 'T..' variadic support to generics
-        Allow for a '{}' block after an 'impls' statement
-            The block contains implementations for the 'impls' type
-        Allow for "let-in" style bindings by allowing an 'in <expr>' in assignments
-            Note: This will likely also require adding an ast node
-        Update 'use' to allow for rebinding generic instantiated types
-            Allow for "use Vector[Int] as IVector" 
-        Add in "inline mut" into the language and be sure the ast recognizes it
-            I'm pretty sure the grammar recognizes as a by-product of recognizing `ValExpr`
-        Change operator precedence rules so that '&' operators have one precedence
-        Add ability to destruct ADT values by reference within match statements
-            Requires a grammar and parser change to allow for "Some(mut& p)" and "Some(&p)"
-            Also update the grammar/ast to collect information for "Mut Rules" testing
-        'drop' is implemented as a public mutable method with no arguments
-        Combine all language design documents TODO into one location
-            Add "find method for allowing custom annotations"
-            Look into adding in a special 'Self' type for OOP interactions
-            Look into tweaking the 'impls' statement in relation to the '{}' block (requiring the '{}', dropping 'let')
-            Look into moving 'mut' into the binding area (lhs, depends on how tuple deconstruction works with 'mut')
-            Look into allowing the creation of lambdas through the '_' character (may be difficult to implement)
-            Extend "Mut Rules" to include working with values and function calling
-            Figure out how to catch and report an invalid construction caused by variadics
-            Figure out whether references should be capturable by closures
-            Check to see how much of my design relies on implicit lifetime checking
-            Look into removing the ability to have named and primary constructors for a type
 ##
 
 # 1,2: Designing the raw memory interface

@@ -49,6 +49,8 @@ Module Import
 
   Imports can be "rebound" to different names using 'as' syntax
     The right-hand side binding now refers to the left-hand side in all future occurances
+      This side can include generic instantiations if desired. ie "use Vec[Int] as IVec"
+      TODO: Can I include this to include restrictions? ie. "use Array[Comparable] as Sortable"
     NOTE: 'as' is only a keyword in this context, It's possible to make 'as' a variable
       So 'use std:wtf:as as why_not' is a valid import (there's no ambiguity in parsing)
     The left-hand binding can't be accessed without the full qualified name
