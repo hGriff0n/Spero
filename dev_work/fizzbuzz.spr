@@ -1,0 +1,10 @@
+mod fizz:buzz
+
+def main = () -> {1..}.map((num) -> "{}".std:io:print(
+        match num {
+            e if e % 15 -> "FizzBuzz"
+            f if f % 5 -> "Buzz"
+            t if t % 3 -> "Fizz"
+            n -> n
+        }
+    )).take(100)
