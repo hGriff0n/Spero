@@ -1,78 +1,66 @@
-What do I need?
-  1. A way to mark and use a section of memory for implementation
-    Select and reserve a 'n byte' sized chunk of memory
-    Allow typesafe modifications to those 'n bytes'
-  2. (Opt) A way to enable reference semantics in function calls
-  3. A way to use specific sections of memory for implementaion
-  4. An easy way of typing a sequence of elements
-  5. (Opt) A way of maintaining typing on a sequence of elements of diverse typing (without relying on 'Any')
-    This is especially useful to enable "forwarding" constructors
-
-Memory:
-  Everything is stack-allocated unless otherwise specified
-    NOTE: This includes custom types
-
-NOTE: Very preliminary idea, not quite ready to be accepted
-References:
-  References are a simple and lightweight way to pass variables by-reference into functions
-    NOTE: Much of this design is taken from C++ style references
-  If taken by a mutable reference (ie. 'mut T&'), any modifications to the argument are maintained in the calling variable
+Memory Allocation:
+  Spero stack-allocates all values by default, unless otherwise specified or directed
+    Optimizations may be allowed to allocate otherwise (unsafe though)
+    Note: This includes custom defined types
 
 Views:
-  A view is a lightweight sequence of values of any length that can be accepted as the last arguments to a function
-  A view is indicated in an argument list by appending the type name with two dots ('..') ala Ranges
+  A view is a syntactic sugar for a sequence of values of any length
+    If a view is the last function parameter, the view acts as a vararg parameter
+  A view is indicated in an argument list by appending the type name with two dots ('..')
     TODO: Explain more about this
   NOTE: Needs more explanations
 
 References:
-  Spero adapts the C++ concept of references to enable a lightweight, yet safe, method of performing call-by-reference
-  This is extremely important in the realms of implementing OOP methods, especially mutable methods
-    Member methods take, by default, a 'T&' as the first parameter. This is bound to the 'self' name
-    Mutable methods take a 'mut T&' instead to allow for mutating the internal state
-  References also enable a rather simple method of reducing memory usage and copies
-    A possible optimization is to turn any parameters of 'T' into a 'T&' where the change doesn't affect compilation
+  Spero adapts C++ references to enable call-by-reference function semantics
+  This is primarily important for implementing OOP methods, especially mutable type-checking
+    Member methods take a 'T&' by default - Mutable members take a 'mut T&'
+  References can also double as a way to reduce memory usage/copies
+    One optimization is to change 'T' parameters to 'T&' if possible
 
 Current Framework Idea:
-  TypeTraits - Abstract class that all types implement to provide various memory information
-    Note: Since all types implement this, I might modify this idea in the future
-    size - field specifying the number of bytes that the type takes up. provided by the compiler
-    align - field specifying the ABI alignment multipler. every valid address of T must be a multiple of this
-    sizeof - method that basically wraps to returning size. Not static
+  TypeTraits - Provides memory/allocation information/methods for programmer use
+    align - the ABI alignment multipler. every valid address of T must be a multiple
+    alignof - basically wraps to returning align. Not static
+    size - the number of bytes that the type takes up
+    sizeof - basically wraps to returning size. Not static
       Note: It might be better to have these as "free-functions" (from a size standpoint)
-    alignof - method that basically wraps to returning align. Not static
-  Addr - Type to represent an address in memory. Addr's must be explicitly created
-    Note: Aside from typing enforcement, the purpose of Addr is slightly unclear
-  Chunk - Type to represent a section of memory. Little more than a (Addr, Size, Bool) tuple. Must be mutable?
-    drop - Method to safely deallocate a Chunk and prevent future usage. Also marks the Chunk as free for reallocation.
-      Note: This does not zero-initialize the memory segment (needed for some mmio behavior)
-      Note: This does not call any destructors as it has no conception of underlying types
-    forget - Method to prevent drop from marking memory as free for allocation use.
-    view_as[T] - Method to reinterpret the Chunk as an 'Element[T]' object for more type-ful operations. Optional offset arg.
-      Note: This interface needs a lot of work and thought
-    apply - Create a sub-chunk with the given offset. Possibly allow an optional 'size'/'end' argument.
-      Note: This is meant to enable '()' semantics for the "Chunk.view_as" model
-    for_each[T] - Method to iterate over each 'T' in the 'Chunk' (as if it was an array of 'Element[T]')
-      Note: Is there a way to enable 'for_each(fn)' and 'for_each.map!(fn)' ??? Perhaps 'iter_each' method
-  TyChunk[T] - Type to represent a single 'T' in heap memory. Intermediary between a Chunk and 'T' in typing
-    set - Method for setting the memory segment to the given value of 'T'
-    get - Method for getting the memory segment as a raw instance of 'T'
-    construct - Method that constructs a 'T' in place given the argument list
-    destroy - Method to call the destructor for 'T' on the memory segment
-    Note: 'TyChunk[T]' does not have a 'drop' method as that would interfere with 'Chunk:view_as' operation
-  Ptr[T] - Type to represent a smart pointer that can't be reassigned. Typed as 'T*' or 'mut T*' (to indicate mutability)
-    borrow - Mutable method to borrow the pointer for some computations. Prevents usage until borrow is released
-    copy - Method to automatically copy the pointer (not the data)
-    deref - Special method called to extract the data from the pointer if a 'T' or 'T&' is expected
-    drop - Method to safely handle deallocation, releasing borrow, and "smart" status when pointer is destroyed
-  RPtr[T] - Type to represent a smart pointer that can be reassigned. Typed as 'T mut*' or 'mut T mut*'
-    Note: RPtr[T] has all the same methods as Ptr[T] plus the following for reassignment
+    Note: I'm not sure on the implementation of this
+      Either a defined generic type that the compiler can fill in the information for
+      Or a abstract type that every type implicitly inherits from (compiler writes the defs)
+  Addr - Represents an address in memory. Addr's must be explicitly created
+  Chunk - Represents a section of memory. Basically a "mut (Addr,Size,Bool)"
+    apply - Create a sub-chunk with the given offset. Optional 'size'/'end' argument?
+      Note: This enables '()' semantics for the "Chunk.view_as" model. Unsure?
+    drop - Deallocate a Chunk (mark as free) and prevent future usage of the instance
+      Note: This does not zero-initialize the memory segments
+      Note: This does not call destructors (no conception of underlying types)
+    for_each[T] - Iterate over each 'T' in the 'Chunk' (as if a 'T..')
+      Note: Is there a way to enable 'for_each(fn)' and 'map!(fn)' with one def (into_iter?)
+    forget - Prevent drop from deallocating the chunk memory segment
+    view_as[T] - Reinterpret the Chunk as an 'Element[T]' object. Optional offset arg.
+    Note: Chunk is a mutable-only type
+  Element[T] - Type to represent a single 'T' in memory. Intermediary type between a 'Chunk' and a 'T'
+    construct - Construct a 'T' in place using the given the argument list
+    destroy - Call the destructor for 'T' on the memory segment
+    get - Interpret the memory segment as a raw instance of 'T'
+    set - Set the memory segment to the byte order for the given value of 'T'
+    Note: 'Element[T]' does not implement 'drop' (ould interfere with 'Chunk' operation)
+  Ptr[T] - Represents a movable pointer. Typed as 'T mut*' or 'mut T mut*'
     TODO: Determine reassignment functions for RPtr[T]
-  alloc - Function to allocate a chunk of 'n bytes'. Returns a Chunk
-  alloc[T] - Function to simplify allocating a known type. defined as "alloc(T.size * n)"
-  malloc[T] - Function to allocate and return a 'T*' object (Ptr[T])
-  ralloc[T] - Function to allocate and return a 'T mut*' object (RPtr[T])
-  calloc[T] - Function to allocate and initialize a single element. Can be defined in terms of "alloc"
-  reserve - Function to mark addresses as off limits for allocation. Useful for memory mapped devices and implementation
+    Note: Ptr[T] implements SPtr[T]. Adds all reassignment methods
+  SPtr[T] - Represents a non-movable (static) pointer. Typed as 'T*' or 'mut T*'
+    borrow - Temporarily borrows the pointer for use in other computations
+      Note: Prevents using the pointer until the borrow is released
+      Note: This is a mutable method
+    copy - Copy the pointer (not the data <- Huh?)
+    deref - Return the pointer data. Special method for when a 'T'/'T&' is expected
+    drop - Destroy and deallocate the pointer if last reference, or release the borrow
+  alloc - Allocate a chunk of 'n' bytes. Returns a Chunk
+  alloc[T] - Helper function for allocating a known type (= "alloc(T.size * n)")
+  calloc[T] - Allocate and initialize a single element
+\r  malloc[T] - Allocate and return a 'T mut*' (Ptr[T])
+  salloc[T] - Allocate and return a 'T*' (SPtr[T])
+  reserve - Mark addresses as off limits for allocation
     Note: This could be moved as a member of Addr. Semantics not needed however
 
 Rust std::mem
@@ -91,11 +79,10 @@ C++ <memory>
   addrof          - get the address of the value
 
 Other needs
-  Interactions with Chunk/Addr/Chunk1
   memzero
 
 TODO:
-  Settle on a memory model for Spero
   Should I provide a method to allocate at a given address ???
-  Need to determine how deref should work for allowing modifications to the existing memory
+  Determine how deref should work for allowing modifications to the existing memory
+    ie. Behavior with 'mut T&' expected
   Need to add a way to get the 'Type' object from a type value

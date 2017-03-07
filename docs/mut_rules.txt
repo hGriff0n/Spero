@@ -1,11 +1,11 @@
 Mutability Rules
-    Within Spero there is a strong focus on reducing unexpected/undesired behavior by eliminating the areas
-        where such behavior can occur. To the most part, this is performed by simply making variables default
-        to a constant state, where their values cannot change. This status can be changed through the usage of
-        the `mut` keyword, creating a state that does allow internal mutation. The interplay in switching
-        between these two conditions has very important consequences to the language as a whole, especially
-        when considering pointers and references. This sheet lays out the actions the compiler should take
-        when encountering mutability changes of various forms.
+    Within Spero there is a strong focus on reducing unexpected/undesired behavior
+        To is largely performed by simply making values default to an immutable state,
+        Where their internal state cannot change. Values can be made mutable with the
+        'mut' keyword, produced a typed state that allow for internal mutation. The
+        rules regarding switching between these two states are very important to the
+        safety of the language, especially considering pointers and references. This
+        sheet lays out the rules the compiler should follow in the given situations.
 
     Assignment (any statement of the form "let t = v", where t and v may be the same name)
         change,       name, ptr/ref, num refs    -> action
@@ -31,10 +31,10 @@ Mutability Rules
 
     Tuple Deconstruction (in 'let' or 'match' statements)
         Tuples follow the simple rule of decomposition into the sum of their members
-        If any the mutability change on any member results in an error, then the entire tuple results in an error
-            Otherwise, the members follow their own rules when binding to the variable/pattern
+        If any part results in an error, then the entire tuple is in error
+            Otherwise, the members follow their own rules for binding
 
-    ADT Deconstruction (any match case of the form `T(t..)` where t are pattern captures)
+    Pattern Deconstruction (match, for, etc.)
         change,       ptr,   capture    -> action
         mut->mut,     na,    nom        -> copy
         mut->mut,     ptr,   nom        -> borrow

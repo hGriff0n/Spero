@@ -1,4 +1,4 @@
-NOTE: Some of the assertions, especially in regard to overloading and inference, are entirely theoretical at this point in time. I have no idea of how difficult it'll be to implement them
+NOTE: Some of the assertions, especially in regard to overloading and inference, are entirely theoretical at this point. I have no idea how to implement them
 
 Functions
   Grammar:
@@ -12,16 +12,18 @@ Functions
 
   Defining a function with the same name creates an overload
     The original function must be in the same scoping level as the second function
-      Otherwise scoped shadowing occurs where the second function "replaces" the original
+      Otherwise under scoping rules, the second function "replaces" the original
     Functions can be overloaded on the basis of paramter and return types
-      It is permissable for a compiler error to be produced if an overload matches a previous declaration
-      Otherwise, any errors should be discoverable within the overload resolution process
+      A compiler error is produced if an overload exactly matches a previous decl
+      Otherwise, any errors are discovered within the overload resolution process
 
   OOP handling
-    Non-static methods declared within a type body have an implicit "self" parameter as the first argument
-      NOTE: OOP functions implicitly handle dot-flipping as a result
-    Member variables may be accessed without indexing this 'self' body, but can be shadowed
-      NOTE: It is a compiler error to shadow the 'self' variable within a method
+    Non-static methods declared within a type body have an implicit "self" first parameter
+      Note: OOP functions implicitly handle dot-flipping as a result
+        Except not really, given ad-hoc polymorphism (interfaces)
+    Member variable access implicitly indexes this 'self' body, unless shadowed
+      Note: Explicitly indexing self/super will always work for access
+      Note: It is a compiler error to shadow the 'self'/'super' variables
 
   Dot-Forwarding
     Dot-forwarding indicates that the function's arguments should be directly passed to the function body
@@ -31,10 +33,9 @@ Functions
     Any function body that begins with a '.' (or 'mut .') is subject to dot-forwarding
       If no argument tuple for the function is provided, one is inferred from the body
         An overload set may be created based on the body of the function
-          This is if a function in the body chain is itself an overload
-	  The overload set is the maximal set that produces a valid typing given the function body
-      If an argument tuple is provided, argument names may be dropped for a tacit-style
-        This tuple mainly reserves to restrict the overload set to "coherent" typings
+	  The overload set is the maximal set of valid typings given for the body
+      If an argument tuple is provided, argument names may be dropped (ie. Types only)
+        This tuple mainly serves to restrict the overload set to "coherent" typings
 
 Function Calling
   Grammar:
@@ -42,42 +43,45 @@ Function Calling
     <value> <op> <value>		# NOTE: look at <> for operator currying
     <value>.<fncall>			# Dot-flipping syntax
 
+  Function evaluation within Spero is an eager process
+    Lazy evaluation can be mimiced with streams/generators/ranges/captures/etc.
+    When the function is evaluated can be moved by the compiler
+
+  Dot-Flipping
+    Dot-flipping allows functions to be called in an "infix" fashion
+      The preceding atom is considered to be the first arguments to the function
+        Note: "n - 1.factorial" => "n - {1.factorial}", not "{n - 1}.factorial"
+      When invoked, the atom is inserted before the other arguments in the tuple
+        ie. "T.fn(...)" is equivalent to "fn(T, ...)
+        Experimental: If the "caller" is a n-ary tuple, tuple application applies
+      When used with operators, dot-flipping upgrades to the level of functions
+        Note: Dot-ops stil require parenthesis for the moment
+
   Omitting Parentheses:
     Function parentheses can be omitted when a no-arg function is called
       Renaming a no-arg function presents a bit of a syntactical challenge:
 	One option is to create a forwarding lambda, ala "let <name> = .<fn>"
 	Another option is to disable no-paren calling, ala "@disable(no_paren)let <name> = <fn>"
-
-  Function evaluation within Spero is an eager process
-    Lazy evaluation can be mimiced with streams/generators/ranges/captures/etc.
-
-  Dot-Flipping
-    Dot-flipping allows functions to be called in an "infix" fashion by prepending a '.'
-      The preceding atom is considered to be the first argument to the function (ala. OOP)
-        Note: "n - 1.factorial" translates to "n - {1.factorial}" not "{n - 1}.factorial"
-      When invoked, the atom is inserted before the other arguments in the tuple
-        Note: "T.fn(...)" is equivalent to "fn(T, ...)
-        Experimental: If the "caller" argument is a n-ary tuple, tuple application may apply
-      When used with operators, dot-flipping only serves to upgrade the precedence to that of functions
-        NOTE: The requirement for parenthesis may be dropped with operators in the future
+        A third is to use "importing" to rebind the name, ala "use <fn> as <name"
 
   Var-arg functions
-    If the final argument to a function has the type T.., then 0+ T's can be passed at the end of the function
-      NOTE: The arguments are implicitly converted to an 'Array[T, n]' container/view
+    If a function's final argument has a view typing, it is "var-arg" parameter
+      The function will accept 0+ T's being passed at the end
+        This T's will be grouped into a Sequence[T] container/view (ie. 'Array[T, n]')
 
   Overload Resolution
-    There are 5 modes of overload matching: Exact, Polymorphic, Generic, Implicit, None (NOTE: In rank order)
+    5 modes of overload matching: Exact, Polymorphic, Generic, Implicit, None
       Exact       <- Exact type match, 'Arg == Param'
-        NOTE: Var-arg matches are considered to be at the "exact" level
+        Note: Var-arg matches are considered to be at the "exact" level
       Polymoprhic <- Subtype relationship, 'Arg :: Param'
-      Generic     <- Generic matching, '[Param]'			# NOTE: See 'types.txt' for more
+      Generic     <- Generic matching, '[Param]'
       None        <- Failure state
       Implicit    <- Construct from the arg, 'Param:new(Arg)'
         Only one level of non-explicit constructors are considered for Implicit matching
         Experimental: The entire argument set may be considered for overloads with only 1 parameter
+      Note: These are given in the rank order used by the resolution algorithm
 
-    TODO: Need to add in language to enable partial-application resolution
-
+    TODO: Go over this entire resolution process and reword it
     The resolution process goes similarly to this
       Choose all functions of name f into the overload set
         If there are any arguments, add a small weight to all functions T:f where T = type(f.params[0])
@@ -97,12 +101,12 @@ Partial Application
     Note: All unbound arguments are at the end of the parameter list
 
   A function call reduces to a partial application iff
-    Overload resolution fails because of a too small input
+    Overload resolution fails because of too little arguments
     A possibly valid overload may exist, given the current arguments
     The resulting function is stored/used (variable/argument/return)
 
-  The partially applied function maintains the same overload set as the parent function
-    This is minus all overloads that would be invalid given the pre-existing overload set
+  The partial function maintains the same overload set as the parent function
+    Minus all overloads that would be invalid given the bound arguments
     This inheritance is static to the time that the function was created
       ie. Overloading the function afterward should not affect partial application
 
@@ -110,7 +114,10 @@ Partial Application
     Binary operators can have different semantics depending on if a value is bound to the left or the right
     Binding a value to the lhs is trivial to perform ("<value> <op>")
     Binding a value to the rhs requires a workaround with dot-forwarding (".<op> <value>")
-      NOTE: Currently, parenthesis are not needed for currying operators but are needed for indexing
+      Note: Currently, parenthesis are not needed for currying operators but are needed for indexing
+        Note: This contradicts earlier statements
+
+  TODO: Need to add in language to enable partial-application resolution
 
   Experimental: Can be disabled through the '@disable(curry)' annotation 	# Change name?
 

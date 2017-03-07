@@ -1,74 +1,93 @@
 # This file is a collection of all statements and expressions in Spero
 Statements
-  A spero source file consists of a sequence of 0+ high-level statements
-    Each high-level statement may consist of may sub-expressions
+  A spero source file consists of a sequence of 0 or more high-level statements
+    Spero semantics make a further distinction of "value expressions"
+      A "value expression" is any statement that produces a usable value
 
-  A ';' character may be used to force a split between two language statements
-    This should only be used in cases where the parsing would fail to reconcile the syntax
+  Statements are whitespace delimited by default
+    TODO: Explain what I mean
+    A ';' may be used to force a split between two statements
+      Only use to fix parsing errors or to improve code readibility
 
   Order of Evaluation can be forced by wrapping sub-expressions in '{}'
-    This is needed because Spero treats all '()' as tuples, but '{}' as scopes
-    The default semantics of scopes provide the same behavior as desired
+    '()' are treated as tuples and the current semantics don't match what's needed
+    TODO: Look into this area, '()' is just too entrenched
+    Note: '{}' allows multiple statements to be included inside of it
 
 Assignment
   Grammar:
-    <context> <name_ptn><gen><inter>|<asgn_val>
-    inter    -> <sig> (= <type_body>|<valexpr>)?
+    <context> <name_ptn><gen> (<interfce>|<asgn_val>)
+    interfce -> <sig> (= <type_body>|<valexpr>)?
     asgn_val -> = <type_body>|<valexpr> (in <valexpr>)?
     context  -> let | def | static
 
-  Context:
+  Context Keyword:
+    Spero takes a different approach to many languages in specifying visibility
+      TODO: What/why?
     This keyword specifies the visibility of the following binding
       let/def/static maps to the traditional protected/public/static visibilities
-      This visibility currently only has an effect in two locations: types and modules
+        TODO: Explain the rules for these. Need a better understanding of all times
+    Note: Currently this keyword has no consistent effect outside of type/module decs
+      This is largely since you can't "index" local scopes anyways
+    'def' exports the binding into the context's public interface
+    'let' creates a binding within the context's local interface (ie. protected)
+       Note: The local context can still access members of the public interface
+    'static' exports the binding into the context's static interface
+       TODO: Define what this means
+       Note: There's no current way put static bindings into the local interface
 
   Signature (:: T)
-    This binding specifies an upper limit to the inferred type of the binding
-      The minimum interface that any value held by the binding must satisfy
+    This specifies the minimum interface any acceptable value must satisfy
       Note: I may end up adding a special behavior for Functions in this respect
     For types, this syntax is one way of specifying an inheritance relationship
-  Generics ([T])
-    Some degree of generic polymorphism for types and variables can be achieved with '[T]' syntax
-    Non-Function variable bindings can also take advantage of Generics to cast their value based on typing needs
-      See "Generic Variables" for more
 
-  Assignment works by binding an execution sequence to a known name
-    For types, this must be the type body
+  Generics ([T]):
+    Parametric polymorphism for types and variables is introduced with '[T]' syntax
+      Note: '[T]' must be attached to the binding on the lhs of the assignment
+    Note: See "Generic Variables" for more
+
+  Assignment works by binding an value expression to a known name
+    For types, this must be the type body, a block of code ('{..}')
       TODO: Consider allowing 'mut' in type body to signify mutable only types
+        ie. "def T = mut { ... }" would define a mutable only type
     For variables, this must be a value expression
-      A value expression is any statement in Spero that can produce a value
-      Multiple lines can be wrapped in a scope for assignment purposes
-      Placing a 'mut' keyword at the beginning of the valexpr automatically makes the binding mutable
+      Specifically, the value that the expression evaluates to
+        Note: The compiler is free to reorganize/be lazy regarding valexprs
     It is permissible to not provide a value in certain cases to create an interface
-      In this case, a type signature (using the inference syntax) must be provided in its place
+      In this case, a type signature must be provided instead
+        This simplifies the process for defining abstract types
+          Note: You can't instantiate an abstract type, but you can accept one
       A definition that conforms to the interface can be provided at a later time
-        This is mainly useful within the context of types for creating abstract types
-	Any type that has unassigned interfaces is an abstract type and can't be instantiated
+        If an interface is left unfilled, the implementing type is also abstract
     Bindings can be "shadowed" to hold a different value by re-assigning with the same name
-      Unless the variable is aliased (or declared in a different scope), the shadowing "drops" the old value
-        Shadowing Functions and Types produces an "overloaded" name instead of dropping the old binding
-      This can also be used to perform mutability switching (ala "t = mut t")
+      If the old value is a Function or a Type, an overload set is created
+        TODO: Improve the wording of this to describe the meaning
+        TODO: Find a wording to prevent "foo = 5 and foo = () -> ()" being overloads
+      If the binding is in the exact scope and is not aliased, the old value is dropped
+        Shadowing can serve to switch mutability, in which case dropping does not occur
       A compiler warning is produced if members (or self/super) are shadowed in type methods
 
   Pattern Matching (for loop and match statement)
-    Assignment can be viewed as a restricted form of the pattern matching syntax
-      Adds ADT decomposition and value matching (tuple decomposition is in assignment however)
-      Also necessitates a unique placement of 'mut' to generate mutable bindings
     Tuple Decomposition
-      Tuple values can be extracted into individual variables by matching against a variable tuple of equal arity
+      Tuple values can be extracted into individual variables by providing a tuple of equal arity
       NOTE: This decomposition process is recursive
-    Mut keyword placement
-      The 'mut' keyword in pattern matching must be placed before the variable which will be mutable
+    Mut keyword Placement
+      The 'mut' keyword is placed within the pattern, next to the "mutable" variables
+        TODO: This is a departure from normal usage why
       If placed before a tuple/ADT, all extracted variables are considered to be "mutable"
     Reference taking
-      Pattern match values can also be captured by reference in some conditions with the '&' character
-        This symbol must be placed before the variable that is being grabbed by reference
-      Some special mutability rules apply to prevent getting around some Spero restrictions
+      Values can also be captured by reference using the '&' character
+        This symbol must be placed before the variable (same as 'mut')
+      Special mutability rules apply to prevent this from abusing some Spero restrictions
+    Assignment can be viewed as a restricted form of the pattern matching syntax
+      Adds ADT decomposition and value matching (tuple decomposition is in assignment however)
+      The 'mut' keyword is always on the value side of the statement, not by the name
 
   Scoped bindings (ie. 'in' statements)
     It is possible to bind a variable for a single statement using 'in' bindings
-    Syntactically it is just an optional "in" after the assignment statement followed by an expression
-      The bound variable will then only be bound within the context of the singular statement
+    Following the name, add an "in <expr>" after an assignment statement
+      The bound variable will then only be bound within the context of the in expr
+      Note: In-bindings aren't recursive at the moment, do to the organization of grammar rules
 
 Control Flow Expressions
   If-Elsif-Else
@@ -80,7 +99,7 @@ Control Flow Expressions
     <expr> .loop
 
     Performs an infinite loop (until a break/return is hit)
-      NOTE: A good way of implementing an infinite generator "loop yield <expr>"
+      Note: A good way of implementing an infinite generator "loop yield <expr>"
 
   While
     while <test> do? <expr>
@@ -91,35 +110,36 @@ Control Flow Expressions
       Warning for true because 'loop' performs the same functionality
 
   For
-    for <pattern> in <expr> do? <expr>
-    do? <expr> .for <pattern> in <expr>
+    for <pattern> in <genexpr> do? <expr>
+    do? <expr> .for <pattern> in <genexpr>
 
-    For loops can accept values of three general types; Iterable[T], Iterator[T], Generators
-      A generator is tentatively any function that contains a reachable yield expression
-        NOTE: This might be generalized in the future
-        NOTE: I might make it so that default arguments can be given to generators as well
+    Genexpr can accept values of three kinds: Iterable[T], Iterator[T], Generators
+      A generator is tentatively any function that contains a reachable yield
+        Note: This might be generalized in the future
+        Note: I might make generators re0entrant ala Lua instead
       The types can be translated according to the following patterns
-        Iterable[T]: "for <pattern> in <iterable> ..." => "for <pattern> in <iterable>.iter ..."
-        Iterator[T]: "for <pattern> in <iterator> ..."
+        Iterable[T]: "for <pattern> in <iterable> <expr>" => "for <pattern> in <iterable>.iter <expr>"
+        Iterator[T]: "for <pattern> in <iterator> <expr>"
           "let iter = mut <iterator>      # Force the iterator to be mutable
           match iter.next {
-            <pattern> -> { ... }
+            <pattern> -> { <expr> }
           }.while iter.hasNext"
-        Generator: "for <pattern> in <generator>(..) ..." =>
-          "match wait <generator>(..) {
+        Generator: "for <pattern> in <generator>(..) <expr>" =>
+          "match wait <generator>(..) {		# Wouldn't this re-start the function ???
             None -> break;
-            Some(<pattern>) -> { ... }
+            Some(<pattern>) -> { <expr> }
           }.loop"
-      NOTE: It is allowable to extend the pattern with throwaways at the end to satisfy type-checking
+      The compiler can extend the pattern with throwaways ('_') to satisfy type-checking
 
-  Jumps
-    The language also provides several forms of controlled gotos
-      break, continue, return, yield, wait		# Semantics follow established behavior
+  Jump Exprs:
+    Spero provides several forms of controlled gotos, following common beahavior
+      break, continue, return, yield, wait
 
-    Each form can be followed by a single expression
+    Each keyword can be followed by a single expression
       This expression serves as the jumps "value" where required by evaluation
 
     TODO: Figure out how corountines can be implemented
+    Note: All of this is experimental atm
     The yield and wait keywords perform coroutine control flow handling
       yield creates a "resumable" return from a function
         Experimental: The function can only be resumed through a 'wait' call
@@ -157,3 +177,45 @@ Ranges
   Ranges cover all values between start and stop ("[)")
     Infinite ranges are creatable by not providing a stop value
       TODO: Remember whether this is whitespace marked or not
+
+Module Declaration
+  Grammar:
+    mod list<var, ':'>
+
+  A module declaration is a single high-level statement (similar to Java packages)
+    All following code is considered to be part of the module's scope
+    The module scope ends when the file ends or at another module declaration
+      Submodules are defined through ':' chains, with the parent module on the left
+    Modules are always public (forced, 'mod' takes the place of visibility context)
+
+  Experimental: The entrypoint file (where main is defined) is not required to declare a module
+    Note: Java/Scala uses a "default" module where one isn't given, I think
+
+Module Import
+  Grammar:
+    use module_path (binding|\{list<binding>\}|_) (:_)?
+    binding -> (<var> (as <var>)?)|(<type> (as <type>)?)
+ 
+  Importing levels the specified bindings into the context of the current context
+    Basically removes the requirement to use the full qualified name
+      Note: An import may just serve to shorten the reqired name
+      Note: This does not "include" the imports so that any code automatically has the same modules
+    A '_' imports everything declared at the current level
+      '_:_' performs a recursive "import all" into the current context
+      TODO: Explain these better
+
+  Imports can be "rebound" to different names using 'as' syntax
+    The right-hand side binding is interpreted as left-hand side (ie. typedef)
+      lhs can include generic instantiations if desired (ie. "use Vec[Int] as IVec"
+      Note: Can I expand this to allow for interface restrictions/rhs generics
+        ie. "use Array[T :: Comparable] as Sortable[T]"
+    Note: 'as' is not a full keyword. You can create bindings with 'as'
+      ie. "use std:wtf:as as why_not" is a valid import/binding
+    Importing only associates the rhs to the qualified lhs name
+      Note: You still have to use the full qualified name if using the lhs
+        ie. "use std:Vec as Vector", can write "std:Vec" or "Vector"
+  
+  Importing follows the same rules as regular bindings (shadowing/errors/etc.)
+    Evaluating an import that would have two types bound to the same name in the same scope is an error
+      NOTE: It is currently possible to have local bindings of types
+      TODO: Resolve this with assignment shadowing

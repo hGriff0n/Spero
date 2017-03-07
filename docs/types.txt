@@ -1,6 +1,3 @@
-TODO: Work on explanations
-  I use interface for '::'
-
 Types
   Grammar:
     type_body = list<adt_con, '|', 1>?(list<arg>)?<inherit>?{ <body> }
@@ -9,56 +6,56 @@ Types
 
   Inheritance:
     Spero provides two basic syntaxes to specify inheritance
-      NOTE: This might change as I develop a more complete understanding of abstract types
-      NOTE: There's no semantic difference between the two at the moment, but they are slightly different conceptually
       Spero types can only inherit from one "complete" type but can inherit from multiple "abstract" types
+        Note: This might change as I develop a more complete understanding of types
+      Note: No current semantic difference, just a conceptual one
 
     Child-parent inheritance (ie. of complete types) is specified through '::'
-      The location of the '::' typing can be on either side of the '=' in the assignment
+      The '::' may be located on either side of the '=' in the assignment
         If the '::' is on the right, the syntax follows the Anonymous Types (ie. 'T ::')
 	If the '::' is on the left, the syntax follws the type inference (ie. ':: T')
-      Constructors of the parent class can be invoked through the 'super' keyword in the child's body
-        A call to 'super' must be the first expression in the type body (a no-arg call will be inserted if none exists)
+      Parent constructors can be invoked through the 'super' keyword
+        A call to 'super' must be the first expression in the type body
+          A no-arg call will be inserted if none is given by the programmer
         Members of the parent type can also be accessed by indexing 'super'
 
-    Interface inheritance (ie. of abstract types) is specified through the 'impls' statement
+    Interface inheritance is specified through the 'impls' statement
       This basically serves to 'import' any definitions into the current class
-      The importing type will become an abstract type if an unimplemented interface remains
       A block, containing the relevant definitions, is allowed after the impls statement
         TODO: Look into requiring this block to exist
         TODO: Look into dropping the vcontext keywords for defining inherited functions
 
   Construction:
     There are three kinds of type constructors; primary, named, and secondary
-      A type may only contain 1 primary constructor, but it may have multiple named/secondary
+      A type may only contain 1 primary constructor
     The primary constructor merges the type body with the function body (ala Scala)
       All variables declared in the primary constructor are type members
-      Annotations are applied to the primary constructor through the '@primary(..)' annotation
+      Annotations are applied to the primary constructor through '@primary(..)'
 	Annotations would need to be placed above the type definition -> apply to the type
-      An implicit, no-arg, primary constructor is automatically generated if one isn't provided
-    Secondary constructors is implemented by overloading the static "new" method
+        TODO: Need a better solution to this issue
+      An no-arg, primary constructor is implicitly generated if needed
+    Secondary constructors are implemented by overloading the static "new" method
       There are 2 general ways of implementing a secondary constructor
 	Create and modify a mutable instance (uses another constructor)
 	"Complete" the type definition ala Anonymous Types
 	  This is needed in case the behavior of another "constructor" is not desired
-      NOTE: he primary constructor is implicitly implemented in these terms
+      Note: he primary constructor is implicitly implemented in these terms
     Named constructors are Spero's way of implementing Algebraic Data Types (ADTs)
-      Match statements can distinguish between named and primary/secondary constructors
-        Type instances always remember which (named) constructor they were built with
+      Type instances always remember which named constructor they were built with
+        Note: This is to allow for pattern matching deconstruction
       Named constructors disable the implicit creation of a primary constructor
     Constructors can be marked with '@explicit' to prevent usage in implicit resolution
-      NOTE: Named constructors are always explicit
+      Note: "implicit resolution" refers to function overloading
 
   Destruction:
     Destructors are implemented by overriding the 'drop' method with no arguments
-      This method is specially recognized by the compiler so we don't need to mark it as '@mutable'
-        The annotation is "implicitly" added by the compiler, so mutation of internal state is allowable
-    Destructor calls are implicitly inserted by the compiler
-      Insertions are done in 2 locations: scope exit and an enclosing type's 'drop' method
-      These insertions are done in reverse order of declaration
-    Destructors can be explicitly called if desired/necessary
-      The variable is marked as "dropped" and is invalid until reassignment/shadowing
-        It is valid to still "own" the memory for optimization purposes
+      An implicit '@mutable' annotation is automatically added to allow internal mutation
+    Implicit insertion of destructor calls by the compiler
+      Insertions are done in 2 locations: scope exit and the end of a 'drop' method
+      These insertions are done in reverse order of var declaration/val creation
+    Destructors can be explicitly called if desired or necessary
+      The variable should be marked as "dropped"/invalid until reassignment
+        It is valid to mark the memory as "owned" for optimization purposes
       Implicit destructor calls are not inserted for explicitly dropped variables
 
 Anonymous Types
@@ -68,31 +65,32 @@ Anonymous Types
   Anonymous types enable instantiating/extending types at the use site
     When bound to a type, this is the syntax for creating a child type
     When bound to any other name, this creates an instance of the type
-      These types have access to the surrounding scope (through closures), so no arguments are needed
-        Experimental: However primary/secondary constructors can be defined and used if desired
+      Note: This is basically served by inserting an implicit constructor call
+      These types have full access to the surrounding scope (through closures)
+        Experimental: Secondary constructors can be defined and used if desired
           The constructor is called by placing an argument tuple after the type body
-      These types cannot declare named constructors
+    Note: Cannot declare primary or named constructors
   
-  The parent types constructor can be called in one of two ways
-    Through a call to super in the type body
-    Following the parent name by an argument tuple (this can be translated to the former)
+  The parent constructor can be called in one of two ways
+    The standard way, a call to super within the body of the type
+    Providing arguments to the parent name when specifying inheritance
+      TODO: Do I still have this syntax ???
 
 Inference
   The typings of variables in Spero is largely inferred by the compiler
+    Note: This should follow an ML-style scheme (like Rust/Scala)
     TODO: Learn about type inference
   Type hints can be provided by the programmer using ':: T' syntax
-    This is mainly useful for return overloading selection but can also perform up/down-casting
+    This is mainly useful for return overloading selection but can also perform casting
   Type inference may select a less specific base type when a derived is produced
     A ':: T' may be bound to a name/generic or to an expression
-      Experimental: Both positions perform largely the same functions
   Casting is done through explicit/implicit constructions or dedicated cast methods
     So a "T -> String" is performed with the 'T:toStr' method
 
 TODO:
   Look into restricting 'impls' to abstract types and '::' to complete types
+    This is just trying to simplify the inheritance mess
   Start designing the type system
-  Look into typeclasses
+  Look into typeclasses/higher-kinded types
   Look into building in variant types ("T | V")
-  Look into higher-kinded types
-  If I can throw an error if a method is not marked '@mutable', I can throw an error if any method is used
-    Why am I making the programmer write the annotation then? IDE support, helpful explicitness
+  Look at defining impls blocks outside of type bodies (maybe require "impls ... for ... { ... }"?)

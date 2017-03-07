@@ -1,23 +1,28 @@
 
 Grammar
-  @<variable><tuple>?
+  @<variable>!?<tuple>?
 
-  A ! at the end of the annotation name marks the annotation as "global"
-    This distinction determines what bodies of code the annotation applies to
-      Normal (local) annotations apply to the next encountered statement
-      Global annotations apply to the entirety of the compilation block
-        TODO: Should this be orderable (ie. only apply to the "rest" of the block)?
+Annotations
+  Annotations are a system for providing hints to the compiler and querying various state at compile time
+    Hints/Guarantees are used by the compiler to provide tigher analysis, optimization, and codegen
+    Some annotation also allow for some querying of compilation state at compile time
+      Note: The exact process and syntax for this is undecided
+      Note: This would enforce that every "usable" transform is an annotation
+      Experimental: Standard expressions using special, annotation-only, variables to access config state
+        ie. "@enable_if(target.machine.os == os.windows) ... @enable_if(target.machine.os == os.mac) ..."
+
+  Annotations are split into local and global versions
+    A '!' at teh end of the annotation's name marks it as global
+    Local annotations are matched, and apply to, the next statement in the program
+      TODO: What does this mean?
+    Global annotations are considered to be statements themselves, albeit resolved at compile time
+      TODO: What does this mean?
 
 Current recognized annotations:
-  pure     - Promises that the function is "pure"
-    May be used to allow for functions/values in compile-time contexts
-    Compiler checking may be rather basic
   mutable  - Restrict a method/type availability to mutable instances
-    TODO: Decide if '@mutable { .. }' should export '..' into the parent scope (NOTE: Not yet)
-  disable  - Turn off the language features
-    TODO: Determine which language features are "toggleable"
-  primary  - Apply annotations to the primary constructor
-    TODO: Not sure if this is the best method
+    This is served by changing the implicit 'self' typing from 'Self&' to 'mut Self&'
+    TODO: Allow '@mutable { .. }' to export scoped declarations into the parent scope (NOTE: Not yet)
+    TODO: Decide on usefulness outside of type declarations
   explicit - Mark a constructor as "invalid" for implicit construction resolution
   safe     - Mark a block of unsafe code as "safe" to execute
     Accepts an optional string literal clarifying why the code segment is "safe"
@@ -25,17 +30,25 @@ Current recognized annotations:
   todo     - Raise a warning
   asm      - Output assembly code for the target architecture
   truthy   - Specify a method to be used for converting values of a type into Booleans
-    Named function must take no arguments and return a Bool or this annotation produces a compiler error
-      ie. sig(fn) = () -> Bool in "@truthy(fn)
+    Takes a function, which must have the signature "() -> Bool" (compiler error otherwise)
 
 Ideas for annotations:
   mem_limit - restrict the amount of memory a type/module/etc can use
-  allow     - turns off compiler warnings or turns on language features that were disabled
-  cfg       - conditional compilations/definitions
-  error_def - ???
-  assert    - raise a compiler error if a condition evaluates to false
+  enable    - turn on language features that were disabled
+  assert    - raise an error (compiler/runtime) if a condition evaluates to false
+  cassert   - raise a compiler error if a condition evaluates to false
   force     - requires/disables language features to create environment
-  enable    - opposite of disable
+  pure      - promise that the function is "pure" for optimization purposes. may allow use in generics
+  disable   - turn of a language feature for some time
+  primary   - apply annotations to the primary constructor instead of the type
+  if_cfg    - conditional compilation based on compilation target
+  hide_warn - turn off specific compiler warnings
+  show_warn - turn on specific compiler warnings
+    Could possibly merge into enable/cfg
+
+Creating custom annotations:
+  No method currently exists for allowing programmers to create custom annotations
+  This is partially due to the lack of knowledge regarding compile-time execution and reflection support
 
 Ideas:
   Expand annotations to be able to make macros with them

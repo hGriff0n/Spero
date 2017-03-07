@@ -1,64 +1,75 @@
 
 Keywords
-  Keywords have two general modes of operation, "basic" and "normal"
-    normal keywords have a higher degree of language compatibility (ie. dot-flipping, etc.)
-    basic keywords are more a more terminal part of the language
+  Keywords act largely the same as in many other languages, as reserved identifiers
+    However, Spero augments some keywords with a degree of compatibility with dot-flipping and other semantics
 
   Grammar:
-    normal -> match | if | while | loop | for
-    basic  -> mod | use | let | def | static | else | elsif
+    mod                           <- declare module name for the current context
+    use                           <- module importing and rebinding/aliasing
+    mut                           <- mark the next value/expression as mutable
+    impls                         <- type inheritance/extension/trait implementing
+    def                           <- mark a binding as publicly visible
+    let                           <- mark a binding as privately (protected) visible
+    static                        <- mark a binding as statically bound
+    match                         <- perform switch-style pattern matching. can be dot-flipped
+    if                            <- standard usage. can be dot-flipped
+    elsif | else                  <- standard usage
+    while                         <- standard usage. can be dot-flipped
+    loop                          <- loop infinitely ("while true"). can be dot-flipped
+    for                           <- for-each style looping with pattern matching. can be dot-flipped
+    break | continue | return     <- standard usage. can be dot-flipped
+    yield                         <- produce a value from a re-entrant function. can be dot-flipped
+    wait                          <- re-enter a re-entrant function and wait for a value. can be dot-flipped
 
-  Keywords:
-    mod			        <- declare module name for the current context
-    use			        <- module importing and rebinding/aliasing
-    match		        <- perform pattern matching on the arguments
-    if | else | while		<- standard usage
-    for	| break		  	<- standard usage
-    continue		    	<- standard usage
-    def | let | static		<- visibility keywords
-    mut			        <- mark the resulting value as mutable for the moment
-    impls		        <- type inheritance/extension
-    yield | return  		<- standard usage
 
 Safety
-  Like most languages, Spero aims to provide programmer safety
-    However, the safety of some code (particularly low-level implementation) can't be verified by the compiler entirely
-    These segments would normally cause the compiler to produce an error
-      However, Spero provides the capability to selective tell the compiler to "trust me"
+  Spero aims to provide programmers with a usable language that prevents unsafe and dangerous practices
+    The safety of some code, particularly low-level implementations, can't be verified by the compiler
+      The target domain of Spero (systems-level like C++, Rust) requires that these areas by "codable"
+      Spero follows Rust in allowing the programmer to mark these sections as "understood"
+        This is valid so long as the unsafe behavior does not "leak" from the section
+        This is performed by attaching the '@safe' annotation to the enclosing scope
+    Programmers can also mark some sections as "unsafe" through the '@unsafe' annotation
+      When applied to a binding assignment, any use of the bound name will be considered as "unsafe"
+      TODO: Why would they do that?
+    TODO: What does the compiler do and doesn't do inside of "unsafe" expressions
 
   Safety Propogation:
-    A function is considered to be unsafe iff
-      At any point in the function definition, an unsafe expression is evaluated
-      The expression is not marked with the '@safe' annotation
-      The expression is not wrapped within an expression that is marked with the '@safe' annotation
-    The program entrypoint must be considered safe in final analysis for compilation to succeed
-    It is possible to hand-mark some functions/etc. as unsafe through '@unsafe'
+    The unsafety-ness of an operation propogates up the call tree until a "@safe" annotation is encountered
+      Note: Of course, this propogation also stops once it reaches the global declaration level
+    In final program analysis, the entrypoint function must be considered as "safe"
+      Otherwise, a compiler error will be produced
+      Note: The default entrypoint is 'main'
 
   Unsafe Operations:
     TODO: Determine what operations make a segment unsafe
 
 Mutability
   Immutable by Default:
-    All values in spero are immutable by default			# Note: This extends to variables/arguments
-      That is, the value cannot be modified through reassignment or calling mutable methods
-      A mutable typing can be indicated by prepending the 'mut' keyword to any <valexpr>
-        NOTE: The exact rules are a bit tricky for where this placement is valid, best to only use in assignment
-	NOTE: The inferred type would be 'mut T', where 'T' is the type of the <valexpr>
-      Mutability of variables is not maintained in shadowing/assignment unless a 'mut' is used
+    All values/variables/arguments in spero are immutable by default
+      Immutability means that modification, through reassignment/mutable methods, is prohibited
+        Note: This applies even within unsafe blocks
+      Mutability can be marked by preceeding the value/variable/etc. with the 'mut' keyword
+        Note: The rules on the placement is somewhat complext at the moment
+      Mutability is extremely transient - it is not maintained in assignment/usage by default
 
   Typing Interaction:
     Mutability is a part of the type system (ala C++'s 'const')
-      'T' is immutable, 'mut T' is mutable
-      A 'mut' must be bound to a type name
-	ie. can't write "def foo = (f :: mut) -> {}"		# NOTE: May change in the future
-    Mutable methods (the '@mutable' annotation)
-      Mutable methods (ie. methods that mutate internal state) must be annotated with '@mutable'
-      Immutable types do not have access to any mutable methods (ie. can't call them on immutable instances)
-        It is also a compiler error to mutate internal state from an immutable method
-          mutate internal state = reassignment or calling mutable method
+      A 'T' is an immutable 'T', a 'mut T' is a mutable 'T'
+        TODO: Do mut rules change this ???
+      'mut' must be bound to a value/variable/type, it is not "free"
+	ie. can't write "def foo = (f :: mut) -> {}"
+    Mutable methods are any method that mutates internal state
+      These methods must be marked with the '@mutable' annotation
+        This annotation changes the typing of the implicit 'self' paramter from 'Self&' to 'mut Self&'
+        Note: Only "mutable" members are modifiable with mutable methods
+      It is a compiler error (mutability) to call a mutable method on an immutable instance
+        Note: Due to 'mut&' typing, modifying state in an immutable method produces a compiler error
       TODO: Find a way to enable conditional behavior based on mutability
-    It is possible to mark types as mutable-only with '@mutable'
-      This makes it a compiler error to create immutable instances/alias of the type
+    Types can be marked as "mutable"-only using the '@mutable' annotation
+      This makes it a compiler error to hold a immutable instance/alias of the type
+      Experimental: An alterante syntax is to simply use the 'mut' keyword
+        ie. "def T = mut { ... }" is equivalent to "@mutable def T = { ... }"
     Experimental: It is possible to mark types as immutable-only with '@disable(mut)'
       Similar to mutable-only, it is a compilation error to create mutable instances
 
@@ -69,51 +80,57 @@ Generics
     gen_arg  -> <type_gen> | <var_gen>
     type_gen -> <type> (+|-|..)? ((::|!:|<|>) <type>)?
     var_gen  -> <var> ((:: <type>) | (= <val>))?
-
-  Generics are a way to write code irrespective of the types of arguments
-    Spero also supports "dependent" style generics by allowing values along with types in generics
-      Like bindings, whether a generic parameter takes a type or a value is determined by the name
-      Types and values have implicit subtype relationships if none are given at the creation site
-        Experimental: Types implicitly add a ':: Type'
-	Values have an implicit ':: Size'
-    The syntax for subtying in Generics is rather simple
-      :: -> The instantiation type must implement the interface
-      !: -> The instantiation type must not implement the interface
-      <  -> The instantiation type must be a subtype
-      >  -> The instantiation type must be a supertype
+ 
+  Generics are a way to write polymorphic code that type-checks at compile-time
+    Spero allows values as well as types to be used within generics as arguments/parameters
+      Note: This means Spero should support Pi-types
+    Like normal bindings, generic parameters distinguish acceptance based on capitalization
+      ie. 'T' expects a type, 't' expects a value
+    Subtype restrictions in generics follow a rather simple syntax
+      ::   -> The argument must implement the following interface
+      !:   -> The argument must not implement the following interface
+      <    -> The argument must be a subtype of the following interface
+      >    -> The argument must be a supertype of the following interface
+        Note: The last two are a bit-iffy about acceptance
+        Note: Values have a default sub-typing of ':: Size'
+        Experimental: Types have a default sub-typing of ':: Type'
     Experimental: Co-/contra- variance can also be indicated on type generics
       The syntax for covariance is to add a '+' after the type parameter (contra = -)
 
-  Variadics within generics
-    Varags are useful when all objects have a specific type in them
-      But to capture any type, we must use the 'Any' type to allow compilation
-    Variadics fixes this by allowing the generics system to capture a sequence of types by name
+  Variadics (T..):
+    Varags are useful when the sequence has a singular type (for ad-hoc polymorphism)
+      But sometimes a subtyping relation does not exist or it is impossible to correctly type-check the code
+    Variadics fixes this by extending generics to capture a sequence of types
+      Variadics use the same syntax as varargs, '..', but it is attached to the type in the generics "window"
       Instead of a sequence of values, a variadic compiles into a tuple (known at compile-time)
-    Variadics are indicated through the same syntax as varargs, the '..' after the type
-      Implementation/etc. restrictions can be indicated after the '..' through the standard means
+        Note: Subtyping relations can be added after the '..'
+    Note: Instead of a Vararg-Sequence, variadics are collected into a tuple
+    TODO: Think of moving the '..' into the subtype area, or prohibiting any other "decorators"
 
-  Value Restrictions:
-    Restrict to basic types for now
-      The key thing, is that equality must be computable at compile time
-    Experimental: In order for types to be used in generics, 2 conditions must be met
-      The type's "eq" method has the @pure annoation (is computable at compile time)
-      The instantiation's value is known at compile-time
+  What Kinds of Objects are Usable in Generics:
+    All types are usable as type arguments
+    Currently, only a predefined set of types are usable as value arguments
+      Note: Current set is { Int, Float, Byte, Char, Bool }
+    Experimental: It is possible to create a custom type that can be used in generics
+      The key thing for any value types, is that equality must be compile-time computable
+        I guess there must also be a way to create compile-time literals as well
 
   Instantiation:
-    Explicit Instantiation is performed by providing concrete types/values for a generic context
-      It is only considered for expressions (specializations are for lhs of assignments)
-    Explicit instantiation of functions/types is not needed if the compiler can infer the correct overload
-      NOTE: This is experimental for types as there may be some benefit to not allowing it (see "base" type)
+    Explicit Instantiation is providing concrete types/values for a generic use context
+      ie. "Vec[Int]" would be explicit instantiation of 'Vec[T] with T=Int'
+    This is different from implicit instantiation which infers the correct values from context
+      This is mainly used by functions, but type constructors can also make use of it
+      ie. "Vec(3)" infers the instantiation type "Vec[Size]"
 
-  Generic definitions can be specialized for specific types/conditions
-    This is done by providing concrete values in a generics array (same syntax as creation)
-      Functions can also be "specialized" through overloading with an explicit argument tuple
-      The complete type/function body must be provided to create a specialization
-	This can be slightly shortcut for types through inheritance/imports
-    A "base" type (no generics) can also be defined with the same name (minus '[]')
-      Note: These are all unique "types", there is no aliasing/magic occuring
-      NOTE: Experimental, as this implies C++ style generics (ie. T[V] can't operate on private members of a T[W])
-	This might be a very good idea given "complete the definition" syntax/semantics (ie. private members aren't guaranteed to exist, only public members)
+  Specialization:
+    Definitions can be given special behavior for specific type/value combinations
+      Specialization follows the same syntax as normal generic declarations
+        The only difference is that values are given, instead of the "placeholder" names
+      Functions can alternately be specialized through overloading the name
+    The complete type/function body must be provided for specialization, ie. no interfaces
+      Note: This work is slightly reduced with types through inheritance/imports
+    Note: Specializations could theoretically allow users to break code "accidentally"
+      ie. "T[I] = {}" ... "T[Int] = { @abort! }"
 
   Instance Resolution:
     Definitions
@@ -123,32 +140,47 @@ Generics
     There are 3 modes of generic declarations (in order of rank)
       Specialized <- [Int]      | [3]
       Subtyped    <- [T :: Num] | [v :: Num]
-      Default	  <- [T]        | [v]		<- Defaults are Subtyped with 'Type' and 'Size' respectively
+      Default	  <- [T]        | [v]
     Instance resolution follows largely the same process as overload resolution
-      or every argument in the instantiation, no match can be worse than another instantiation
+      For every element of the current instance, no match can be worse than another
       A compiler error is produced if no declaration could be found
 	A valid declaration will always be found if a default case exists
-      If two matching declaration are found (of the same rank), a compiler error is produced
-	Otherwise the resolution is well-formed by taking the highest ranked declaration
+      If two declaration are found of the same rank, a compiler error is produced
+	Otherwise the resolution is well-formed by taking the highest rank
 
-  Variables:
-    Generics can be applied to non-function bindings the same as any other type
-      This allows the variable to be accepted in any context that it's value is constructible to
-        NOTE: The bound value should have the form 'T(...)' but it is not required yet
+  Usage of Generics in non-Type (ie. Variable) bindings:
+    Spero's semantic design strongly implies all bindings should access the generics system
+      For variables, this mainly gets us an ability to extend the contexts a value is acceptable in
+        Note: This is mainly done by forming the value as "T(...)", but not required
+    Generic variables can be "instantiated" to a concrete type in one of 3 ways
+      Implicit conversion, ie. in functions/etc.
+      Explicit instantiation with the generic argument
+      Type-Annotation (ie. ':: T'), this basically follows from implicit conversion
 
-    The variable can be "instantiated" to a specific type in one of three ways
-      Implicit conversion, ie. for functions, etc.
-      Instantiation with an explicit template parameter
-      Inference (ie. ':: T'), this basically follows from implicit conversion
+  Co-/Contra-variance
+    TODO: Explain More
 
-  Variadics and Covariance
-    Generics can also be implemented to accept a sequence of different types by appending a '..' to the generic type
-      TODO: Explain more
-    This variadics take up the syntactical spot for indicating co/contra-variance (ala Scala)
+Modules
+  A module is a collection of declarations that provide some encapsulation without using types
+  TODO: Explain more, figure out where to put this
+  TODO: Figure out how modules should be resolved
 
+Qualified Names
+  Grammar:
+    module_path type_path (<var>|<type>|<op>)
+    module_path -> (<var>:)*
+    type_path   -> (<type>:)*
+
+  The qualified name is the full organizational path that the binding falls under
+    "std:io:println" refers to the "println" binding in the "std:io" module
+      Similarly, "Int:abs" is the "abs" binding in the "Int" type
+    All bindings in Spero can be accessed using their full qualified name
+      TODO: Figure out how to resolve this process
+    All variables within the qual_field are automatically interpreted as modules
+      Note: Except for the last variable in the chain (ie. is there a ':' after?)
 
 TODO:
-  Figure out monads
+  Figure out how monads would work
   What should the behavior of 'static' be in local scopes 
   Determine what the default "unsafe" expressions should be
   Find a way to make def/let meaningful in local contexts (ie. not types/modules)
