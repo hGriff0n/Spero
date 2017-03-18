@@ -4,11 +4,20 @@ Memory Allocation:
     Note: This includes custom defined types
 
 Views:
-  A view is a syntactic sugar for a sequence of values of any length
-    If a view is the last function parameter, the view acts as a vararg parameter
-  A view is indicated in an argument list by appending the type name with two dots ('..')
-    TODO: Explain more about this
-  NOTE: Needs more explanations
+  Views are indicated by appending two dots after a type's name (ie. 'T..')
+    Views are not the same as variadics though they use the same syntax
+      A variadic tuple can have sequences of values from any type
+      Views can only accept values that are subtypes of the declared type
+
+  Views act as a form of syntactic sugar for a variable-length sequence of values
+    On a typing level, a 'T..' is just a simpler way to say 'Iterable[T]'
+      This simplifies the ability of functions to accept sequences of many types
+  
+  Views take on a special-semantical value when used as a function's last parameter
+    This placing allows the function to accept a var-arg sequence of values
+      ie. "foo(Int..)" -> "foo(1, 2, 3, 4)" and "foo(1, 2, 3)" and "foo"
+    TODO: Figure out how this is to be implemented
+      I could have var-arg views converted into a container, but that may be inefficient
 
 References:
   Spero adapts C++ references to enable call-by-reference function semantics

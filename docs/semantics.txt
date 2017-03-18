@@ -8,9 +8,7 @@ Keywords
     use                           <- module importing and rebinding/aliasing
     mut                           <- mark the next value/expression as mutable
     impls                         <- type inheritance/extension/trait implementing
-    def                           <- mark a binding as publicly visible
-    let                           <- mark a binding as privately (protected) visible
-    static                        <- mark a binding as statically bound
+    def | let | static            <- create a new binding with context-dependent visibility
     match                         <- perform switch-style pattern matching. can be dot-flipped
     if                            <- standard usage. can be dot-flipped
     elsif | else                  <- standard usage
@@ -20,6 +18,22 @@ Keywords
     break | continue | return     <- standard usage. can be dot-flipped
     yield                         <- produce a value from a re-entrant function. can be dot-flipped
     wait                          <- re-enter a re-entrant function and wait for a value. can be dot-flipped
+
+  Visibility Contexts
+    Spero relies on three unique keywords to introduce bindings
+      The usage of three keywords allows for a tight control of the visibility of the created binding
+
+    There are three unique contexts in which a binding can be created (File, Type, Scope)
+      File context is all declarations in the global scope of a file
+      Type context is all declarations declared within a type body definitions
+      Scope context is all declarations made with a block/function body
+
+    The mapping of the visibility keywords to the declaration contexts is as follows:
+      context - File   | Type          | scope
+      ===========================================
+      let     - module | public        | local
+      def     - public | protected     | local
+      static  - file   | public static | static
 
 
 Safety
@@ -56,7 +70,6 @@ Mutability
   Typing Interaction:
     Mutability is a part of the type system (ala C++'s 'const')
       A 'T' is an immutable 'T', a 'mut T' is a mutable 'T'
-        TODO: Do mut rules change this ???
       'mut' must be bound to a value/variable/type, it is not "free"
 	ie. can't write "def foo = (f :: mut) -> {}"
     Mutable methods are any method that mutates internal state
@@ -94,8 +107,7 @@ Generics
         Note: The last two are a bit-iffy about acceptance
         Note: Values have a default sub-typing of ':: Size'
         Experimental: Types have a default sub-typing of ':: Type'
-    Experimental: Co-/contra- variance can also be indicated on type generics
-      The syntax for covariance is to add a '+' after the type parameter (contra = -)
+    Co-/contra-variance can also be indicated on type generics (co = +, contra = -)
 
   Variadics (T..):
     Varags are useful when the sequence has a singular type (for ad-hoc polymorphism)
@@ -158,11 +170,33 @@ Generics
       Type-Annotation (ie. ':: T'), this basically follows from implicit conversion
 
   Co-/Contra-variance
-    TODO: Explain More
+    Variance refers to how subtyping relationships work with relation to more complex types
+      ie. Given a "List[T]" how should "List[Cat]" and "List[Animal]" behaven given "Cat :: Animal"
+      covariance:       A :: B -> T[A] :: T[B]
+      contravaiance:    A :: B -> T[B] :: T[A]
+      bivariance:       A :: B -> T[A] :: T[B] ^ T[B] :: T[A]
+      invariance:       A :: B -> Nothing
+    
+    These relationships in generic contexts are indicated with the '+'/'-' characters following the type name
+      ie. "[T+, U-, V]" is covariant on T, contravariant on U, invariant on V
+    Note: It is uncertain the exact usefulness of variance annotations in Spero. They are carried over from Scala
 
 Modules
-  A module is a collection of declarations that provide some encapsulation without using types
-  TODO: Explain more, figure out where to put this
+  A module is a collection of declarations under a common namespace
+    Submodules are indicated by appending a parent's name with a ':' followed by the submodule name
+    Note: They are primarily an organizational feature
+
+  The module declaration is a single high-level statement that normally begins any file
+    Module declarations are not nestable, they immediately switch over the "modular" context
+      Note: This is because there is no "end-module" signifier in the current spec
+      Note: A single file may contain multiple modules
+    Submodules must be declared using the complete qualified parent string
+  
+  Modules consist of a public and a private interface (indicated through 'def'/'let')
+    'static' marks the binding as "file-local" while 'let' marks it as "module-local"
+      ie. let-bindings can be accessed from another file but only under the parent module
+    Note: These semantics allow modules to act as an alternate encapsulation system
+
   TODO: Figure out how modules should be resolved
 
 Qualified Names
@@ -180,8 +214,6 @@ Qualified Names
       Note: Except for the last variable in the chain (ie. is there a ':' after?)
 
 TODO:
-  Figure out how monads would work
   What should the behavior of 'static' be in local scopes 
-  Determine what the default "unsafe" expressions should be
   Find a way to make def/let meaningful in local contexts (ie. not types/modules)
   Explain variadics and covariance in generics

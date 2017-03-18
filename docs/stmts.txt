@@ -4,10 +4,13 @@ Statements
     Spero semantics make a further distinction of "value expressions"
       A "value expression" is any statement that produces a usable value
 
-  Statements are whitespace delimited by default
-    TODO: Explain what I mean
-    A ';' may be used to force a split between two statements
-      Only use to fix parsing errors or to improve code readibility
+  Statement-deliniation
+    Spero statements are parsing-delineated by default
+      The parser will match a statement as long as the rule matches
+    
+    Generally, whitespace is all that's needed to have correct behavior
+      A ';' may be used to force a split where this option is not enough
+        Note: Should only be used to fix parsing errors/improve readibility
 
   Order of Evaluation can be forced by wrapping sub-expressions in '{}'
     '()' are treated as tuples and the current semantics don't match what's needed
@@ -48,8 +51,7 @@ Assignment
 
   Assignment works by binding an value expression to a known name
     For types, this must be the type body, a block of code ('{..}')
-      TODO: Consider allowing 'mut' in type body to signify mutable only types
-        ie. "def T = mut { ... }" would define a mutable only type
+      Note: 'mut {..}' defines a mutable-only type
     For variables, this must be a value expression
       Specifically, the value that the expression evaluates to
         Note: The compiler is free to reorganize/be lazy regarding valexprs
@@ -60,9 +62,13 @@ Assignment
       A definition that conforms to the interface can be provided at a later time
         If an interface is left unfilled, the implementing type is also abstract
     Bindings can be "shadowed" to hold a different value by re-assigning with the same name
-      If the old value is a Function or a Type, an overload set is created
-        TODO: Improve the wording of this to describe the meaning
-        TODO: Find a wording to prevent "foo = 5 and foo = () -> ()" being overloads
+      If the old value is a Type, the new value must be a specialization of the Type
+        TODO: Work on the behavior of the type system in this case
+      If the old value is a Type, the new value must also be a Type or an error is produced
+        Note: This allows for specializing Tyes
+      If the old value is a Function, the new value must be a Function iff:
+        The binding is declared in a file/type context
+        An overload set for that binding already exists in the local context
       If the binding is in the exact scope and is not aliased, the old value is dropped
         Shadowing can serve to switch mutability, in which case dropping does not occur
       A compiler warning is produced if members (or self/super) are shadowed in type methods
@@ -165,9 +171,7 @@ Tuples
 
   Indexing:
     n-arry tuples can be indexed with '.<i>' syntax where 'i' is a Size literal < n
-      TODO: Figure out implementation
-      It's possible to implement this with the Indexable interface
-        However, everything with tuples is known statically so better error messages can be reported
+      This is performed at compile-time through compiler intrinsics
 
 Ranges
   Grammar:
@@ -197,25 +201,23 @@ Module Import
     binding -> (<var> (as <var>)?)|(<type> (as <type>)?)
  
   Importing levels the specified bindings into the context of the current context
-    Basically removes the requirement to use the full qualified name
-      Note: An import may just serve to shorten the reqired name
+    Basically removes the requirement to use part of the qualified name to reference the binding
       Note: This does not "include" the imports so that any code automatically has the same modules
-    A '_' imports everything declared at the current level
-      '_:_' performs a recursive "import all" into the current context
-      TODO: Explain these better
+    A '_' imports everything declared within the module up to that entrypoint
+      ie. "use std:_" changes "std:io:println" -> "io:println" and "std:foo" -> "foo"
+    '_:_' performs a recursive "import all" into the current context
+      This removes the need to use the full-qualified name to reference all items within that module or any submodule
+    Note: Imported bindings can still be accessed through their full, qualified name
 
   Imports can be "rebound" to different names using 'as' syntax
     The right-hand side binding is interpreted as left-hand side (ie. typedef)
-      lhs can include generic instantiations if desired (ie. "use Vec[Int] as IVec"
+      lhs can include generic instantiation information if desired (ie. "use Vec[Int] as IVec"
       Note: Can I expand this to allow for interface restrictions/rhs generics
         ie. "use Array[T :: Comparable] as Sortable[T]"
-    Note: 'as' is not a full keyword. You can create bindings with 'as'
+    Note: 'as' is not a full keyword. You can name bindings as 'as' just fine
       ie. "use std:wtf:as as why_not" is a valid import/binding
     Importing only associates the rhs to the qualified lhs name
       Note: You still have to use the full qualified name if using the lhs
         ie. "use std:Vec as Vector", can write "std:Vec" or "Vector"
   
   Importing follows the same rules as regular bindings (shadowing/errors/etc.)
-    Evaluating an import that would have two types bound to the same name in the same scope is an error
-      NOTE: It is currently possible to have local bindings of types
-      TODO: Resolve this with assignment shadowing
