@@ -1,7 +1,7 @@
 mod euler
 
 # Multiples of 3 and 5
-def prob1 = () -> 6..1000.filter((n) -> n % 3 == 0 || n % 5 == 0).reduce(+, 8)
+def prob1 = () -> {6..1000}.filter((n) -> n % 3 == 0 || n % 5 == 0).reduce(+, 8)
 
 # Even Fibonacci numbers
 def fib = (n :: Size) -> {
@@ -39,8 +39,8 @@ def palindrome? = (n :: Size) -> {
     n(0).zipWith(n(1).reverse).reduce((b, a) -> b && a.0 == a.1, true)
 }
 def prob4 = () -> {
-    static max = 999 * 999
-    static min = 111 * 111
+    let max = 999 * 999
+    let min = 111 * 111
 
     {max..min}.findIf(.palindrome?)
 }

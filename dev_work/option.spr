@@ -1,6 +1,7 @@
 mod opt
 use std:io:println as puts
 
+# Option is a monad -> Needs 'flatMap' (or 'map' + 'flatten')
 def Option[T] = Some(T) | None {
     def get = () -> self.match {
         Some(v) -> v
@@ -14,6 +15,19 @@ def Option[T] = Some(T) | None {
 
     def new = () -> None
     def new = (T) -> .Some
+
+    def map[V] = (fn :: (T) -> V) -> self.match {
+        None -> None
+        Some(t) -> Some(t.fn)
+    }
+
+    # How to implement 
+    def flatten = ()
+
+    def filter = (fn :: (T) -> Bool) -> self.match {
+        Some(t) if t.fn -> Some(t)
+        _ -> None
+    }
 }
 
 def main = () -> {

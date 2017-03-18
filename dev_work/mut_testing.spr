@@ -8,11 +8,10 @@ def foo = (x :: Int) -> {
     let x = x           # mut T => T. Reuse
 }
 
-def foo = (x :: mut Int) -> foo(x)
+# You can't overload a function based on the mutability of an argument (at least for non-pointers/references)
+# def foo = (x :: mut Int) -> let x = x in foo(x)       # Make x immutable to prevent infinite recursion
 
-def mfoo = (x :: mut Int) -> {
-    x += 2
-}
+def mfoo = (x :: mut Int) -> x += 2
 
 let Foo = {
     use sys:now
@@ -22,32 +21,29 @@ let Foo = {
         "WAKE UP!".io:println
 
     # Mutable-only methods
-    @mutable
-    def sort = () -> arr = arr.sort
-
-    @mutable
-    def push = (x :: Int) -> arr = arr.push_back(x)
+    def sort = mut () -> arr.sort!                      # Looking into allowing this to be named 'sort!'
+    def push = mut (x :: Int) -> arr.push_back(x)
 
 
     # This method has different behavior based on the object's mutability
-    def pop = () ->
-        arr.pop_back .if @mutable else "Pop!".io:println
+    def pop = () -> @mutable(arr.pop_back, "Pop!".io:println)
+        # '@mutable(true, [false])
 
     # Immutable methods
     def size = () -> arr.size
-
     def toStr = () -> arr.toStr
 
 
     # Custom constructors are implemented as static methods
     static new = (mult :: Int) ->       # The '{...}' is "completing" the definition
         Foo {                           # Technically the type is abstract (members have no values)
-            arr = mut [1, 4, 3, 6].map(* mult).Vector[Int]
+            arr = mut [1, 4, 3, 6].map(.* mult).Vector[Int]
         }
 
+    # Alternate way of defining the same constructor (using "complete" syntax)
     static new = (mult :: Int) -> {
-        let ret = mut Foo               # Piggyback on the default constructor
-        ret.arr.map!(* mult)
+        let ret = mut Foo
+        ret.arr.map!(.* mult)
         ret
     }
 }
@@ -76,9 +72,9 @@ def main = () -> {
     }
 
     let f = Foo
-    "{}: {}".println(f.size, f)
+    "{}: {}".println(f.size, f.toStr)       # 'Foo' doesn't implement 'Serializable'
 
     # sort modifies f
     f.sort!
-    "{}: {}".println(f.size, f)
+    "{}: {}".println(f.size, f.toStr)
 }

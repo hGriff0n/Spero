@@ -1,8 +1,8 @@
 mod loopy
 use std:io:println
 
-
-def Foo = {
+# define a mutable-only type
+def Foo = mut {
     def start = mut 3;
     def step = mut 2;
     def end = mut 7;
@@ -43,7 +43,7 @@ def main = () -> {
         prod *= i
     }
 
-    let f = Foo
+    let f = mut Foo
 
     for i in {f.start..f.end} {}
     for i in f.start.if true..f.end {}                      # Fails type-checking
@@ -85,7 +85,7 @@ def main = () -> {
             yield rev_stack.pop;
     }
 
-    # Translation
+    # Translation (Shouldn't this call rev_gen everytime)
     match wait rev_gen(3, 4, 1, 6, 2, 34) {
         None -> break;
         Some(elem) -> {

@@ -160,7 +160,7 @@ def ptrTest = () -> {
     # let tst = ptr                             # error: Immutable+Mutable pointers to the same locations (how on earth do I determine that ???)
                                                 # I can use mut-reassignment checking rules, to insert some checking code
     let tst = ptr.borrow                        # This method prevents using 'ptr' while test is in scope (still holding the borrow)
-                                                # Think a bit of Rust's "ownership" concept in this regard (note: borrow is @mutable)
+                                                # Think a bit of Rust's "ownership" concept in this regard (note: borrow is mutable)
                                                 # I need to think about it's interaction with number of references
     let tst = o_ptr                             # No problem. Should also drop the borrowing of `ptr`
     
