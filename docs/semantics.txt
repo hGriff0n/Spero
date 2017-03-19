@@ -7,9 +7,10 @@ Keywords
     mod                           <- declare module name for the current context
     use                           <- module importing and rebinding/aliasing
     mut                           <- mark the next value/expression as mutable
-    impls                         <- type inheritance/extension/trait implementing
+    impl                          <- type inheritance/extension/trait implementing
     def | let | static            <- create a new binding with context-dependent visibility
     match                         <- perform switch-style pattern matching. can be dot-flipped
+    case                          <- optional keyword to introduce a match case statement
     if                            <- standard usage. can be dot-flipped
     elsif | else                  <- standard usage
     while                         <- standard usage. can be dot-flipped
@@ -73,16 +74,14 @@ Mutability
       'mut' must be bound to a value/variable/type, it is not "free"
 	ie. can't write "def foo = (f :: mut) -> {}"
     Mutable methods are any method that mutates internal state
-      These methods must be marked with the '@mutable' annotation
-        This annotation changes the typing of the implicit 'self' paramter from 'Self&' to 'mut Self&'
+      These methods are marked with the 'mut' keyword before the assigned function
+        The compiler treats this context as changing the implicit 'self' parameter from 'Self&' to 'mut Self&'
         Note: Only "mutable" members are modifiable with mutable methods
       It is a compiler error (mutability) to call a mutable method on an immutable instance
         Note: Due to 'mut&' typing, modifying state in an immutable method produces a compiler error
       TODO: Find a way to enable conditional behavior based on mutability
-    Types can be marked as "mutable"-only using the '@mutable' annotation
+    Types can be marked as "mutable"-only using the 'mut' keyword as well
       This makes it a compiler error to hold a immutable instance/alias of the type
-      Experimental: An alterante syntax is to simply use the 'mut' keyword
-        ie. "def T = mut { ... }" is equivalent to "@mutable def T = { ... }"
     Experimental: It is possible to mark types as immutable-only with '@disable(mut)'
       Similar to mutable-only, it is a compilation error to create mutable instances
 
@@ -91,7 +90,7 @@ Generics
   Grammar:
     \[list<gen_arg, 1>\]
     gen_arg  -> <type_gen> | <var_gen>
-    type_gen -> <type> (+|-|..)? ((::|!:|<|>) <type>)?
+    type_gen -> <type> (+|-)? (..)? ((::|!:|<|>) <type>)?
     var_gen  -> <var> ((:: <type>) | (= <val>))?
  
   Generics are a way to write polymorphic code that type-checks at compile-time
@@ -212,6 +211,18 @@ Qualified Names
       TODO: Figure out how to resolve this process
     All variables within the qual_field are automatically interpreted as modules
       Note: Except for the last variable in the chain (ie. is there a ':' after?)
+
+Sugaring Operations
+  Some operations need to be implicitly translated to a function call
+    Pointer Dereference - 'deref :: Self | Self& | mut Self&'
+    Function Calling 'a(..)' - 'call(...)'
+    Indexing Setting 'a(..) = v' - 'set(.., V)'
+  
+  Indexable[K, V] - the interface for all indexable types
+    mutable 'get/set' methods must be predefined
+    an immutable 'get' and 'call' overloads are defined by the trait
+      Note: The typing for 'get' is really up-in-the air at the moment
+        Involves the compiler casting 'self' to 'mut Self&' which is illegal
 
 TODO:
   What should the behavior of 'static' be in local scopes 

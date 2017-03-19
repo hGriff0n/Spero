@@ -1,9 +1,7 @@
-Find method for allowing custom annotations to be defined
-Look into adding a special 'Self' type for OOP interactions/function definitions
-Look into moving 'mut' into the binding area for normal assignment
 Look into allowing the creation of lambdas through the '_' character
 Extend "Mut Rules" to include working with values and function calling
 Figure out how to catch and report invalid constructions caused by variadics
 Figure out whether references should be capturable by closures
 Check to see how much of the design relies on implicit lifetime checking
-Look into removing the ability for a type to have primary and named constructors
+Figure out how to mark types as "immutable-only"
+Look at adding in-built variant types through "V | T" syntax

@@ -19,9 +19,9 @@ Types
           A no-arg call will be inserted if none is given by the programmer
         Members of the parent type can also be accessed by indexing 'super'
 
-    Interface inheritance is specified through the 'impls' statement
+    Interface inheritance is specified through the 'impl' statement
       This basically serves to 'import' any definitions into the current class
-      A block, containing the relevant definitions, is allowed after the impls statement
+      A block, containing the relevant definitions, is allowed after the impl statement
         TODO: Look into requiring this block to exist
         TODO: Look into dropping the vcontext keywords for defining inherited functions
 
@@ -58,9 +58,16 @@ Types
         It is valid to mark the memory as "owned" for optimization purposes
       Implicit destructor calls are not inserted for explicitly dropped variables
 
+  Special keywords/Variables
+    There are 3 special keywords in the context of types: self, Self, and super
+      Self is the type of self (literally "self.type")
+      self/super are indexable variables referring to the current instance
+        super refers to the parent type (restricted interface)
+        calling self and super outside of methods calls the constructor
+
 Anonymous Types
   Grammar:
-    <type> <tuple>? ::: <cons>? <scope> <tuple>?
+    <type> <tuple>? ::: <scope> <tuple>?
   
   Anonymous types enable instantiating/extending types at the use site
     When bound to a type, this is the syntax for creating a child type
@@ -88,9 +95,9 @@ Inference
     So a "T -> String" is performed with the 'T:toStr' method
 
 TODO:
-  Look into restricting 'impls' to abstract types and '::' to complete types
+  Look into restricting 'impl' to abstract types and '::' to complete types
     This is just trying to simplify the inheritance mess
   Start designing the type system
   Look into typeclasses/higher-kinded types
   Look into building in variant types ("T | V")
-  Look at defining impls blocks outside of type bodies (maybe require "impls ... for ... { ... }"?)
+  Look at defining impl blocks outside of type bodies (maybe require "impl ... for ... { ... }"?)

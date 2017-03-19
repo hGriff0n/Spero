@@ -1,0 +1,12 @@
+Bindings
+  A binding is any name that the programmer uses to reference a value
+    Bindings are subdivided into three types: Variables, Operators, and Types
+
+  Types are simply indicated by the first character being capitalized
+    [A-Z][A-Za-z_]
+
+  Variables are indicated by the first character being lowercase
+    [a-z][A-Za-z_]!?
+
+  Operators are pretty much anything that isn't capture by variable/type
+    TODO: Put in operator grammar

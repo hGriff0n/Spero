@@ -88,6 +88,11 @@ Assignment
     Assignment can be viewed as a restricted form of the pattern matching syntax
       Adds ADT decomposition and value matching (tuple decomposition is in assignment however)
       The 'mut' keyword is always on the value side of the statement, not by the name
+    Matching Abilities
+      It is possible to match a value on type, value, and if-true
+        type - "<var> :: T"
+        value - "<val>"
+        if-true - "<var> if <cond>"
 
   Scoped bindings (ie. 'in' statements)
     It is possible to bind a variable for a single statement using 'in' bindings
@@ -166,12 +171,15 @@ Scope
       NOTE: Indexing a scope is therefore equivalent to indexing the returned value
 
 Tuples
+  Tuples are a simple collection of values of any number of types
+
   Grammar:
     \(list<valexpr>\)
 
   Indexing:
     n-arry tuples can be indexed with '.<i>' syntax where 'i' is a Size literal < n
       This is performed at compile-time through compiler intrinsics
+      Note: '(<i>)' syntax does not perform indexing for tuples
 
 Ranges
   Grammar:

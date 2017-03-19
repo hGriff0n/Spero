@@ -38,7 +38,7 @@ Current Framework Idea:
       Or a abstract type that every type implicitly inherits from (compiler writes the defs)
   Addr - Represents an address in memory. Addr's must be explicitly created
   Chunk - Represents a section of memory. Basically a "mut (Addr,Size,Bool)"
-    apply - Create a sub-chunk with the given offset. Optional 'size'/'end' argument?
+    call - Create a sub-chunk with the given offset. Optional 'size'/'end' argument?
       Note: This enables '()' semantics for the "Chunk.view_as" model. Unsure?
     drop - Deallocate a Chunk (mark as free) and prevent future usage of the instance
       Note: This does not zero-initialize the memory segments
