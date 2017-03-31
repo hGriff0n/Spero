@@ -5,3 +5,6 @@ Figure out whether references should be capturable by closures
 Check to see how much of the design relies on implicit lifetime checking
 Figure out how to mark types as "immutable-only"
 Look at adding in-built variant types through "V | T" syntax
+Analyze the abilities of the type system and get "impl"/inheritance working
+Analyze the ability to correctly perform dot-flipping and solve the expression problem through it
+Relook over adding type matching capabilities to pattern matching. The '->' matches FnTyping
