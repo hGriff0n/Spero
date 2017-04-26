@@ -1,0 +1,88 @@
+Documentation laying out the types and functions of the standard library, their interfaces and behavior
+
+module std
+  
+module std:lang
+  Num
+
+  Int
+    +, - *, ^ :: (Num) -> Num
+    / :: (Num) -> Float
+    abs :: () -> Int
+
+  Float
+
+  Size
+
+  String
+
+  Char
+
+  Byte
+
+module std:io
+
+module std:io:fs
+
+module std:math
+  pi[T]
+  tau[T]
+  e[T]
+  acos
+  asin
+  atan
+  atan2
+  cos
+  cosh
+  hypot
+  sin
+  sinh
+  tan
+  tanh
+
+module std:mem
+  TODO: Take up from memory work
+
+module std:sys
+  I8/I16/I32/I64
+
+  U8/U16/U32/U64
+
+  F..
+
+module std:sys:env
+
+module std:util
+  Array[T] :: (Size), (T..)
+    impl = Iterable[Size, T], Iterable[T]
+    len :: () -> Size
+  Array[T, n] :: (T..)
+    impl = Array[T]
+  Map[K, V]
+    impl = Iterable[(K, V)], Indexable[K, V]
+  Iterator[T]
+    next :: mut () -> Option[T]
+    hasNext :: () -> Bool
+  Indexable[K, V]
+    set :: mut (K, V) -> ()
+    get :: mut (K) -> mut V&
+    get = (k :: K) -> @mut_cast(self).get(k) :: mut V&
+    call = .get
+  Iterable[T]
+    iter :: () -> Iterator[T]
+  Seq[T]
+    impl = Iterable[T], Indexable[Size, T]
+  Tree[T]
+    impl = Iterable[T]
+  HashMap[K, V]
+    impl = Map[K, V]
+  TreeMap[K, V]
+    impl = Map[K, V], Tree[(K, V)]
+  List[T]
+    impl = Seq[T]
+    len :: () -> Size
+  Vec[T]
+    impl = Seq[T]
+    pop :: () -> T
+    push :: (T) -> ()
+    len :: () -> Size
