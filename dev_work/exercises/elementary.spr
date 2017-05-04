@@ -10,9 +10,9 @@ def who = () -> {
 }
 
 def alibob = () -> match "Who are you? {}".getln {
-    "Alice" -> "Hello, Alice!".println                  # Do I need to restrict the type that getln returns here?
-    "Bob" -> "Hello, Bob!".println                      # Matching should be able to handle this automatically
-    _ -> ()
+    case "Alice" -> "Hello, Alice!".println                  # Do I need to restrict the type that getln returns here?
+    case "Bob" -> "Hello, Bob!".println                      # Matching should be able to handle this automatically
+    case _ -> ()
 }
 
 def sum = () -> {

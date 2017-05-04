@@ -93,6 +93,7 @@ Assignment
         type - "<var> :: T"
         value - "<val>"
         if-true - "<var> if <cond>"
+    Pattern matches within a "match" statement must be preceded by the "case" keyword
 
   Scoped bindings (ie. 'in' statements)
     It is possible to bind a variable for a single statement using 'in' bindings
