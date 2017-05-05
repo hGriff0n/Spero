@@ -3,8 +3,12 @@ Extend "Mut Rules" to include working with values and function calling
 Figure out how to catch and report invalid constructions caused by variadics
 Figure out whether references should be capturable by closures
 Check to see how much of the design relies on implicit lifetime checking
-Figure out how to mark types as "immutable-only"
-Look at adding in-built variant types through "V | T" syntax
-Analyze the abilities of the type system and get "impl"/inheritance working
+Take an in-depth look at the type system (and the capabilities)
+  Look at adding in-built variant types through "V | T" syntax
+  Look at adding "T + V"/"T * V" syntax for generic restricitions (maybe inheritance)
+  Figure out how to mark types as "immutable-only"
+  Get "impl"/inheritance working and set up
+  Ensure that dot-flipping can be performed correctly
 Analyze the ability to correctly perform dot-flipping and solve the expression problem through it
-Relook over adding type matching capabilities to pattern matching. The '->' matches FnTyping
+Try to add type matching capabilities to pattern matching
+  Look at changing the case statement key-operator from '->' to '=>'
