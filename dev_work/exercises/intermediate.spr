@@ -45,12 +45,13 @@ def Array[T, n] = util:Iterable[T] :: {
     # Enable indexing semantics for Arrays
     impls Indexable[T] {                            # TODO: How to handle slicing
         def set = mut (Size, T) -> .match {
-            i, &e if i < n -> store.view_as[T](i).set(e)
-            i, _ -> @error!(3241, i, n)
+            i, &e if i < n => store.view_as[T](i).set(e)
+            i, &e if e < n => store.view_as[T](e).set(i)
+            i, _ => @error!(3241, i, n)
         }
         def apply = (Size) -> .match {
-            i if i < n -> Some(store.view_as[T].get)
-            i -> @error!(3242, i, n)
+            i if i < n => Some(store.view_as[T].get)
+            i => @error!(3242, i, n)
         }
     }
 
@@ -82,13 +83,13 @@ def Vector[T] = util:Iterable[T] :: {
     # `impls` blocks are a new feature to simplify organization
     impls Indexable[T] {
         def set = mut (Size, T) -> .match {
-            i, &e if i < num_elems -> store.view_as[T](i).set(e)
-            _ -> @error!(3241, i, num_elems)
+            i, &e if i < num_elems => store.view_as[T](i).set(e)
+            _ => @error!(3241, i, num_elems)
         }
         # apply = (Size) -> .match {
         def apply = (Size) -> .match {
-            i if i < num_elems -> Some(store.view_as[T](i).get)
-            _ -> @error!(3242, i, num_elems)
+            i if i < num_elems => Some(store.view_as[T](i).get)
+            _ => @error!(3242, i, num_elems)
         }
     }
 
@@ -112,8 +113,8 @@ def Vector[T] = util:Iterable[T] :: {
 
     @todo("Figure out how error handling will be done (both compile and run-time)")
     def popBack = mut (e :: T) -> match num_elems {
-        0 -> @error!(3240)
-        n -> {
+        0 => @error!(3240)
+        n => {
             num_elems -= 1
             store.view_as[T](num_elems).drop
         }
@@ -154,19 +155,19 @@ def BinaryHeap[T :: Comparable] = (comparator :: (T, T) -> Bool) {
         let index = mut 0
 
         match (store.get(index.left), store.get(index.left + 1)) {
-            Some(l), Some(r) if comparator(l, r) -> {
+            Some(l), Some(r) if comparator(l, r) => {
                 break.if comparator(store(index), r)
 
                 store.swap(index, index.left + 1)
                 index = index.left + 1
             }
-            Some(l), Some(r) -> {
+            Some(l), Some(r) => {
                 break.if comparator(store(index), l)
 
                 store.swap(index, index.left)
                 index = index.left
             }
-            Some(l), None -> {
+            Some(l), None => {
                 store.swap(index, index.left) .if comparator(l, store(index))
                 break
             }
@@ -235,8 +236,8 @@ def heapSort[T :: Comparable] = (list :: T*) -> {
 def BTree[T] = Stub, Leaf(T), Branch(BTree, T, BTree) {
     # This doesn't look like it works to well
     def height = () -> self.match {
-        Branch(t1, _, t2) -> max(t1.height, t2.height) + 1
-        _ -> 0
+        Branch(t1, _, t2) => max(t1.height, t2.height) + 1
+        _ => 0
     }
 
     def insert = mut (elem :: T) -> {}

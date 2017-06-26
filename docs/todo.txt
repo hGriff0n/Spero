@@ -1,14 +1,22 @@
-Look into allowing the creation of lambdas through the '_' character
 Extend "Mut Rules" to include working with values and function calling
 Figure out how to catch and report invalid constructions caused by variadics
 Figure out whether references should be capturable by closures
-Check to see how much of the design relies on implicit lifetime checking
-Take an in-depth look at the type system (and the capabilities)
-  Look at adding in-built variant types through "V | T" syntax
-  Look at adding "T + V"/"T * V" syntax for generic restricitions (maybe inheritance)
-  Figure out how to mark types as "immutable-only"
-  Get "impl"/inheritance working and set up
-  Ensure that dot-flipping can be performed correctly
+  Check to see how much of the design relies on implicit lifetime checking
 Analyze the ability to correctly perform dot-flipping and solve the expression problem through it
-Try to add type matching capabilities to pattern matching
-  Look at changing the case statement key-operator from '->' to '=>'
+Figure out how concurrency should be handled within Spero
+  Should 'yield' without a 'wait' equate to a straight return?
+Test whether ref matching (ie. 'mut&') can allow for modifying structures through for loops
+Look into whether there is a way to automatically create '.*=' methods similar to scala
+Add in language to enorce that all operators must be functions (ie. no "def + = 3")
+Look into ways of "subtyping" dependent types (ie. Array[T, n < 5] - all arrays of any type where the length < 5)
+Work on the variance rules (especially in relation to and/or types)
+Look into quick ways to create/handle tests and documentation from within Spero
+Figure out how inheritance/interface specification should work
+  Get that set-up and working logically
+    Remove inheritance rules/ast information if pure-impls route is taken
+  Note: Any solution should probably allow for "importing" definitions from outside
+Add in documentation to reflect and/or types ('&'/'|')
+  Note: I use the phrase "junction types" to refer to them sometimes within the compiler
+Figure out a syntax to allow for easy "type aliasing", particularly in relation to junction types
+  Maybe by reordering the rebind syntax (current: <imported> as <alias>)
+    Hard to square the necessary changes with the current grammar

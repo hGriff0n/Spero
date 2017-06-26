@@ -1,6 +1,0 @@
-Scrap sheet for tracking ideas for future versions of the language
-
-Allow for "def foo(...) :: T = ..." syntax for defining functions. Translates to "def foo :: (..) -> T = (...) -> ...".   Problem with where to put "mut" marking
-Allow for "def T(...) { ... }" syntax for defining types. Translates to "def T = (...) { ... }"
-  I think ADTs would require the "= <ADT>" syntax to work [Might not though]
-Allow for the creation of custom annotations

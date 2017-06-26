@@ -1,0 +1,12 @@
+Always-immutable types will be indicated through the '@immutable' annotation
+  Maybe extend this to values too (annotation causes error whenever type instances are attempted to be used in a mutable manner)
+Added 'T & V' syntax for generic subtyping, specifying multiple implementations that must be included
+Changes to match statement ordering
+  Add in ':: T' syntax for matching on type (tied to variable)
+  Made 'case' keyword optional again
+  Changed divider operator from '->' to '=>'
+Added 'T | V' and 'T & V' types (or/and types)
+  Added '{}' syntax for constraining types (and/or are greedy signifiers)
+    so "(T) -> U | V" is a function that takes a T and returns either a U or a V
+Unary operators are created the same way as binary operators, by defining a function inside the parent type
+  Unary operators take no direct arguments however (ie. "def ! = () -> {}")

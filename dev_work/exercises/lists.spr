@@ -143,9 +143,9 @@ def toDigitList = (n :: mut Int) -> {
 @todo("Maybe implement Karatsuba multiplication and different bases")
 @todo("The digit list won't be a sequence of integers")
 def digitMatch = (DigitList, DigitList, c :: Char) -> c.match {
-    '+' -> ()
-    '-' -> ()
-    '*' -> ()
+    '+' => ()
+    '-' => ()
+    '*' => ()
 }
 
 @todo("Write function to interpret digit-list in base b1 and convert to digit-list in base b2")
@@ -222,9 +222,9 @@ def binarySearch[T :: Comparable] = (list :: Indexable[T], elem :: T, left :: Si
     static middle = (l, r) -> {{r - l} / 2} + 1
 
     middle(left, right).match {
-        mid if mid == left      -> return elem == list(left)                        # Be sure to add in conditional match syntax
-        mid if elem < list(mid) -> return binarySearch(list, elem, left, mid)
-        mid                     -> return binarySearch(list, elem, mid, right)
+        mid if mid == left      => return elem == list(left)                        # Be sure to add in conditional match syntax
+        mid if elem < list(mid) => return binarySearch(list, elem, left, mid)
+        mid                     => return binarySearch(list, elem, mid, right)
     }
 }
 def binarySearch[T :: Comparable] = (list :: Indexable[T], elem :: T) ->

@@ -10,9 +10,9 @@ def who = () -> {
 }
 
 def alibob = () -> match "Who are you? {}".getln {
-    case "Alice" -> "Hello, Alice!".println                  # Do I need to restrict the type that getln returns here?
-    case "Bob" -> "Hello, Bob!".println                      # Matching should be able to handle this automatically
-    case _ -> ()
+    "Alice" => "Hello, Alice!".println                  # Do I need to restrict the type that getln returns here?
+    "Bob" => "Hello, Bob!".println                      # Matching should be able to handle this automatically
+    _ => ()
 }
 
 def sum = () -> {
@@ -58,14 +58,14 @@ def guessingGame = () -> {
 
     loop {
         num_tries += 1
-        let guess = "Enter a number: {}".getln :: Int   # Should getln return a Optional[T] or equivalent ??
+        let guess = "Enter a number: {}".getln          # Should getln return a Optional[T] or equivalent ??
                                                         # Be sure to update code once I decide this
 
         # Preliminary conditional match syntax
         match guess {
-            x if x == secret -> break;                 # Probably should get around to adding conditional match syntax
-            x if x < secret -> "Sorry. The secret number is higher than {}".println(x)
-            x -> ("Sorry. The secret number is lower than {}", x).println
+            x if x == secret => break;                 # Probably should get around to adding conditional match syntax
+            x if x < secret => "Sorry. The secret number is higher than {}".println(x)
+            x :: Int => ("Sorry. The secret number is lower than {}", x).println
         }
     }
 

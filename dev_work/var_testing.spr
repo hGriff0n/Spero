@@ -45,8 +45,9 @@ def main = () -> {
 
     let foo = mut Some(5)
     match foo {
-        Some(mut var) -> var += 3           # Doesn't modify to foo's value
-        None -> 5
+        Some(mut var) => var += 3           # Doesn't modify to foo's value
+        #Some(mut& var) => var += 3         # Does modifies foo's value
+        None => 5
     }
     
     let Some(bar) = foo                     # ADTs can be decomposed in bindings (Experimental)
@@ -67,7 +68,8 @@ def main = () -> {
     let p_ptr = mem:alloc((Int) -> mut .mem:alloc)          # You'd write 'mut i.mem:alloc'
 
     
-    &i_ptr(3)           # '&' binds to 'i_ptr(3)', which is a compiler error (can't call a pointer)
+    @deprecated("Pointer dereference is automatic")
+    i_ptr(3)            # '&' binds to 'i_ptr(3)', which is a compiler error (can't call a pointer)
     {&i_ptr}(3)         # '&' binds to 'i_ptr', producing a function that accepts a 3
 
     &v_ptr              # Dereferences the pointer

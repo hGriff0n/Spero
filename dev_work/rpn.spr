@@ -15,8 +15,8 @@ def main = () -> "={}".println(getln.parse)
 
 def Stack[T] = Empty | Cons(T, Stack) {
 	def toStr = self .match {
-		Cons(i, Empty) -> i.toStr
-		_              -> "nil"
+		Cons(i, Empty) => i.toStr
+		_              => "nil"
 	}
 
 	def push = (t :: T) -> Cons(t, self)
@@ -26,12 +26,12 @@ let parse = (String) ->
 	.groupWhile(isDigit)
 	.removeIf(isSpace)
 	.reduce(Empty, (a, b) .match {
-		Cons(r, Cons(l, _s)), "+" -> Cons(l + r, _s)
-		Cons(r, Cons(l, _s)), "-" -> Cons(l - r, _s)
-		Cons(r, Cons(l, _s)), "/" -> Cons(l / r, _s)
-		Cons(r, Cons(l, _s)), "*" -> Cons(l * r, _s)
-		Cons(l, _s), "~"          -> Cons(-l, _s)
-		s, _                      -> Cons(_.toInt, s) 
+		Cons(r, Cons(l, _s)), "+" => Cons(l + r, _s)
+		Cons(r, Cons(l, _s)), "-" => Cons(l - r, _s)
+		Cons(r, Cons(l, _s)), "/" => Cons(l / r, _s)
+		Cons(r, Cons(l, _s)), "*" => Cons(l * r, _s)
+		Cons(l, _s), "~"          => Cons(-l, _s)
+		s, _                      => Cons(_.toInt, s) 
 	})
 
 def test = (log :: Logger) -> {

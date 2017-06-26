@@ -11,8 +11,8 @@ def Option[T+ :: Copy] = None | Some(T) {
 
     impls std:util:Copy                 # Implements 'std:util:Copy'
     def copy = () -> self.match {
-        None -> None
-        Some(v) -> v.copy.Some
+        None => None
+        Some(v) => v.copy.Some
     }
 
     # Import everything from the std:io module into this class
@@ -21,8 +21,8 @@ def Option[T+ :: Copy] = None | Some(T) {
     # implement the 'std:io:Printable' interface
     impls Printable
     def toStr = () -> self.match {
-        None -> "None"
-        Some(v) -> "Some({})".std:lang:String:fmt(v)
+        None => "None"
+        Some(v) => "Some({})".std:lang:String:fmt(v)
     }
 }
 

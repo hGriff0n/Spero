@@ -4,29 +4,29 @@ use std:io:println as puts
 # Option is a monad -> Needs 'flatMap' (or 'map' + 'flatten')
 def Option[T] = Some(T) | None {
     def get = () -> self.match {
-        Some(v) -> v
+        Some(v) => v
     }
 
     def or_else = (e :: T) ->
         self.match {
-            Some(v) -> v
-            None -> e
+            Some(v) => v
+            None => e
         }
 
     def new = () -> None
     def new = (T) -> .Some
 
     def map[V] = (fn :: (T) -> V) -> self.match {
-        None -> None
-        Some(t) -> Some(t.fn)
+        None => None
+        Some(t) => Some(t.fn)
     }
 
     # How to implement 
     def flatten = ()
 
     def filter = (fn :: (T) -> Bool) -> self.match {
-        Some(t) if t.fn -> Some(t)
-        _ -> None
+        Some(t) if t.fn => Some(t)
+        _ => None
     }
 }
 

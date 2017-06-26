@@ -59,7 +59,7 @@ def main = () -> {
     For loop translations
     ##
     # Iterable
-    for mut i in arr do {
+    for mut& i in arr do {
         i += 1;
     }
 
@@ -67,7 +67,7 @@ def main = () -> {
     {
         let iter = mut arr.iter
         while iter.hasNext match iter.next {
-            mut i -> i += 1
+            mut& i => i += 1
         }
     }
 
@@ -87,24 +87,24 @@ def main = () -> {
 
     # Translation (Shouldn't this call rev_gen everytime)
     match wait rev_gen(3, 4, 1, 6, 2, 34) {
-        None -> break;
-        Some(elem) -> {
+        None => break;
+        Some(elem) => {
             "{}".println(elem)
         }
     }.loop
 
     # Mutating elements (NOTE: Experimental, This might change in the future)
     @safe("No yield or returning of local pointers")
-    for mut i in arr.ref_iter {
+    for mut& i in arr.iter {
         i &*= 2;
     }
 
     # Translation
     @safe("No yield or returning of local pointers")
     {
-        let iter = mut arr.ref_iter
+        let iter = mut arr.iter
         while iter.hasNext match iter.next {
-            mut i -> i &*= 2;
+            mut& i => i &*= 2;
         }
     }
 }

@@ -75,19 +75,19 @@ Assignment checking (for references):
 
 # ADT deconstruction borrows the values when assigning to the variables
 def decTest = (l :: Option[Int]) -> match l {
-    Some(p) -> p                # Perfectly fine, follow from assignment rules
-    Some(mut p) -> p            # Might not be allowed in conjunction though
+    Some(p) => p                # Perfectly fine, follow from assignment rules
+    Some(mut p) => p            # Might not be allowed in conjunction though
 }
 
 def decTest = (l :: mut Option[Int]) -> match l {
-    Some(p) -> p                # Perfectly fine, follow from assignment rules
-    Some(mut p) -> p            # Might not be allowed in conjunction though
+    Some(p) => p                # Perfectly fine, follow from assignment rules
+    Some(mut p) => p            # Might not be allowed in conjunction though
 }
 
 def decTest = (l :: mut Option[Int]) -> match l {
-    Some(mut& p) -> p += 3      # Taking something by reference
-    Some(&p) -> p               # This is taking `p` by const-reference
-    None -> 0
+    Some(mut& p) => p += 3      # Taking something by reference
+    Some(&p) => p               # This is taking `p` by const-reference
+    None => 0
 }
 
 ##
@@ -107,7 +107,7 @@ def List = {
 
 def workWithList = (l :: List&) -> {
     match l.next {
-        Some(p) -> {                        # const->const, ptr, nom -> copy
+        Some(p) => {                        # const->const, ptr, nom -> copy
             # let mp = mut p.borrow         # error: Attempt to call mutable method 'borrow' on immutable object 'p'
             # let mp = mut p                # error: Attempt to take const ptr 'p' with >1 references as mutable
 
@@ -122,7 +122,7 @@ def workWithList = (l :: List&) -> {
             mp.val += 3                     # Goal is to create a mutable object 'mp' that can modify `l.next.val`
         }
         # Some(mut p) -> p.val += 3         # error: Deconstructing const ptr from 'l.next' into a mutable object 'p'
-        None -> 0
+        None => 0
     }
 }
 

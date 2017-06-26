@@ -4,3 +4,5 @@ Complete the implementation of speroc to produce correct spero code
 Implement spark, the spero package/build manager
 Work on the spero standard library
 Improve the usability of spero-lang website
+Design a tutorial for the language
+  Put the tutorial on the spero-lang page
