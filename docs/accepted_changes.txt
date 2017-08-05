@@ -10,3 +10,10 @@ Added 'T | V' and 'T & V' types (or/and types)
     so "(T) -> U | V" is a function that takes a T and returns either a U or a V
 Unary operators are created the same way as binary operators, by defining a function inside the parent type
   Unary operators take no direct arguments however (ie. "def ! = () -> {}")
+Removed '..' syntax for specifying ranges
+  Functionality will be taken up by standard function "range" instead
+Added the '::' operator for specifying typechecking
+  ie. "if a :: T" defines a check for whether 'a' implements 'T'
+  This syntax replaces the type checking code in 'match' statements
+Improve the documentation of 'Assignment', especially in regards to variable shadowing
+  Some of the information is wrong, other is confusing
