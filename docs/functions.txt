@@ -37,14 +37,21 @@ Functions
       If an argument tuple is provided, argument names may be dropped (ie. Types only)
         This tuple mainly serves to restrict the overload set to "coherent" typings
 
+  Operator Overloading
+    Types can overload most operators (exception of '::') by providing a custom function definition
+      Binary operators must be a function that takes a single argument
+      Unary operators must be a function that takes no additional arguments
+      Note: Ignoring the single 'self' instance that is automatically included
+    TODO: Look at making this a 'free function' instead
+
 Function Calling
   Grammar:
     <value><tuple>?
-    <value> <op> <value>		# NOTE: look at <> for operator currying
+    <value> <op> <value>	# NOTE: look at <> for operator currying
     <value>.<fncall>			# Dot-flipping syntax
 
   Function evaluation within Spero is an eager process
-    Lazy evaluation can be mimiced with streams/generators/ranges/captures/etc.
+    Lazy evaluation can be mimiced with streams/generators/captures/etc.
     When the function is evaluated can be moved by the compiler
 
   Dot-Flipping

@@ -80,10 +80,6 @@ Mutability
       It is a compiler error (mutability) to call a mutable method on an immutable instance
         Note: Due to 'mut&' typing, modifying state in an immutable method produces a compiler error
       TODO: Find a way to enable conditional behavior based on mutability
-    Types can be marked as "mutable"-only using the 'mut' keyword as well
-      This makes it a compiler error to hold a immutable instance/alias of the type
-    Experimental: It is possible to mark types as immutable-only with '@disable(mut)'
-      Similar to mutable-only, it is a compilation error to create mutable instances
 
 TODO: Clear up explanations and definitions
 Generics
@@ -105,6 +101,7 @@ Generics
       >    -> The argument must be a supertype of the following interface
         Note: The last two are a bit-iffy about acceptance
         Note: Values have a default sub-typing of ':: Size'
+        Note: Junction types are allowed on the right hand of these restrictions
         Experimental: Types have a default sub-typing of ':: Type'
     Co-/contra-variance can also be indicated on type generics (co = +, contra = -)
 

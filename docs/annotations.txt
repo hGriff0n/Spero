@@ -23,8 +23,7 @@ Annotations
         TODO: Is it possible to annotate global annotations?
 
 Current recognized annotations:
-  mutable  - Control codegen based on the mutability of 'self'
-    '@mutable(true, [false], [object=self])'
+  immutable - Make it a compiler error to hold an object/type in a mutable context
   explicit - Mark a constructor as "invalid" for implicit construction resolution
   safe     - Mark a block of unsafe code as "safe" to execute
     Accepts an optional string literal clarifying why the code segment is "safe"
@@ -35,6 +34,8 @@ Current recognized annotations:
     Takes a function, which must have the signature "() -> Bool" (compiler error otherwise)
 
 Ideas for annotations:
+  mutable  - Control codegen based on the mutability of 'self'
+    '@mutable(true, [false], [object=self])'
   mem_limit - restrict the amount of memory a type/module/etc can use
   enable    - turn on language features that were disabled
   assert    - raise an error (compiler/runtime) if a condition evaluates to false

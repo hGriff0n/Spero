@@ -90,9 +90,10 @@ Assignment
       The 'mut' keyword is always on the value side of the statement, not by the name
     Matching Abilities
       It is possible to match a value on type, value, and if-true
-        type - "<var> :: T"
         value - "<val>"
         if-true - "<var> if <cond>"
+          Note: Type matching is handled through the "interface operator" (ie. '::')
+            so "v if v :: Int" specifies the case branch to take if "v" is an "Int"
     Pattern matches within a "match" statement must be preceded by the "case" keyword
 
   Scoped bindings (ie. 'in' statements)
@@ -130,16 +131,16 @@ Control Flow Expressions
         Note: This might be generalized in the future
         Note: I might make generators re0entrant ala Lua instead
       The types can be translated according to the following patterns
-        Iterable[T]: "for <pattern> in <iterable> <expr>" => "for <pattern> in <iterable>.iter <expr>"
-        Iterator[T]: "for <pattern> in <iterator> <expr>"
+        Iterable[T]: "for <pattern> in <iterable> <expr>" becomes "for <pattern> in <iterable>.iter <expr>"
+        Iterator[T]: "for <pattern> in <iterator> <expr>" becomes
           "let iter = mut <iterator>      # Force the iterator to be mutable
           match iter.next {
-            <pattern> -> { <expr> }
+            <pattern> => { <expr> }
           }.while iter.hasNext"
-        Generator: "for <pattern> in <generator>(..) <expr>" =>
+        Generator: "for <pattern> in <generator>(..) <expr>" becomes
           "match wait <generator>(..) {		# Wouldn't this re-start the function ???
-            None -> break;
-            Some(<pattern>) -> { <expr> }
+            None => break;
+            Some(<pattern>) => { <expr> }
           }.loop"
       The compiler can extend the pattern with throwaways ('_') to satisfy type-checking
 
@@ -181,15 +182,6 @@ Tuples
     n-arry tuples can be indexed with '.<i>' syntax where 'i' is a Size literal < n
       This is performed at compile-time through compiler intrinsics
       Note: '(<i>)' syntax does not perform indexing for tuples
-
-Ranges
-  Grammar:
-    <index>..<index>?
-
-  TODO: Expand on this
-  Ranges cover all values between start and stop ("[)")
-    Infinite ranges are creatable by not providing a stop value
-      TODO: Remember whether this is whitespace marked or not
 
 Module Declaration
   Grammar:

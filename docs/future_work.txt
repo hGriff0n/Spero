@@ -6,5 +6,4 @@ Allow for "def T(...) { ... }" syntax for defining types. Translates to "def T =
   Problem: I think ADTs would require the "= <ADT>" syntax to work [Might not though]
 Allow for the creation of custom annotations
 Think about allowing "3.+ 4" instead of "3.+(4)"
-Look into allowing Or types in generic specializations
 Change Type junction syntax to have CNF precedence levels (ala binary operators)

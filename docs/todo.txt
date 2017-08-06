@@ -15,8 +15,11 @@ Figure out how inheritance/interface specification should work
   Get that set-up and working logically
     Remove inheritance rules/ast information if pure-impls route is taken
   Note: Any solution should probably allow for "importing" definitions from outside
-Add in documentation to reflect and/or types ('&'/'|')
-  Note: I use the phrase "junction types" to refer to them sometimes within the compiler
 Figure out a syntax to allow for easy "type aliasing", particularly in relation to junction types
   Maybe by reordering the rebind syntax (current: <imported> as <alias>)
     Hard to square the necessary changes with the current grammar
+Add explicit language specifying the 'match' statement and it's handling
+  Note: the 'switch' operator is "=>"
+  Note: the 'case' keyword is optional
+Improve the documentation of 'Assignment', especially in regards to variable shadowing
+  Some of the information is confusing or even just plain wrong

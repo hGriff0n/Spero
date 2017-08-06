@@ -67,7 +67,7 @@ Current Framework Idea:
   alloc - Allocate a chunk of 'n' bytes. Returns a Chunk
   alloc[T] - Helper function for allocating a known type (= "alloc(T.size * n)")
   calloc[T] - Allocate and initialize a single element
-\r  malloc[T] - Allocate and return a 'T mut*' (Ptr[T])
+  malloc[T] - Allocate and return a 'T mut*' (Ptr[T])
   salloc[T] - Allocate and return a 'T*' (SPtr[T])
   reserve - Mark addresses as off limits for allocation
     Note: This could be moved as a member of Addr. Semantics not needed however

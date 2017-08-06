@@ -58,16 +58,25 @@ Types
         It is valid to mark the memory as "owned" for optimization purposes
       Implicit destructor calls are not inserted for explicitly dropped variables
 
-  Special keywords/Variables
+  Special keywords/variables
     There are 3 special keywords in the context of types: self, Self, and super
       Self is the type of self (literally "self.type")
       self/super are indexable variables referring to the current instance
         super refers to the parent type (restricted interface)
         calling self and super outside of methods calls the constructor
 
+  Mutability
+    Most types can be instantiated/held as immutable or mutable
+      NOTE: See 'semantics.txt' for more on how this affects the code
+    Types can be restricted to one kind of mutability mode
+      This means that it would be an error to hold an instance/alias in the opposite mode
+      Mutable-only is indicated by preceding the type body with mut
+      Immutable-only is indicated through the '@immutable' annotation
+        NOTE: Both are located at the type definition
+
 Anonymous Types
   Grammar:
-    <type> <tuple>? ::: <scope> <tuple>?
+    <type> <tuple>? :: <scope> <tuple>?
   
   Anonymous types enable instantiating/extending types at the use site
     When bound to a type, this is the syntax for creating a child type
@@ -94,10 +103,30 @@ Inference
   Casting is done through explicit/implicit constructions or dedicated cast methods
     So a "T -> String" is performed with the 'T:toStr' method
 
+Junction Types
+  There are two kinds: Conjuction ("and") and Disjunction ("or")
+  "or" types are a way to maximally type systems without losing ambiguity
+    They are indicated through the '|' character (ie. "T | V")
+    These must be diambiguated through a match statement before use
+      Unless the context allows for a 'T' or a 'V'
+      TODO: Expand on this
+  "and" types are a way to maximally constrain polymorphic systems
+    Most useful for requiring implementation of multiple interfaces
+    They are indicated through the '&' character (ie. "T & V")
+  Junction types are incredibly greedy from a parsing standpoint
+    ie. "(T) -> U | V" is a function from "T" to "U | V"
+    '{}' can be used to constrain this collection
+      ie. "{(T) -> U} | V" is a function from "T" to "U", or a "V"
+
+"instanceof" operator
+  Spero overloads the '::' string to provide "is type" checking in non-creation contexts
+    ie. "a :: T" returns true iff "a" is an instance of the "T" type and false otherwise
+  Additionally, the compiler can then assert that any branched usages of "a" have the "T" type restriction (as opposed to whatever "a" had before hand)
+    Note: If "inftype(a) < T" then "a" will take on the inferred typing of T, even though "T" is a less-precise typing
+
 TODO:
   Look into restricting 'impl' to abstract types and '::' to complete types
     This is just trying to simplify the inheritance mess
   Start designing the type system
   Look into typeclasses/higher-kinded types
-  Look into building in variant types ("T | V")
   Look at defining impl blocks outside of type bodies (maybe require "impl ... for ... { ... }"?)

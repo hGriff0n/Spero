@@ -1,6 +1,8 @@
 Documentation laying out the types and functions of the standard library, their interfaces and behavior
 
 module std
+  Range - todo find a location to place these in the module structure
+  range
   
 module std:lang
   Num
