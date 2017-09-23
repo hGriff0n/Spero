@@ -7,3 +7,6 @@ Allow for "def T(...) { ... }" syntax for defining types. Translates to "def T =
 Allow for the creation of custom annotations
 Think about allowing "3.+ 4" instead of "3.+(4)"
 Change Type junction syntax to have CNF precedence levels (ala binary operators)
+  Just flips the precedence from and matching first to or matching first
+Add in Higher Kinded Types to the language
+  Particularly allow for generic fields to be "ignored" through the '_' character

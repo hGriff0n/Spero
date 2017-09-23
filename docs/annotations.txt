@@ -24,16 +24,17 @@ Annotations
 
 Current recognized annotations:
   immutable - Make it a compiler error to hold an object/type in a mutable context
-  explicit - Mark a constructor as "invalid" for implicit construction resolution
-  safe     - Mark a block of unsafe code as "safe" to execute
+  safe      - Mark a block of unsafe code as "safe" to execute
     Accepts an optional string literal clarifying why the code segment is "safe"
-  unsafe   - Mark a block of safe code as "unsafe"
-  todo     - Raise a warning
-  asm      - Output assembly code for the target architecture
-  truthy   - Specify a method to be used for converting values of a type into Booleans
-    Takes a function, which must have the signature "() -> Bool" (compiler error otherwise)
+  unsafe    - Mark a block of safe code as "unsafe"
+  todo      - Raise a warning
+  asm       - Output assembly code for the target architecture
+  static    - marks an assignment as having "static" scope
 
 Ideas for annotations:
+  explicit  - Mark a constructor as "invalid" for implicit construction resolution
+  truthy   - Specify a method to be used for converting values of a type into Booleans
+    Takes a function, which must have the signature "() -> Bool" (compiler error otherwise)
   mutable  - Control codegen based on the mutability of 'self'
     '@mutable(true, [false], [object=self])'
   mem_limit - restrict the amount of memory a type/module/etc can use

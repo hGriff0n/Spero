@@ -1,12 +1,16 @@
 Bindings
-  A binding is any name that the programmer uses to reference a value
-    Bindings are subdivided into three types: Variables, Operators, and Types
+  Types: [A-Z][A-Za-z_0-9]*
+  Variables: [a-z][A-Za-z_0-9]*
+  Operators: 
+      TODO: Add in Operator grammar
 
-  Types are simply indicated by the first character being capitalized
-    [A-Z][A-Za-z_]
+Function Definition
+  <tuple> -> <scope>
+  <tuple> -> mut? .?<statement>
+  mut? .<statement>
 
-  Variables are indicated by the first character being lowercase
-    [a-z][A-Za-z_]!?
-
-  Operators are pretty much anything that isn't capture by variable/type
-    TODO: Put in operator grammar
+Function Calling
+  <type><array>?<tuple><type_ext>?
+  <value><array>?<tuple>?<type_ext>?
+  <value> <op> <value>?
+  <value>.<fncall>

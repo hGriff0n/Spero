@@ -22,9 +22,9 @@ Assignment
     <context> <name_ptn><gen> (<interfce>|<asgn_val>)
     interfce -> <sig> (= <type_body>|<valexpr>)?
     asgn_val -> = <type_body>|<valexpr> (in <valexpr>)?
-    context  -> let | def | static
+    context  -> let | def
 
-  Context Keyword:
+  Context Keyword: (see `semantics.txt:Keywords/Visibility Contexts`)
     Spero takes a different approach to many languages in specifying visibility
       TODO: What/why?
     This keyword specifies the visibility of the following binding
@@ -35,9 +35,7 @@ Assignment
     'def' exports the binding into the context's public interface
     'let' creates a binding within the context's local interface (ie. protected)
        Note: The local context can still access members of the public interface
-    'static' exports the binding into the context's static interface
-       TODO: Define what this means
-       Note: There's no current way put static bindings into the local interface
+    NOTE: Spero reserves the 'private' keyword for a possible extension of this visibility system
 
   Signature (:: T)
     This specifies the minimum interface any acceptable value must satisfy
@@ -74,6 +72,7 @@ Assignment
       A compiler warning is produced if members (or self/super) are shadowed in type methods
 
   Pattern Matching (for loop and match statement)
+    TODO: Condense and compact these sections
     Tuple Decomposition
       Tuple values can be extracted into individual variables by providing a tuple of equal arity
       NOTE: This decomposition process is recursive
@@ -88,13 +87,11 @@ Assignment
     Assignment can be viewed as a restricted form of the pattern matching syntax
       Adds ADT decomposition and value matching (tuple decomposition is in assignment however)
       The 'mut' keyword is always on the value side of the statement, not by the name
-    Matching Abilities
-      It is possible to match a value on type, value, and if-true
-        value - "<val>"
-        if-true - "<var> if <cond>"
-          Note: Type matching is handled through the "interface operator" (ie. '::')
-            so "v if v :: Int" specifies the case branch to take if "v" is an "Int"
-    Pattern matches within a "match" statement must be preceded by the "case" keyword
+    Matching Abilities (TODO: Tidy this up a bit)
+      Values can be ignored through the '_' match character
+      Specific value constants can also be matched on by simply giving the constant as the match pattern
+        NOTE: This may not be too useful within for loops
+      Otherwise, the "value" gets assigned according to the var pattern
 
   Scoped bindings (ie. 'in' statements)
     It is possible to bind a variable for a single statement using 'in' bindings
@@ -163,6 +160,14 @@ Control Flow Expressions
 
   A 'do' keyword can proceed any statement in the language
     It has no effect on code generation or parsing and exists solely for readibility purposes
+
+  Match
+    Performs general pattern matching (ala "for")
+    "Match" statements add in the 'conditional' case expression
+      This allows for matching the same pattern under different conditions
+        ie. "v if v < 5 => ..." != "v => ..."
+      This syntax can be used to perform typed pattern matching through the '::' keyword
+    NOTE: All case expressions use "=>" to deliminate the pattern from the expression
 
 Scope
   Grammar:

@@ -1,4 +1,4 @@
-
+NOTE: Type construction requires the presence of a tuple
 
 Testing for definition
 
@@ -7,6 +7,8 @@ Type Interactions
   All types inherit from the supertype, Type
   [T] <- A type-list
   (T) <- A type tuple (no "->" or "{" so not an arg tuple)
+
+Extracting types from types
 
 
 TODO:

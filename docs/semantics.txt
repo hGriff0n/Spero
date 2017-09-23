@@ -21,8 +21,8 @@ Keywords
     wait                          <- re-enter a re-entrant function and wait for a value. can be dot-flipped
 
   Visibility Contexts
-    Spero relies on three unique keywords to introduce bindings
-      The usage of three keywords allows for a tight control of the visibility of the created binding
+    Spero relies on unique keywords to introduce bindings
+      The usage of these keywords allows for a tight control of the visibility of the created binding
 
     There are three unique contexts in which a binding can be created (File, Type, Scope)
       File context is all declarations in the global scope of a file
@@ -32,10 +32,15 @@ Keywords
     The mapping of the visibility keywords to the declaration contexts is as follows:
       context - File   | Type          | scope
       ===========================================
-      let     - module | public        | local
-      def     - public | protected     | local
-      static  - file   | public static | static
-
+      let     - module | protected     | local
+      def     - public | public        | local
+  
+  Assignments can also be introduced in one of three storage contexts (local, global, static)
+    Local assignments can only exist within the context of a scope, type/function body, or let-binding
+    Static assignments are any assignments marked with the '@static' annotation
+    Global assignments are any assignments not falling into either of the above categories
+    TODO: Explain what these storage contexts "do"
+     
 
 Safety
   Spero aims to provide programmers with a usable language that prevents unsafe and dangerous practices

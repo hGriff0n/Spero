@@ -1,10 +1,7 @@
 NOTE: Some of the assertions, especially in regard to overloading and inference, are entirely theoretical at this point. I have no idea how to implement them
 
 Functions
-  Grammar:
-    <tuple> -> <type>? <scope>
-    <tuple> -> mut? .?<statement>
-    mut? .<statement>
+  Grammar: See 'syntax.txt'
 
   Type Signature:
     (Params...) -> Ret			# NOTE: Shorthand for the below
@@ -42,13 +39,14 @@ Functions
       Binary operators must be a function that takes a single argument
       Unary operators must be a function that takes no additional arguments
       Note: Ignoring the single 'self' instance that is automatically included
-    TODO: Look at making this a 'free function' instead
+    Compound Assignment
+      Compound assignment is not a default behavior for spero types
+        ie. "<lhs> <op>= <rhs>" != "<lhs> = <lhs> <op> <rhs>" by default
+      Such behavior can be imitated by defining mutable operator overloads as such:
+        "def <op>= = mut (a :: T) -> { self = self <op> a }"
 
 Function Calling
-  Grammar:
-    <value><tuple>?
-    <value> <op> <value>	# NOTE: look at <> for operator currying
-    <value>.<fncall>			# Dot-flipping syntax
+  Grammar: See 'syntax.txt'
 
   Function evaluation within Spero is an eager process
     Lazy evaluation can be mimiced with streams/generators/captures/etc.
@@ -65,11 +63,17 @@ Function Calling
         Note: Dot-ops stil require parenthesis for the moment
 
   Omitting Parentheses:
-    Function parentheses can be omitted when a no-arg function is called
+    Parentheses can be omitted when a no-arg function is called
+      Except in the case of constructing types (due to metaprogramming considerations)
       Renaming a no-arg function presents a bit of a syntactical challenge:
 	One option is to create a forwarding lambda, ala "let <name> = .<fn>"
 	Another option is to disable no-paren calling, ala "@disable(no_paren)let <name> = <fn>"
         A third is to use "importing" to rebind the name, ala "use <fn> as <name"
+      NOTE: This may change in the future to simplify the process of renaming no-arg functions
+        In the meantime, 'use-as' rebinding allows for the same semantics
+    Parentheses cannot be ommitted to perform default type construction
+      This is to allow for nicer metaprogramming syntax
+        ie. "Int" refers to the `Int` type object and not a default `Int` value (ie. "Int() => 0")
 
   Var-arg functions
     If a function's final argument has a view typing, it is "var-arg" parameter
@@ -114,7 +118,7 @@ Partial Application
 
   The partial function maintains the same overload set as the parent function
     Minus all overloads that would be invalid given the bound arguments
-    This inheritance is static to the time that the function was created
+    This inheritance is local to the time that the function was created
       ie. Overloading the function afterward should not affect partial application
 
   Positional Currying of Operators
