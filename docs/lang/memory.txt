@@ -12,7 +12,7 @@ Views:
   Views act as a form of syntactic sugar for a variable-length sequence of values
     On a typing level, a 'T..' is just a simpler way to say 'Iterable[T]'
       This simplifies the ability of functions to accept sequences of many types
-  
+
   Views take on a special-semantical value when used as a function's last parameter
     This placing allows the function to accept a var-arg sequence of values
       ie. "foo(Int..)" -> "foo(1, 2, 3, 4)" and "foo(1, 2, 3)" and "foo"
@@ -36,7 +36,9 @@ Current Framework Idea:
     Note: I'm not sure on the implementation of this
       Either a defined generic type that the compiler can fill in the information for
       Or a abstract type that every type implicitly inherits from (compiler writes the defs)
+
   Addr - Represents an address in memory. Addr's must be explicitly created
+
   Chunk - Represents a section of memory. Basically a "mut (Addr,Size,Bool)"
     call - Create a sub-chunk with the given offset. Optional 'size'/'end' argument?
       Note: This enables '()' semantics for the "Chunk.view_as" model. Unsure?
@@ -48,22 +50,25 @@ Current Framework Idea:
     forget - Prevent drop from deallocating the chunk memory segment
     view_as[T] - Reinterpret the Chunk as an 'Element[T]' object. Optional offset arg.
     Note: Chunk is a mutable-only type
+
   Element[T] - Type to represent a single 'T' in memory. Intermediary type between a 'Chunk' and a 'T'
     construct - Construct a 'T' in place using the given the argument list
     destroy - Call the destructor for 'T' on the memory segment
     get - Interpret the memory segment as a raw instance of 'T'
     set - Set the memory segment to the byte order for the given value of 'T'
     Note: 'Element[T]' does not implement 'drop' (ould interfere with 'Chunk' operation)
+
   Ptr[T] - Represents a movable pointer. Typed as 'T mut*' or 'mut T mut*'
     TODO: Determine reassignment functions for RPtr[T]
     Note: Ptr[T] implements SPtr[T]. Adds all reassignment methods
-  SPtr[T] - Represents a non-movable (static) pointer. Typed as 'T*' or 'mut T*'
+    SPtr[T] - Represents a non-movable (static) pointer. Typed as 'T*' or 'mut T*'
     borrow - Temporarily borrows the pointer for use in other computations
       Note: Prevents using the pointer until the borrow is released
       Note: This is a mutable method
     copy - Copy the pointer (not the data <- Huh?)
     deref - Return the pointer data. Special method for when a 'T'/'T&' is expected
     drop - Destroy and deallocate the pointer if last reference, or release the borrow
+
   alloc - Allocate a chunk of 'n' bytes. Returns a Chunk
   alloc[T] - Helper function for allocating a known type (= "alloc(T.size * n)")
   calloc[T] - Allocate and initialize a single element

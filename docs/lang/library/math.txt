@@ -1,0 +1,16 @@
+std:math
+
+  pi[T]
+  tau[T]
+  e[T]
+  acos
+  asin
+  atan
+  atan2
+  cos
+  cosh
+  hypot
+  sin
+  sinh
+  tan
+  tanh

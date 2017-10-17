@@ -1,27 +1,59 @@
+Functions
+
+  A function is defined as a collected sequence of code with a defined entry point and set of exit points. Execution of the function starts off at the entry point and continues, following the otherwise defined semantics of the language, until it encounters one of the exit points, at which point control is returned to the calling code. These semantics allow for the repeated usage and modularization of algorithmic steps.
+
+  Arguments may be passed to the function body if the definition declares them as supported. These arguments are bound to the scope of the function body before any other statements in the function are executed. If the function is defined entirely using dot-forwarding, it is not necessary for these arguments to have an associated name, rather an accepted type. These arguments are immediately forwarded on to the function body (without decomposing the tuple).
+
+  NOTE: This isn't the correct description of how arguments are handled (binding removes elements from the tuple)
+  TODO: Improve the wording of this
+  TODO: Need to find a place to add in 'partial application' (before overloading)
+
+Syntax
+  type signature: (Params...) -> Ret		# NOTE: Shorthand for the alternate syntax
+    alternate: Function[(Params...), Ret]
+  calling: `see syntax.txt`
+  definition: `see syntax.txt`
+
+Function Overloading
+
+  Spero as a language supports the capability for function definitions to be "overloaded", that is that multiple behaviors may be associated to the same logical 'name'. A new overload is created by assigning to a logical name a new function that differs either in the type of the return or in the product typing of the parameter tuple from a pre-existing definition that was previously bound to the assigned name.
+
+  Calls to an overloaded function are disambiguated through a strict algorithmic procedure that matches the calling arguments to the available parameter lists to pick out a "best" match.
+
+  TODO: Define "best"
+
+  NOTE: This process must make an unambiguous decision (compiler error otherwise)
+  NOTE: Overloads are only created if the new assignment occurs in the same scope as the old assignment
+    Otherwise normal variable shadowing rules apply.
+  NOTE: It is allowable for any implementing compiler to produce an error if a new overload would subsume
+    (or be subsumed by) an existing overload. However, this is not required by the standard
+
 NOTE: Some of the assertions, especially in regard to overloading and inference, are entirely theoretical at this point. I have no idea how to implement them
 
+Operator Overloading
+
+  Operator overloading is a specialized form of function overloading that can change the behavior of binary/unary operators. Binary operators are defined generally as any series of non-alphanumeric characters (that otherwise hold no meaning to Spero). The behavior of these operations can be modified by assigning a function taking one argument to the operator (ala. "def <op> = (t) -> ...") within the lhs type body.
+
+The behavior of the specified unary opeators can be customized by assigning a no-arg function to the operator within the operand's type body. The "names" of unary operators is predefined within the standard and cannot be redefined or moved.
+
+  TODO: Improve the wording of this section
+  TODO: Figure out a way to add in order-insensitivity
+  NOTE: Compound assignment is not provided by Spero. It can be mimiced with mutable assignment
+
+Object interaction
+
+  Non-static member functions (ie. functions declared within the context of a type body) automatically have an implicit "self :: Self&" first parameter inserted into the body. If the function is marked as "mut" (through attaching `mut` before the argument tuple), then the typing of the `self` parameter changes to `mut Self&`, thereby allowing the oject to be mutably altered. An additional 'super' keyword is defined that serves to force selection of inherited definitions in the child type (especially when the child overrides the implementation).
+
+  Variable resolution will implicitly attempt to index into this parameter if lookup fails to find a definition in the immediate scope (but before the global/higher context). It is always possible to explicitly index into the 'self'/'super' keyword and access the variable definitions if needed, although it will be an indexing error if such a definition doesn't exist. Note that 'self' and 'super' are keywords and cannot be shadowed so there is no ambiguity about what the behavior of this statement should be.
+
+  TODO: Mention static member functions
+  TODO: Mention how to call member functions
+  NOTE: New variables cannot be defined on 'self'/'super'. Spero only allows old-variables to be modified
+
+Coroutines
+
+
 Functions
-  Grammar: See 'syntax.txt'
-
-  Type Signature:
-    (Params...) -> Ret			# NOTE: Shorthand for the below
-    Function[(Params...), Ret]
-
-  Defining a function with the same name creates an overload
-    The original function must be in the same scoping level as the second function
-      Otherwise under scoping rules, the second function "replaces" the original
-    Functions can be overloaded on the basis of paramter and return types
-      A compiler error is produced if an overload exactly matches a previous decl
-      Otherwise, any errors are discovered within the overload resolution process
-
-  OOP handling
-    Non-static methods declared within a type body have an implicit "self" first parameter
-      Note: OOP functions implicitly handle dot-flipping as a result
-        Except not really, given ad-hoc polymorphism (interfaces)
-    Member variable access implicitly indexes this 'self' body, unless shadowed
-      Note: Explicitly indexing self/super will always work for access
-      Note: It is a compiler error to shadow the 'self'/'super' variables
-
   Dot-Forwarding
     Dot-forwarding indicates that the function's arguments should be directly passed to the function body
       Roughly analagous to an implicit cut-and-past with a dot-flipping call
@@ -33,17 +65,6 @@ Functions
 	  The overload set is the maximal set of valid typings given for the body
       If an argument tuple is provided, argument names may be dropped (ie. Types only)
         This tuple mainly serves to restrict the overload set to "coherent" typings
-
-  Operator Overloading
-    Types can overload most operators (exception of '::') by providing a custom function definition
-      Binary operators must be a function that takes a single argument
-      Unary operators must be a function that takes no additional arguments
-      Note: Ignoring the single 'self' instance that is automatically included
-    Compound Assignment
-      Compound assignment is not a default behavior for spero types
-        ie. "<lhs> <op>= <rhs>" != "<lhs> = <lhs> <op> <rhs>" by default
-      Such behavior can be imitated by defining mutable operator overloads as such:
-        "def <op>= = mut (a :: T) -> { self = self <op> a }"
 
 Function Calling
   Grammar: See 'syntax.txt'
@@ -105,7 +126,6 @@ Function Calling
       A dispatch (overload resolution) error will occur if one of the following applies
 	No function was selected by the overload process (no overload exists)
 	2 or more functions were selected by the overload process (multiple overloads exist)
-	2 or more construction paths for an Implicit match exists (can be viewed as the previous case)
 
 Partial Application
   A partial application is a function with some arguments bound from a prior call site
@@ -131,6 +151,8 @@ Partial Application
   TODO: Need to add in language to enable partial-application resolution
 
   Experimental: Can be disabled through the '@disable(curry)' annotation 	# Change name?
+
+Coroutines
 
 Experimental Ideas:
   Define '+' for functions, so "f + g" creates a function 'h', "h(...) = f(...) + g(...)"

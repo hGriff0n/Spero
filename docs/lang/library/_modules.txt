@@ -1,0 +1,22 @@
+Modules
+
+  This file specifies the modular layout of the Spero standard library. The interfaces and behavior of the public types and functions exported by the standard library are specified within the primary module files (primary being the first level).
+
+  The `std:lang` module is automatically imported into every Spero program, providing the definitions it provides to the user.
+
+Structure
+
+  std
+   |- io
+   |--- fs
+   |- lang
+   |- math
+   |- mem
+   |- range
+   |- sys
+   |--- env
+   |- util
+
+TODO:
+  Explain more about this structure
+  Figure out how I want to specify the interfaces

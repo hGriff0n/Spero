@@ -1,0 +1,39 @@
+std:util
+
+  Array[T] :: (Size), (T..) impls Indexable[Size, T], Iterable[T]
+    len :: () -> Size
+
+  Array[T, n] :: (T..) impls Array[T]
+
+  Map[K,V] impls Indexable[K, V], Iterable[(K, V)]
+
+  Iterator[T]
+    next :: mut () -> Option[T]
+      TODO: I think this 'mut' would allow the elements to be modified (maybe 'next' should produce a new iterator ???)
+    hasNext :: () -> Bool
+
+  Indexable[K, V]
+    set :: mut (K, V) -> ()
+      TODO: If the following definitions for 'get' work, I can eliminate 'set'
+    get :: mut (K) -> mut V&
+    get = (k :: K) -> @mut_cast(self).get(k) :: V&
+    call = .get
+
+  Iterable[T]
+    iter :: () -> Iterator[T]
+      TODO: I need a way to pass on the mutability of the parent type
+
+  Tree[T] impls Iterable[T]
+
+  HashMap[K, V] impls Map[K, V]
+
+  TreeMap[K, V] impls HashMap[K, V]
+
+  List[T] impls Indexable[Size, T], Iterable[T]
+
+  Vec[T] impls Indexable[Size, T], Iterable[T]
+    popFront :: () -> T
+    popBack :: () -> T
+    pushFront :: (T) -> ()
+    pushBack :: (T) -> ()
+    len :: () -> Size

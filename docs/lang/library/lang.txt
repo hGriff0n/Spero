@@ -1,0 +1,20 @@
+std:lang
+
+  Num
+
+  Int
+    +,-,*,^ :: (Num) -> Num
+    / :: (Num) -> Float
+    abs :: () -> Int
+
+  Float
+
+  Size
+
+  String
+
+  Char
+
+  Byte
+
+  Range

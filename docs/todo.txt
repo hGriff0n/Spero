@@ -1,6 +1,8 @@
 Organize Documentation Correctly Among the Files
   Figure out what to do with 'syntax.txt' (and grammar decisions)
   Read up on the c++ standard to get an idea for how they layout everything
+Look at 'ideas.txt' for some ideas about function return type specifying and type construction
+Possibly update 'vs-spero' to account for language changes in annotation syntax
 Double check that the rebind rules allow for aliasing junction types
   Allow this if it is not currently implemented
 Determine if the speroc grammar allows for placing `mut` on forwarded function bodies

@@ -1,0 +1,70 @@
+Annotations
+
+  An annotation should be defined as a named expression which provides some hint to the compiler as to the intended usage of an expression. These hints can range from allowing conditional compilation to a simple 'todo' marker that allows for custom reporting of warning messages. These guarantees and hints can be used to provide tighter analysis and optimization on the generated code
+
+  NOTE: The compiler may reserve the right to ignore some annotations if necessary
+  NOTE: Annotations do not exist within the generated code or even during the analysis phases after they have been resolved
+  NOTE: Currently it isn't possible to produce custom annotations
+
+Syntax
+  local annotation: @<variable> <tuple>?
+  global annotation: @!<variable> <tuple>?
+
+  Annotations are syntactically divided into two broad categories that determine what expressions their effects are applied to. Local annotations, indicated by the non-existance of a '!' character, always apply to the next expression that appears after it is encountered. Global annotaions, on the other hand, are an expression in and of themselves; their effects are rather applied to the surrounding compilation environment (the surrounding scope if used in a scope, type if in a type, and global if outside). Note that this means that local annotations can be applied to global annotations.
+
+  All annotations can be combined with an optional tuple that provides various arguments to the internal machinery.
+    TODO: Explain this better
+    NOTE: This means annotations can't be applied to tuples
+
+Compile-time Variables
+  In the specific case of compile-time generation, the compiler makes available several "state" variables that can be queried within annotations. These variables largely correlated directly to various system/target/contextual codegen controls, such as determining the operating system of the target machine. In this example case, the compiler variables allow for the generation of windows specific code iff the target machine has a windows os through the combined usage of the '@enable_if' annotation.
+
+  EXAMPLE: @enable_if(target.machine.os == os.windows) ...
+
+Current Annotations
+  Any compiler for the spero language must provide the following default annotations with the specified behaviors
+  
+  @immutable - Mark a type as immutable-only
+    Values of this type must produce a compiler error when held in a mutable context.
+  @safe      - Mark a block of unsafe code as "safe"
+    Takes an optional string literal to document why the specific segment is "safe"
+  @unsafe    - Mark a block of safe code as "unsafe"
+  @todo      - Produces a user-defined warning message
+  @asm       - Output assembly code for the target architecture
+    TODO: Define the semantics/syntax of this
+  @static    - Mark an assignment as having 'static' scope
+  @enable_if - Conditionally enable/disable the following code based on some compile-time condition
+    ALTERNATE: @if_cfg
+
+Possible Annotations
+  The following annotations are currently being considered for standardization
+
+  @explicit  - Mark a constructor as "invalid" for implicit construction resolution
+  @truthy    - Specify a method to be used for converting values of a type into Booleans
+    Takes a function, which must have the signature "() -> Bool" (compiler error otherwise)
+  @mutable   - Control codegen based on the mutability of 'self'
+    '@mutable(true, [false], [object=self])'
+  @mem_limit - restrict the amount of memory a type/module/etc can use
+  @enable    - turn on language features that were disabled
+  @assert    - raise an error (compiler/runtime) if a condition evaluates to false
+  @cassert   - raise a compiler error if a condition evaluates to false
+  @force     - requires/disables language features to create environment
+  @pure      - promise that the function is "pure" for optimization purposes. may allow use in generics
+  @disable   - turn of a language feature for some time
+  @primary   - apply annotations to the primary constructor instead of the type
+  @hide_warn - turn off specific compiler warnings
+  @show_warn - turn on specific compiler warnings
+    Could possibly merge into enable/cfg
+  @delta     - epsilon equality tests for doubles
+  @intrinsic - compiler provided method/type definition. file only specifies interface
+    Basically, Spero code defines an abstract type but you can still instantiate it
+  @final     - mark methods/classes as unoverridable/un-subtypable
+
+TODO:
+  Find a way to enable custom annotations
+  Annotations only applying to one-expression forces the usage of scopes to group statements
+    Any variables declared in these scopes are unreachable from outside. Find out if that is onerous
+  Look into extending safe with "assert", require compile-time code that can evaluate to true/false
+
+Ideas:
+  Expand annotations to be able to make macros with them

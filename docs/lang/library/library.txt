@@ -1,59 +1,5 @@
 Documentation laying out the types and functions of the standard library, their interfaces and behavior
 
-module std
-  Range - todo find a location to place these in the module structure
-  range
-  
-module std:lang
-  Num
-
-  Int
-    +, - *, ^ :: (Num) -> Num
-    / :: (Num) -> Float
-    abs :: () -> Int
-
-  Float
-
-  Size
-
-  String
-
-  Char
-
-  Byte
-
-module std:io
-
-module std:io:fs
-
-module std:math
-  pi[T]
-  tau[T]
-  e[T]
-  acos
-  asin
-  atan
-  atan2
-  cos
-  cosh
-  hypot
-  sin
-  sinh
-  tan
-  tanh
-
-module std:mem
-  TODO: Take up from memory work
-
-module std:sys
-  I8/I16/I32/I64
-
-  U8/U16/U32/U64
-
-  F..
-
-module std:sys:env
-
 module std:util
   Array[T] :: (Size), (T..)
     impl = Iterable[Size, T], Iterable[T]

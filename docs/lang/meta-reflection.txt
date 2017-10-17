@@ -1,0 +1,15 @@
+Reflection and Metaprogramming
+
+  Spero aims to provide the ability to perform type-aware metaprogramming within it's syntax and semantics.
+
+
+'Type' type
+
+  All types in Spero are implicitly instances of the 'Type' type ('Type' is a standalone). 
+
+NOTE: Type construction requires the presence of a tuple
+
+
+TODO:
+  Come up with syntax for querying a definition
+  Come up with syntax for extracting types from types
