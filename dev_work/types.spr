@@ -1,27 +1,27 @@
 use std:{fs, sys}
 
 def Foo = {
-    let f ::= mut fs:File
+    let f ::= mut fs:File()
 
-    static new = () -> "f.txt".Foo
+    static new = () -> "f.txt".Foo()
 
     # This is actual a function that returns a Foo, but doesn't
     static new = (file :: String) -> Foo {              # Completing the definition for Foo
-        f = mut file.fs:File                            # 'f' must gain a value here (as it's `let` bound)
-        "Opened at {}".writeln(f, sys:now)              # immutable members must also recieve values here
+        f = mut file.fs:File()                          # 'f' must gain a value here (as it's `let` bound)
+        "Opened at {}".writeln(f, sys:now())            # immutable members must also recieve values here
     }                                                   # mutable 'def'/'static' members don't require value assignment
                                                         # Though that will make the resulting type abstract
     static drop = (f :: mut Foo) -> {
-        "Closed at {}".writeln(f.f, sys:now)
+        "Closed at {}".writeln(f.f, sys:now())
     }
 }
 
 # This is sugar for the Foo
 def SugarFoo = (file :: String) {
-    let f = mut file.fs:File
-    "Opened at {}".writeln(f, sys:now)
+    let f = mut file.fs:File()
+    "Opened at {}".writeln(f, sys:now())
 
-    static new = () -> "f.txt".Foo
+    static new = () -> "f.txt".Foo()
 
     static drop = (f :: mut Foo) -> {
         "Closed at {}".writeln(f.f, sys:now)
@@ -35,14 +35,14 @@ def Bar = (n :: mut Int) {
 
     # This constructor is only usable within this class
     @private
-    static new = (r :: std:math:rand:Random) -> new Bar(r.next)
+    static new = (r :: std:math:rand:Random) -> new Bar(r())
 }
 
 # How to return a function ???
-def create = (T: Type) -> T:new
+def create = (T: Type) -> T:new()
 
 def main = () -> {
-    let f = new Foo
+    let f = new Foo()
 
     Foo:drop(f)         # Delete f here
     #let r = f          Error: 'f' was dropped
@@ -50,14 +50,14 @@ def main = () -> {
     let f = 3
     let r = f           # Fine. r = 3
 
-    let f = Foo.new
+    let f = Foo.new()
     let r = f           # Copy 'f'
     Foo:drop(f)         # Drop 'f'
 
     let f = create(Foo)
     using r = f
-    Foo:drop(f)         # Copy, drop, and invalidate 'f'. 'r' assumes ownership of Foo 
+    Foo:drop(f)         # Copy, drop, and invalidate 'f'. 'r' assumes ownership of Foo
 
-    Foo                 # Calls consructor and destructor
+    Foo()               # Calls consructor and destructor
     Foo:drop(Foo:new)   # Same as previous line
 }

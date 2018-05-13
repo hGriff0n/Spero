@@ -1,47 +1,48 @@
 mod exercises:elementary
 
 use std:{io, math, util}:_
+use std:Range
 
-def hello = () -> "Hello World".println
+def hello = () -> "Hello World".println()
 
 def who = () -> {
-    let name = "Who are you? {}".get                    # getln eisplays the prompt string then reads until a new line
+    let name = "Who are you? {}".getln()                # getln displays the prompt string then reads until a new line
     "Hello, {}!".println(name)                          # Don't need to restrict name to a type (println doesn't need it)
 }
 
-def alibob = () -> match "Who are you? {}".getln {
-    "Alice" => "Hello, Alice!".println                  # Do I need to restrict the type that getln returns here?
-    "Bob" => "Hello, Bob!".println                      # Matching should be able to handle this automatically
+def alibob = () -> match "Who are you? {}".getln() {
+    "Alice" => "Hello, Alice!".println()                # Do I need to restrict the type that getln returns here?
+    "Bob" => "Hello, Bob!".println()                    # Matching should be able to handle this automatically
     _ => ()
 }
 
 def sum = () -> {
-    let num :: Size = "Enter a number: {}".getln        # Definitely need to restrict typing here
-    "Sum 1 to {}: {}".println(num, {1..num}.reduce(+, 0))
+    let num :: Size = "Enter a number: {}".getln()      # Definitely need to restrict typing here
+    "Sum 1 to {}: {}".println(num, Range(1, num).reduce(+, 0))
 }
 
 def modsum = () -> {
-    let num = "Enter a number: {}".getln :: Size        # Can restrict in multiple ways
-    "Sum 1 to {}: {}".println(num, {1..num}.filter((n) -> n % 3 == 0 || n % 5 == 0).reduce(+, 0))
+    let num = "Enter a number: {}".getln() :: Size      # Can restrict in multiple ways
+    "Sum 1 to {}: {}".println(num, Range(1, num).filter((n) -> n % 3 == 0 || n % 5 == 0).reduce(+, 0))
 }
 
 def choice = () -> {
-    "Enter a number: {}".getln :: Size                  # What should getln return on multiple "{}"s (or should there be another function for that) ???
+    "Enter a number: {}".getln() :: Size                # What should getln return on multiple "{}"s (or should there be another function for that) ???
     getln("Do you want to calculate the product or the sum: ")
 }
 
 def printTable = () -> for i in 0..12 do {
-    {0..12}.foreach((j) -> "{:4}".print(i * j))         # Print 'i*j' using a minimum of 4 spaces (formatting)
-    println                                             # Print a newline character
+    Range(0, 12).foreach("{:4}".print(i * _))           # Print 'i*j' using a minimum of 4 spaces (formatting)
+    println()                                           # Print a newline character
 }
 
 @noexit                                                 # Annotation that the function never exits
 def allprimes = () -> {
-    static primes = mut [2].Vector[Size]
+    static primes = mut [2 :: Size].Vector()
     for elem in primes yield elem                       # Yield the known values first
 
     loop {
-        let cur_prime = mut primes.back.+(1)
+        let cur_prime = mut primes.back().+(1)
 
         # Find the next prime using sieve of erasthosenes (naively)
         while primes.reduce((b, p) -> b || cur_prime % p == 0, false) do cur_prime += 1;
@@ -53,19 +54,19 @@ def allprimes = () -> {
 }
 
 def guessingGame = () -> {
-    let secret = rand :: Int
+    let secret = rand() :: Int
     let num_tries = mut 0
 
     loop {
         num_tries += 1
-        let guess = "Enter a number: {}".getln          # Should getln return a Optional[T] or equivalent ??
+        let guess = "Enter a number: {}".getln()        # Should getln return a Optional[T] or equivalent ??
                                                         # Be sure to update code once I decide this
 
         # Preliminary conditional match syntax
         match guess {
             x if x == secret => break;                 # Probably should get around to adding conditional match syntax
             x if x < secret => "Sorry. The secret number is higher than {}".println(x)
-            x :: Int => ("Sorry. The secret number is lower than {}", x).println
+            x :: Int => "Sorry. The secret number is lower than {}".println(x)
         }
     }
 

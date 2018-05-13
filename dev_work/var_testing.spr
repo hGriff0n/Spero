@@ -17,16 +17,16 @@ def Bar = {
     def baz = mem:alloc(Baz)
     def val = mut mem:alloc[Int](3)
 
-    def gtz = () -> val &> 0    
+    def gtz = () -> val > 0
 }
 
 def Foo = {
-    def bar = Bar
+    def bar = Bar()
 }
 
 # Define a generator for yield demonstration
 def rev_gen[T] = (elems :: T*) -> {
-    let rev_stack = std:util:Stack[T]
+    let rev_stack = std:util:Stack[T]()
 
     for elem in elems
         rev_stack.push(elem);
@@ -36,20 +36,20 @@ def rev_gen[T] = (elems :: T*) -> {
 }
 
 def main = () -> {
-    let foo = Foo
-    let bar = Bar
+    let foo = Foo()
+    let bar = Bar()
 
     do std:io:println("Truthiness works!") .if bar
 
-    &{ if bar do bar.baz else bar.val }
+    { if bar do bar.baz else bar.val }
 
     let foo = mut Some(5)
     match foo {
-        Some(mut var) => var += 3           # Doesn't modify to foo's value
+        Some(mut var) -> var += 3           # Doesn't modify to foo's value
         #Some(mut& var) => var += 3         # Does modifies foo's value
-        None => 5
+        None -> 5
     }
-    
+
     let Some(bar) = foo                     # ADTs can be decomposed in bindings (Experimental)
     let (foo, bar) = mut (3, 4)
 
@@ -67,7 +67,7 @@ def main = () -> {
     let v_ptr = mem:alloc(() -> " World".print)
     let p_ptr = mem:alloc((Int) -> mut .mem:alloc)          # You'd write 'mut i.mem:alloc'
 
-    
+
     @deprecated("Pointer dereference is automatic")
     i_ptr(3)            # '&' binds to 'i_ptr(3)', which is a compiler error (can't call a pointer)
     {&i_ptr}(3)         # '&' binds to 'i_ptr', producing a function that accepts a 3

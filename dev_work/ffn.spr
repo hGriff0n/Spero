@@ -3,45 +3,45 @@ mod ffn
 use std:util:Vector
 use std:math
 
-def sigmoid[F] = (F f) -> 1 / (1 + math:exp(f))
-def sig_prime[F] = (F f) -> f.sigmoid * (1 - f.sigmoid)
+def sigmoid[F] = (f :: F) -> 1 / (1 + math:exp(f))
+def sig_prime[F] = (f :: F) -> f.sigmoid() * (1 - f.sigmoid())
 
 def Perceptron[Val] = (id :: Size) {
-    let out = mut Val
-    let err = mut Val
+    let out = mut Val()
+    let err = mut Val()
 
-    let weights = mut Vector[Val]
-    let bias = mut Val
-    
+    let weights = mut Vector[Val]()
+    let bias = mut Val()
+
     def run = mut (inp :: Vector[Val]&) -> {
         err = 0
 
         out = match weights.size {
             0 => out = inp(id)
-            _ => out = inp.zip(weights).map!(*).reduce(+) + bias
+            _ => out = inp.zip(weights).map(*).reduce(+, 0) + bias
         }
     }
 
     def run = mut (inp :: vector[Perceptron[T]]&) -> {
         err = 0
 
-        out = inp.zip(weights).map!(*).reduce(+) + bias
+        out = inp.zip(weights).map(*).reduce(+) + bias
     }
 
     def calculateError = mut (exp :: Val) -> err = sig_prime(out) * (exp - sigmoid(out))
 
     def calculateError = mut (next :: Vector[Perceptron[Val]]&) ->
-        err = sig_prime(out) * next.map!((n) -> n.err * n.weights(id)).reduce(+)
+        err = sig_prime(out) * next.map((n) -> n.err * n.weights(id)).reduce(+)
 
     def updateWeights = mut (inp :: Vector[Val]&, alpha :: mut Val) -> {
         alpha *= err * sig_prime(out)
         bias += alpha
-        let max_change = mut alpha.abs
+        let max_change = mut alpha.abs()
 
         # I don't think this would work
-        weights(1..).zipWithIndex.map!((w) -> {
+        weights(Range(1)).zipWithIndex.map((w) -> {
             let change = alpha * inputs(w.1)
-            if change.abs > max_change do max_change = change
+            if change.abs() > max_change do max_change = change
             w.0 += change
         })
 
@@ -51,10 +51,10 @@ def Perceptron[Val] = (id :: Size) {
     def updateWeights = mut (prev :: Vector[Perceptron[Val]]&, alpha :: mut Val) -> {
         alpha *= err
         bias += alpha
-        let max_change = alpha.abs
+        let max_change = alpha.abs()
 
-        weights(1..).zipWithIndex.map!((w) -> {
-            let change = alpha * prev(w.1).activate
+        weights(Ranage(1)).zipWithIndex.map((w) -> {
+            let change = alpha * prev(w.1).activate()
             if change.abs > max_change do max_change = change
             w.0 += change
         })
@@ -68,19 +68,19 @@ def Perceptron[Val] = (id :: Size) {
     static new = (r :: std:rand:Random, inp :: Size, id :: Size) -> {
         let node = mut Perceptron(id)
 
-        weights.fill(inp + 1, () -> r)
-        bias = r
+        weights.fill(inp + 1, () -> r())
+        bias = r()
     }
 }
 
 def FFN[Val] = (n_in :: Size, n_hid :: Size, n_lay :: Size) -> {
-    let net = mut Vector:fill(0..n, (i) -> .Perceptron[Val]).Vector
+    let net = mut Vector:fill(Range(0, n), Perceptron[Val](_))
 
-    let r = std:rand:Random
-    for j in 0..n_hid
-        net.push_back(Vector:fill(0..n_hidden, (i) -> Perceptron[Val(r, if j == 0 n_in else n_hid, i)))
+    let r = std:rand:Random()
+    for j in Range(0, n_hid)
+        net.push_back(Vector:fill(Range(0, n_hid), (i) -> Perceptron[Val](r, if j == 0 n_in else n_hid, i)))
 
-    net.push_back(Perceptron[Val](r, if n_lay == 0 n_in else n_hid, 0).Vector)
+    net.push_back(Perceptron[Val](r, if n_lay == 0 n_in else n_hid, 0).Vector())
 
     def run = mut (...) -> { ... }
 }

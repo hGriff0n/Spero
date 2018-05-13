@@ -18,14 +18,14 @@ def Option[T] = Some(T) | None {
 
     def map[V] = (fn :: (T) -> V) -> self.match {
         None => None
-        Some(t) => Some(t.fn)
+        Some(t) => Some(t.fn())
     }
 
-    # How to implement 
+    # How to implement
     def flatten = ()
 
     def filter = (fn :: (T) -> Bool) -> self.match {
-        Some(t) if t.fn => Some(t)
+        Some(t) if t.fn() => Some(t)
         _ => None
     }
 }
@@ -34,6 +34,6 @@ def main = () -> {
     let val = Some(3)
     let tst = None
 
-    "{}".puts(val.get)
+    "{}".puts(val.get())
     "{}".puts(tst.or_else(3))
 }

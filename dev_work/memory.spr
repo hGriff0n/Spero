@@ -33,16 +33,16 @@ def intArrayTest = () -> {
     let chnk = mut mem:alloc(Int.size * 4)          # Allocate space for 4 Int's. Returning a 'Chunk' allows for more intuitive operations
     # let chnk = mut mem:alloc(Int, 4)
 
-    let fst = mut chnk.view_as[Int]                 # Make 'fst' refer to the first Int in 'chnk's region of memory
+    let fst = mut chnk.view_as[Int]()               # Make 'fst' refer to the first Int in 'chnk's region of memory
     fst.set(1)                                      # Would 'chnk' have to be mutable for this operation ???
 
-    let thd = mut chnk(2 * Int.size).view_as[Int]   # These semantics ("Element[T] = T") is currently unstable as I'm not sure
+    let thd = mut chnk(2 * Int.size).view_as[Int]() # These semantics ("Element[T] = T") is currently unstable as I'm not sure
     # let thd = mut chnk(2, Int).view_as[Int]       # Depending on how raw types work, this may be possible
     # let thd = mut chnk[Int](2).view_as[Int]       # I know this works, just is it feasible to do the analysis
     thd = 3                                         # How interchangeable a "Element[T]" should be with a "T". This implies very
 
     # Should equal '4' as 'alloc' zero-initializes
-    {0..4}.map!(chnk.view_as[Int](_).get).reduce(+) # How will 'Element[T]:get' be typed ???
+    Range(0, 4).map!(chnk.view_as[Int](_).get()).reduce(+) # How will 'Element[T]:get' be typed ???
 
     # 'Chunk:drop' automatically frees the memory when the function exits
 }
@@ -54,7 +54,7 @@ def intArrayTest = () -> {
   To that end, Chunk needs a way to interact with it's byte sequence (or sub-sequence) in a type-safe/-knowledgeable way
   That is the purpose of `TyChunk[T]`, an intermediate type between Chunk's raw memory view and Spero's whole type view.
   TyChunk's are created through various Chunk methods and act a lot like Chunk in several respsects. However, TyChunk trades
-  Off the bitwise operations of Chunk for a more type-ful member list, including constructing an instance in place, etc. 
+  Off the bitwise operations of Chunk for a more type-ful member list, including constructing an instance in place, etc.
 ##
 # NOTE: The name of 'TyChunk' (typed chunk) needs some work
 @todo("Update the interface to the current 'Memory[T]' standard")
@@ -66,8 +66,8 @@ def initTest = () -> {
                                                 # IDEA: 'chnk.transmute(0)' would make a variable at the address of the first Int ???
 
     # chnk.set[Int](ptr.view)
-    chnk.view_as[Int] = ptr.view_as[Int].get
-    chnk.set[Int](1, ptr.view_as[Int].get)
+    chnk.view_as[Int]() = ptr.view_as[Int].get()
+    chnk.set[Int](1, ptr.view_as[Int].get())
 }
 
 ##
@@ -82,10 +82,10 @@ def wrap = (mmio :: mem:Addr) -> {
     let device = mut mem:Chunk(mmio, 4)     # Chunk needs to have a bound for it's "control"
     # let device = mut mem:MemRef(mmio, 4)  # Might be able to make a separate type instead (having explicit call to forget is potentially unsafe)
 
-    device.view_as[Size] = 35               # You can use '=' or 'set' for setting an 'Memory[T]'
+    device.view_as[Size]() = 35             # You can use '=' or 'set' for setting an 'Memory[T]'
     # device.view_as[Size].set(35)          # Though I think 'set' may be more idiomatic
 
-    device.forget                           # Call 'forget' to prevent 'mmio' from being marked "free" in 'drop'
+    device.forget()                         # Call 'forget' to prevent 'mmio' from being marked "free" in 'drop'
                                             # This interface makes memory safety the default behavior of Spero
                                             # You have to try to get the memory "unsafe" behavior
 }
@@ -113,7 +113,7 @@ Language Atom (variadics):
   Better matching tuples. This has some affect on typing as you can see below. The variadic pack, however, still
   Retains some neat syntax tricks, particularly the ability to "expand" through '..'
 ##
-def forward[T, Args..] = (args :: Args) -> args.T
+def forward[T, Args..] = (args :: Args) -> args.T()
 
 let TestType = (z :: Int) {
     def isInt = mut true
@@ -125,7 +125,7 @@ let TestType = (z :: Int) {
     }
 }
 let useFwd = () -> {
-    let t1 = 3.forward[TestType]
+    let t1 = 3.forward[TestType]()
     let t2 = mut forward[TestType](3.4, 5.2)
 
     @assert!(t1.isInt != t2.isInt, "forward doesn't work as expected")
@@ -159,15 +159,15 @@ def ptrTest = () -> {
     # AssignRules.(mut->const,diff,ptr,_) ==> error
     # let tst = ptr                             # error: Immutable+Mutable pointers to the same locations (how on earth do I determine that ???)
                                                 # I can use mut-reassignment checking rules, to insert some checking code
-    let tst = ptr.borrow                        # This method prevents using 'ptr' while test is in scope (still holding the borrow)
+    let tst = ptr.borrow()                      # This method prevents using 'ptr' while test is in scope (still holding the borrow)
                                                 # Think a bit of Rust's "ownership" concept in this regard (note: borrow is mutable)
                                                 # I need to think about it's interaction with number of references
     let tst = o_ptr                             # No problem. Should also drop the borrowing of `ptr`
-    
+
     # Swap out the value
     let t = 5
     swap(ptr, t)
-    
+
 
     # Way to create pointers from pre-allocated memory
     let ptr_pool = mut mem:alloc(8)
@@ -194,7 +194,7 @@ Language Atom (references):
   To this end, Spero allows 'T&' syntax to indicate a pass-by-reference "reference" ala C++ (switch the mutability though)
   A raw 'T&' is really only good for preventing accidental copying. Compilers may be allowed to add '&' in analysis/optimization for this reason
   Changing to 'mut T&' allows for the same mutability rules as 'mut T', but with the added benefit that changes propogate to the callee
-  
+
   References are not allowed to be stored within a type, either through member or through ADT
     TODO: What about captures?
 

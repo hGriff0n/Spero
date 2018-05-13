@@ -10,9 +10,9 @@ use serialzie;
 def main = () -> {
     let (db, args) = docopt:interface(
         docopt:Arg("-db", String),
-        docopt:Arg("-p", String)).parse(sys:env:args)
+        docopt:Arg("-p", String)).parse(sys:env:args())
 
-    let db = mut connect(db).panic_on_error
+    let db = mut connect(db).panic_on_error()
 
     match args.splitFirst {
         "add", args => add(args, db);
@@ -22,28 +22,28 @@ def main = () -> {
     }
 }
 
-let add = (args, db) -> :: () {
+let add = (args, db) -> {
     let new = Book:serializeFrom(args);
     db.insert_into("books", new).match {
         @todo!("Handle result of insert")
     }
 }
 
-let update = (args, db) -> :: () {
+let update = (args, db) -> {
     let change = Book:serializeFrom(args);
     db.update("books", change).match {
         @todo!("Handle result of update")
     }
 }
 
-let remove = (args, db) -> :: () {
+let remove = (args, db) -> {
     let remove = String:serializeFrom(args);
     db.remove("books").where((id) => id == remove).match {
         @todo!("Handle result of remove")
     }
 }
 
-let show = (args, db) -> :: () {
+let show = (args, db) -> {
     db.select("*").from("books").match {
         b if b :: Book => std:io:println("{}", b);
         _ => @todo!("Handle error case")
@@ -51,6 +51,6 @@ let show = (args, db) -> :: () {
 }
 
 let panic_on_error[T] = (Result[T]) -> :: T .match {
-    Err(e) => sys:panic(e);
+    Err(e) => sys:panic(e)
     Ok(t) => t
 }

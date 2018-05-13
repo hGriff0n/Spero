@@ -7,12 +7,12 @@ Inheritance and Anonymous Types
 ##
 def Option[T+ :: Copy] = None | Some(T) {
     static new = () -> None
-    static new = (T) -> .Some
+    static new = (T) -> .Some()
 
     impls std:util:Copy                 # Implements 'std:util:Copy'
     def copy = () -> self.match {
         None => None
-        Some(v) => v.copy.Some
+        Some(v) => v.copy().Some()
     }
 
     # Import everything from the std:io module into this class
@@ -30,7 +30,7 @@ def HelloWorld = (lang :: String) {
     def greet :: () -> ()
     def talk :: (String) -> ()
 
-    static test = () -> "Hello, World!".puts
+    static test = () -> "Hello, World!".puts()
 
     impls std:io:Printable
     def toStr = .mut greet
@@ -45,14 +45,14 @@ It makes no sense to use '::' after a type constructor (outside of generics)
 
 # def BigInt = Num :: {}        <- This is also valid, though it may be less readable with constructors
 def BigInt :: Num = {           # If you think about it, all types have an implicit ':: Type' here
-    super                       # Call the parent constructor (this call (with no args) is implicitly inserted if the first line is not 'super...')
+    super()                     # Call the parent constructor (this call (with no args) is implicitly inserted if the first line is not 'super...')
                                 # The parent constructor must be the first line (or it will raise a compiler error, attempt to call parent constructor twice)
 }
 
 def main = () -> {
     let french = mut HelloWorld :: {
         super("French")
-        def greet = () -> "tout le monde".puts
+        def greet = () -> "tout le monde".puts()
         def talk = (n :: String) -> "Salut, {}".puts(n);
         def name = mut ""
     }
@@ -61,13 +61,13 @@ def main = () -> {
     # Note that Anonymous Types still "devolve" to no-paren constructions
     # It's only when binding to types that this behavior is avoided
     converse(french, HelloWorld("Spanish") :: {
-            def greet = () -> "mundo".puts
+            def greet = () -> "mundo".puts()
             def talk = (n :: String) -> "Hola, {}".puts(n)
         })
 
     # Experimenting with unifying access semantics
         # Thought: Good idea, needs work on the specifics of translation and extension (tuples need to be statically checked for one)
-    let vec = [0, 1, 2].std:util:Vector
+    let vec = [0, 1, 2].std:util:Vector()
     vec.0       # translates to 'vec(0)'    <- Type has dynamic size
 
     let tup = (0, 1, 2)
@@ -76,7 +76,7 @@ def main = () -> {
 
 @disable(no_parens)
 def fncall_problem[T] = (T) -> Type {
-    T
+    T()
 }
 
 # Look at 'http://docs.groovy-lang.org/latest/html/documentation/index.html' and 'https://doc.rust-lang.org/book/' for example documentation
@@ -87,7 +87,7 @@ Metaprogramming and ':'/'.'
 def converse = (a :: HelloWorld, b :: HelloWorld) -> {
     # Perform initial introductions
     HelloWorld:greet(a)
-    b.greet
+    b.greet()
 
     # '?' performed the meta-indexing (returns an Option[T] of the value of the field)
         # Fields can use "Generics" to only get the field if it has a specific type (???)

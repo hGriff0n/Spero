@@ -26,3 +26,7 @@ Determine whether to keep in 'implicit construction'
 Figure out how to abstact away 'mut'/'&' from code that doesn't care about it
 Fix the coloring of 'rebind' statements in vs-spero
   Types should be colored as Types
+
+Figure out a way to not require parentheses everywhere
+  This is particularly egregious in the case of 'size' in some of the dev_work examples
+How does 'n' get introdued in 'impl Indexable[T] for Array[T, n]' ???

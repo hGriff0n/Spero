@@ -11,16 +11,16 @@ def Foo = mut {
 def main = () -> {
     let arr = [1, 2, 3]
     let prod = mut 1
-    
+
     # Testing while loops
     let i = mut 0
-    while i < arr.len do
+    while i < arr.len() do
         i += 1
 
-    let iter = mut arr.iter
+    let iter = mut arr.iter()
     loop {
-        prod *= iter.next
-        if (!iter.hasNext) break;
+        prod *= iter.next()
+        if (!iter.hasNext()) break;
     }
 
     "{} - {}".println(prod, i)
@@ -45,14 +45,14 @@ def main = () -> {
 
     let f = mut Foo
 
-    for i in {f.start..f.end} {}
-    for i in f.start.if true..f.end {}                      # Fails type-checking
-    for i in {f.start.if true}..f.end {}                    # Might fail type-checking
+    for i in Range(f.start, f.end) {}
+    for i in f.start.if Range(true, f.end) {}               # Fails type-checking
+    for i in Range(f.start.if true, f.end) {}               # Might fail type-checking
 
-    for i in {f.start..f.end}.filter(_ % 2 == 0) {}
-    
-    for i in f.start.if f.start > 4 else 5..f.end {}        # Fails type-checking (if and for)
-    for i in {f.start.if f.start > 4 else 5}..f.end {}
+    for i in Range(f.start, f.end).filter(_ % 2 == 0) {}
+
+    for i in Range(f.start if f.start > 4 else 5, f.end) {}
+    for i in f.start if f.start > 4 else Range(5, f.end) {}
 
 
     ##
@@ -65,8 +65,8 @@ def main = () -> {
 
     # Translation
     {
-        let iter = mut arr.iter
-        while iter.hasNext match iter.next {
+        let iter = mut arr.iter()
+        while iter.hasNext() match iter.next() {
             mut& i => i += 1
         }
     }
@@ -76,13 +76,13 @@ def main = () -> {
         "{}".println(elem)
 
     def rev_gen[T] = (elems :: T*) -> {
-        let rev_stack = std:util:Stack[T]
+        let rev_stack = std:util:Stack[T]()
 
         for elem in elems
             rev_stack.push(elem);
 
-        while rev_stack.size > 0
-            yield rev_stack.pop;
+        while rev_stack.size() > 0
+            yield rev_stack.pop()
     }
 
     # Translation (Shouldn't this call rev_gen everytime)
@@ -95,16 +95,16 @@ def main = () -> {
 
     # Mutating elements (NOTE: Experimental, This might change in the future)
     @safe("No yield or returning of local pointers")
-    for mut& i in arr.iter {
+    for mut& i in arr.iter() {
         i &*= 2;
     }
 
     # Translation
     @safe("No yield or returning of local pointers")
     {
-        let iter = mut arr.iter
-        while iter.hasNext match iter.next {
-            mut& i => i &*= 2;
+        let iter = mut arr.iter()
+        while iter.hasNext() match iter.next() {
+            mut& i => i = i * 2;
         }
     }
 }

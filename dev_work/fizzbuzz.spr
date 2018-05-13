@@ -1,6 +1,6 @@
 mod fizz:buzz
 
-def main = () -> {1..}.map((num) -> "{}".std:io:print(
+def main = () -> Range(1).map((num) -> "{}".std:io:print(
         match num {
             e if e % 15 => "FizzBuzz"
             f if f % 5 => "Buzz"

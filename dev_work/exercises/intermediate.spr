@@ -26,34 +26,18 @@ def MorseSignal = (lett :: Char, code :: String) {
     def lett = lett
 }
 static morse_symbols = makeMorseCodeMap              # let's just assume I have a valid morse code mapping
-def convert = (String) ->
-    .map((lett) -> morse_symbols(0)(lett).code)
-def convert = (MorseSignal*) ->
-    .map((sym) -> morse_symbols(1)(sym).lett).join
+def convert = (String) -> .map(morse_symbols(0)(_).code)
+def convert = (MorseSignal*) -> .map(morse_symbols(1)(_).lett).join()
 
 @todo("Write a program to find the longest palindromic substring of a given string")
 def longestPalindrome = (String) -> {}
 
 @todo("Design a list type")
-@disable(mut)
 def List[T] = Empty | Cons(T, List) {}
 
 @todo("Design an array type")
 def Array[T, n] = util:Iterable[T] :: {
-    let store = mut mem:alloc[T](n)                 # Allocate a chunk of `n * T.size` bytes
-
-    # Enable indexing semantics for Arrays
-    impls Indexable[T] {                            # TODO: How to handle slicing
-        def set = mut (Size, T) -> .match {
-            i, &e if i < n => store.view_as[T](i).set(e)
-            i, &e if e < n => store.view_as[T](e).set(i)
-            i, _ => @error!(3241, i, n)
-        }
-        def apply = (Size) -> .match {
-            i if i < n => Some(store.view_as[T].get)
-            i => @error!(3242, i, n)
-        }
-    }
+    let store = mut mem:allocs[T](n)                # Allocate a chunk of `n * T.size` bytes
 
     # Enable iterator support
     let Iterator = util:Iterator[T] :: {
@@ -65,12 +49,25 @@ def Array[T, n] = util:Iterable[T] :: {
             get(curr_idx - 1)
         }
     }
-    def iter = () -> Iterator
-    def mut_iter = mut () -> mut Iterator      # Don't know how I'm going to enable modifiable iterators yet
+    def iter = () -> Iterator()
+    def mut_iter = mut () -> mut Iterator()        # Don't know how I'm going to enable modifiable iterators yet
 
     def size = () -> n
 
     static drop = () -> {}
+}
+
+# TODO: How to handle slicing
+impl Indexable[T] for Array[T, n] {
+    def set = mut (Size, T) -> .match {
+        i, &e if i < n => store.view_as[T](i).set(e)
+        i, &e if e < n => store.view_as[T](e).set(i)
+        i, _ => @error!(3241, i, n)
+    }
+    def apply = (Size) -> .match {
+        i if i < n => Some(store.view_as[T].get)
+        i => @error!(3242, i, n)
+    }
 }
 
 @todo("Design a vector type")
@@ -78,20 +75,7 @@ def Vector[T] = util:Iterable[T] :: {
     let num_elems = mut 0
     let room_size = mut 10
 
-    let store = mut mem:alloc[T](10)
-
-    # `impls` blocks are a new feature to simplify organization
-    impls Indexable[T] {
-        def set = mut (Size, T) -> .match {
-            i, &e if i < num_elems => store.view_as[T](i).set(e)
-            _ => @error!(3241, i, num_elems)
-        }
-        # apply = (Size) -> .match {
-        def apply = (Size) -> .match {
-            i if i < num_elems => Some(store.view_as[T](i).get)
-            _ => @error!(3242, i, num_elems)
-        }
-    }
+    let store = mut mem:allocs[T](10)
 
     def pushBack = mut (e :: T) -> {
         if num_elems == room_size {
@@ -102,7 +86,7 @@ def Vector[T] = util:Iterable[T] :: {
             mem:bcpy(store, store + num_elems * T.size, tmp)                # Byte-wise copy the data over to the new chunk
 
             # Manually free the original memory for future allocation
-            store.drop
+            store.drop()
             store = tmp
         }
 
@@ -116,12 +100,24 @@ def Vector[T] = util:Iterable[T] :: {
         0 => @error!(3240)
         n => {
             num_elems -= 1
-            store.view_as[T](num_elems).drop
+            store.view_as[T](num_elems).drop()
         }
     }
 
     def size = () -> num_elems
-    def capacity = () -> room_size 
+    def capacity = () -> room_size
+}
+
+impl Indexable[T] for Vector[T] {
+    def set = mut (Size, T) -> .match {
+        i, &e if i < num_elems => store.view_as[T](i).set(e)
+        _ => @error!(3241, i, num_elems)
+    }
+    # apply = (Size) -> .match {
+    def apply = (Size) -> .match {
+        i if i < num_elems => Some(store.view_as[T](i).get)
+        _ => @error!(3242, i, num_elems)
+    }
 }
 
 @todo("Design a std::deque type")
@@ -139,7 +135,7 @@ def BinaryHeap[T :: Comparable] = (comparator :: (T, T) -> Bool) {
 
     let bubbleUp = mut () -> {
         static parent = (i :: Size) -> i / 2
-        let index = mut store.size
+        let index = mut store.size()
 
         while index > 0 {
             let idx = index.parent
@@ -177,31 +173,23 @@ def BinaryHeap[T :: Comparable] = (comparator :: (T, T) -> Bool) {
 
     def push = mut (elem :: T) -> {
         store.pushBack(elem)
-        bubbleUp
+        bubbleUp()
     }
-    
-    def push = mut (T*) -> .foreach(self.push)          # I think I need the 'self.' here to ensure correct lookup
+
+    def push = mut (T*) -> .foreach(self.push(_))          # I think I need the 'self.' here to ensure correct lookup
 
     def pop = mut () -> {
         let retval = store(0)                       # Should this return an Optional[T] ???
-        store(0) = store.popBack
+        store(0) = store.popBack()
 
-        bubbleDown
+        bubbleDown()
     }
 
     def peek = () -> store(0)
-    def size = () -> store.size
+    def size = () -> store.size()
 
     @todo!("Add iterator methods?")
 
-    # Alternate way of adding specific behavior for if T is Serializable
-    # Benefits greatly from allowing impls to be followed by a block of code
-    @todo("Find a better way to do 'enable_if' stuff")
-    @enable_if(T :: Serializable)
-    impls Serializable[T] {
-        static toString = () -> ""
-        static fromString = (s :: String) -> {}
-    }
 
     # Constructor for initializing with a set sequence
     static new = (elems :: T*, comparator :: (T, T) -> Bool) -> {
@@ -211,10 +199,18 @@ def BinaryHeap[T :: Comparable] = (comparator :: (T, T) -> Bool) {
     }
 }
 
+# Alternate way of adding specific behavior for if T is Serializable
+# Benefits greatly from allowing impls to be followed by a block of code
+@todo("Find a better way to do 'enable_if' stuff")
+@enable_if(T :: Serializable)
+impl Serializable[T] for BinaryHeap[T] {
+    static toString = () -> ""
+    static fromString = (s :: String) -> {}
+}
+
 # Note: This can create a infinite loop (need to "strip" T of Serializable typing)
 @todo("Find a better way to do 'enable_if' stuff")
 def BinaryHeap[T :: Serializable] = BinaryHeap[T - Serializable] :: {       # "remove" Serializable typing from T for the purposes of selection
-    impls Serializable[T]
     static toString = () -> ""
     static fromString = (s :: String) -> {}
 }
@@ -224,10 +220,10 @@ def MinHeap[T] = (list :: T*) -> BinaryHeap(list, <)
 def heapSort[T :: Comparable] = (list :: T*) -> {
     # let heap = MinHeap(list)
     let heap = BinaryHeap[T](list, <)               # Create a minimum heap
-    
-    let list = Vector[T]                            # I want to return the type passed in
-    for i in 0..heap.size do
-        list.pushBack(heap.pop)
+
+    let list = Vector[T]()                          # I want to return the type passed in
+    for i in Range(0, heap.size()) do
+        list.pushBack(heap.pop())
 
     list
 }

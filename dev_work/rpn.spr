@@ -15,7 +15,7 @@ def main = () -> "={}".println(getln.parse)
 
 def Stack[T] = Empty | Cons(T, Stack) {
 	def toStr = self .match {
-		Cons(i, Empty) => i.toStr
+		Cons(i, Empty) => i.toStr()
 		_              => "nil"
 	}
 
@@ -31,17 +31,17 @@ let parse = (String) ->
 		Cons(r, Cons(l, _s)), "/" => Cons(l / r, _s)
 		Cons(r, Cons(l, _s)), "*" => Cons(l * r, _s)
 		Cons(l, _s), "~"          => Cons(-l, _s)
-		s, _                      => Cons(_.toInt, s) 
+		s, _                      => Cons(_.toInt, s)
 	})
 
 def test = (log :: Logger) -> {
-	log << ("{} {} +".fmt(3, 4).parse.toStr)
-	log << ("{} {} + {} *".fmt(3, 4, 5).parse.toStr)
+	log << ("{} {} +".fmt(3, 4).parse().toStr())
+	log << ("{} {} + {} *".fmt(3, 4, 5).parse().toStr())
 }
 
 def arrayTest = (nums :: Int*) -> {
 	let view = [1, 2, 3, 4, 5] ++ nums		# The language intrinsic is a view (or sequence)
-	let arr = nums.Array					# Array is a stdlib feature
+	let arr = nums.Array()					# Array is a stdlib feature
 
 	println("The first element is {}", arr(0))
 }
@@ -49,23 +49,23 @@ def arrayTest = (nums :: Int*) -> {
 def sortTest[T] = () -> {
 	let (a, b) = (3, "I")
 
-	[3, 4, 5, 1, 2].sort((a, b) -> a < b).toStr.println
+	[3, 4, 5, 1, 2].sort((a, b) -> a < b).toStr().println()
 }
 
 def functionTest = () -> {
-	def foo = () -> "Hello".println
-	"Goodbye".println						# This is the only thing that should print
+	def foo = () -> "Hello".println()
+	"Goodbye".println()						# This is the only thing that should print
 }
 
 def split = (s :: String, i :: Int)	->
 	s.zipWith(index)
-	 .groupWhile(< i)
-	 .map(.snd .mkString)					# How to access a tuple ???
+	 .groupWhile(_ < i)
+	 .map(_.1.mkString())					# How to access a tuple ???
 
 def noargs = () -> {
-	let person = "Enter your name: {}".std:io:getln
-	let age = "Enter your age: {}".std:io:getln
-	let (gen, race) = "Enter your gender: {}\nEnter your race: {}".std:io:getln
+	let person = "Enter your name: {}".std:io:getln()
+	let age = "Enter your age: {}".std:io:getln()
+	let (gen, race) = "Enter your gender: {}\nEnter your race: {}".std:io:getln()
 
 	"{person}, {age - 5}, {}, {race}".fmt(gen)			# You can evaluate expressions within the '{}'
 }

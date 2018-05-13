@@ -15,35 +15,35 @@ def mfoo = (x :: mut Int) -> x += 2
 
 let Foo = {
     use sys:now
-    let arr = mut [1, 4, 3, 6].Vector[Int]
+    let arr = mut [1, 4, 3, 6].Vector[Int]()
 
     if now.hour < 12
-        "WAKE UP!".io:println
+        "WAKE UP!".io:println()
 
     # Mutable-only methods
-    def sort = mut () -> arr.sort!                      # Looking into allowing this to be named 'sort!'
+    def sort = mut () -> arr.sort!()                    # Looking into allowing this to be named 'sort!'
     def push = mut (x :: Int) -> arr.push_back(x)
 
 
     # This method has different behavior based on the object's mutability
-    def pop = () -> @mutable(arr.pop_back, "Pop!".io:println)
+    def pop = () -> @mutable(arr.pop_back, "Pop!".io:println())
         # '@mutable(true, [false])
 
     # Immutable methods
-    def size = () -> arr.size
-    def toStr = () -> arr.toStr
+    def size = () -> arr.size()
+    def toStr = () -> arr.toStr()
 
 
     # Custom constructors are implemented as static methods
     static new = (mult :: Int) ->       # The '{...}' is "completing" the definition
         Foo {                           # Technically the type is abstract (members have no values)
-            arr = mut [1, 4, 3, 6].map(.* mult).Vector[Int]
+            arr = mut [1, 4, 3, 6].map(.* mult).Vector[Int]()
         }
 
     # Alternate way of defining the same constructor (using "complete" syntax)
     static new = (mult :: Int) -> {
-        let ret = mut Foo
-        ret.arr.map!(.* mult)
+        let ret = mut Foo()
+        ret.arr.map!(_ * mult)
         ret
     }
 }

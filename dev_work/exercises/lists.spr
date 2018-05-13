@@ -5,8 +5,8 @@ use std:{io, math, util}:_
 def max[T :: Comparable] = (T..) -> .reduce((l, r) -> if l < r do r else l)
 
 def reverse[T] = (list :: mut Indexable[T]&) -> {
-    for i in 0..{list.size / 2}
-        list.swap(i, list.size - i)
+    for i in Range(0, list.size / 2)
+        list.swap(i, list.size() - i)
 
     list
 }
@@ -15,14 +15,14 @@ def occurs[T :: Comparable] = (elem :: T, list :: T..) ->
     list.reduce((b :: Boolean, p) -> b || p == elem, false)
 
 def oddIndices[T] = (T..) ->
-    .zipWithIndex.filter((elem) -> elem.1 % 2 == 1).map!(_.0)       # I don't think the '_' syntax is settled
+    .zipWithIndex.filter(_.1 % 2 == 1).map!(_.0)                        # I don't think the '_' syntax is settled
 
 def runningTotal[T] = (list :: T..) -> {
-    let col = mut Vector[T]                                         # Need to instantiate a type I know has `pushBack`
+    let col = mut Vector[T]()                                           # Need to instantiate a type I know has `pushBack`
 
     for elem in list do
         col.pushBack(col.back.or_else(T) + elem)
-    
+
     col
 }
 
@@ -33,106 +33,106 @@ def isPalindrome = (s :: String) -> {
         halves(0).pushBack(halves(1)(0))                                # Put the middle character in both strings
                                                                         # I'm assuming split would leave the secon string bigger here
 
-    halves(1).reverse!
+    halves(1).reverse!()
     halves(0).zipWith(halves(1)).reduce((b, a) -> b && a.0 == a.1, true)
 }
 
 def forSum[T] = (list :: T..) -> {
-    let acc = mut T
+    let acc = mut T()
     for elem in list acc += elem
     acc
 }
 
 def whileSum[T] = (list :: T..) -> {
     let acc = mut T
-    let iter = mut list.iter
-    while iter.hasNext do
-        acc += iter.next
+    let iter = mut list.iter()
+    while iter.hasNext() do
+        acc += iter.next()
     acc
 }
 
-def speroSum[T] = (T..) -> .reduce(+, T)
+def speroSum[T] = (T..) -> .reduce(+, T())
 
 def recurSum[T] = (list :: Iterable[T]) -> {
-    if list.empty return T
-    list(0) + list(1..).recurSum
+    if list.empty() return T()
+    list(0) + list(Range(1)).recurSum()
 }
 
 def handMap[T, V] = (list :: Iterable[T], fn :: (T) -> V) -> {
-    let col = list.type.new
+    let col = list.type.new()
     let pushBack = if !{col .? pushBack} () -> ()               # Goal: Return the same type that was passed in
                                                                 # Without knowing the collection type that was passed
     for elem in list                                            # The line tries to define a pushBack function if
-        col.pushBack(elem.fn)                                   # none is defined for the class
+        col.pushBack(elem.fn())                                 # none is defined for the class
 
     col
 }
 
-def printSquares = (Size*) -> .handMap((i) -> "{}".println(i ^ 2))
+def printSquares = (Size*) -> .handMap("{}".println(_ ^ 2))
 
 def concate[T] = (l1 :: Iterable[T], l2 :: Iterable[T]) -> {
-    let ret = l1.copy.Vector[T]                                 # I want there to be a way to implement this to return 
+    let ret = l1.copy.Vector[T]()                               # I want there to be a way to implement this to return
                                                                 # the same type of the list passed in to the function
     for elem in l2 do ret.pushBack(l1)                          # But i need a definition for pushBack to do so
     ret
 }
 
 def alternateCombine[T] = (l1 :: Iterable[T], l2 :: Iterable[T]) -> {
-    let ret = mut Vector[T]
-    
-    let (iter1, iter2) = mut (l1.iter, l2.iter)                 # Used this because size(l1) may not = size(l2)
+    let ret = mut Vector[T]()
 
-    while iter1.hasNext && iter2.hasNext {
-        ret.pushBack(iter1.next)
-        ret.pushBack(iter2.next)
+    let (iter1, iter2) = mut (l1.iter(), l2.iter())            # Used this because size(l1) may not = size(l2)
+
+    while iter1.hasNext() && iter2.hasNext() {
+        ret.pushBack(iter1.next())
+        ret.pushBack(iter2.next())
     }
 
-    while iter1.hasNext do ret.pushBack(iter1.next)
-    while iter2.hasNext do ret.pushBack(iter2.next)
+    while iter1.hasNext() do ret.pushBack(iter1.next())
+    while iter2.hasNext() do ret.pushBack(iter2.next())
     ret
 }
 
 def merge[T] = (l1 :: Iterable[T], l2 :: Iterable[T]) -> {
-    let ret = mut Vector[T]
-    let (iter1, iter2) = mut (l1.iter, l2.iter)
+    let ret = mut Vector[T]()
+    let (iter1, iter2) = mut (l1.iter(), l2.iter())
 
     # TODO: Need to update the vs extension to highlight tuple decomposition
-    while iter2.hasNext {
-        vec.pushBack(iter1.takeWhile(_ < iter2.peek))
-        break.if !iter1.hasNext                                 # This is needed to prevent errors by calling iter1.peek on an empty iterator
-        vec.pushBack(iter2.takeWhile(_ < iter1.peek))           # I need a better way of getting around this
+    while iter2.hasNext() {
+        vec.pushBack(iter1.takeWhile(_ < iter2.peek()))
+        break.if !iter1.hasNext()                               # This is needed to prevent errors by calling iter1.peek on an empty iterator
+        vec.pushBack(iter2.takeWhile(_ < iter1.peek()))         # I need a better way of getting around this
     }                                                           # I could define `<` for Option[T] (as a monad)
 
     # Alternate way of accessing elements from iterators
-    loop match iter1.getNext {
+    loop match iter1.getNext() {
         Some(elem) -> ret.pushBack(elem)
         None -> break;
     }
-    while iter2.hasNext do ret.pushBack(iter2.next)
+    while iter2.hasNext() do ret.pushBack(iter2.next())
     ret
 }
 
 def rotate[T] = (list :: Indexable[T], k :: Int) ->
-    list(k..).concate(list(0..k))
+    list(Range(k)).concat(list(Range(0, k)))
 
 def fibonacci = (n :: Size) -> {
     static memoize = mut [1, 1].Vector[Size]
 
-    for i in memoize.size..n do
+    for i in Range(memoize.size, n) do
         memoize.pushBack(memoize(i - 1) + memoize(i - 2))
-    
+
     return memoize(n - 1)
 }
 
 let DigitList = Deque[Char] :: {}
 def toDigitList = (n :: mut Int) -> {
-    let list = mut DigitList
+    let list = mut DigitList()
 
     let isneg = n < 0
-    n.abs!
+    n.abs!()
 
     while n != 0 {
-        list.pushFront({ n % 10 }.Char:parseInt)
+        list.pushFront({ n % 10 }.Char:parseInt())
         n /= 10
     }
 
@@ -152,15 +152,15 @@ def digitMatch = (DigitList, DigitList, c :: Char) -> c.match {
 def digitToBase = (DigitList, Size, Size) -> {}
 
 def selectionSort[T :: Comparable] = (list :: mut Indexable[T]&) ->
-    for i in 0..{list.size - 1} do {
-        let min = mut j;
-        for i in {j + 1}..list.size} 
+    for i in Range(0, list.size() - 1) do {
+        let min = mut j
+        for i in Range(j + 1, list.size())
             if list(i) < list(min) min = i
 
         list.swap(i, j).if min != j
     }
 
-def insertionSort[T :: Comparable] = (list :: mut Indexable[T]&) -> list.insertionSort(0, list.size)
+def insertionSort[T :: Comparable] = (list :: mut Indexable[T]&) -> list.insertionSort(0, list.size())
 
 def insertionSort[T :: Comparable] = (list :: mut Indexable[T]&, l :: Size, r :: Size) ->
     for i in 1..{r - 1} {
@@ -183,10 +183,10 @@ def mergeSort[T :: Comparable] = (list :: mut Indexable[T]&) -> {
         if list(up) < list(i) {
             list.swap(i, up)
             up += 1
-        }.for i in l..{mid-1}
+        }.for i in Range(l, mid-1)
     }
 
-    mergeSort(0, list.size)
+    mergeSort(0, list.size())
 }
 
 def quickSort[T :: Comparable] = (list :: mut Indexable[T]&) -> {
@@ -200,7 +200,7 @@ def quickSort[T :: Comparable] = (list :: mut Indexable[T]&) -> {
         quickSort(mid, r)
     }
 
-    quickSort(0, list.size)
+    quickSort(0, list.size())
 }
 
 def stoogeSort[T :: Comparable] = (list :: mut Indexable[T]&, left :: Size, right :: Size) -> {
@@ -216,7 +216,7 @@ def stoogeSort[T :: Comparable] = (list :: mut Indexable[T]&, left :: Size, righ
     list
 }
 def stoogeSort[T] = (list :: mut Indexable[T]&) ->
-    (list, 0).stoogeSort(list.size - 1)
+    (list, 0).stoogeSort(list.size() - 1)
 
 def binarySearch[T :: Comparable] = (list :: Indexable[T], elem :: T, left :: Size, right :: Size) -> {
     static middle = (l, r) -> {{r - l} / 2} + 1
@@ -228,10 +228,10 @@ def binarySearch[T :: Comparable] = (list :: Indexable[T], elem :: T, left :: Si
     }
 }
 def binarySearch[T :: Comparable] = (list :: Indexable[T], elem :: T) ->
-    (list, elem, 0, list.size).binarySearch
+    (list, elem, 0, list.size).binarySearch()
 
 def framePrint = (strs :: String..) -> {
-    let siz = strs.reduce((l, s) -> if l < s.len s.len else l, 0) + 4
+    let siz = strs.reduce((l, s) -> if l < s.len() s.len() else l, 0) + 4
 
     "{}".println('#'.rep(siz))
     for str in strs "# {} #".println(s)
@@ -242,10 +242,10 @@ def framePrint = (strs :: String..) -> {
 
 # Simple type to prevent wrong calling of translate function
 let PigLatinString = (str :: String) {                  # Constructor arguments are protected by default
-    let str = str.split(" ").map!((s) -> s(1..) + s(0) + "ay").join(" ")
+    let str = str.split(" ").map!((s) -> s(Range(1)) + s(0) + "ay").join(" ")
 
     def translate = () -> str.split(" ").map!((s) -> {
-        let tail = s(0..{s.len - 3})
-        s(s.len - 2) + tai
+        let tail = s(Range(0, s.len() - 3))
+        s(Range(s.len() - 2)) + tail
     }).join(" ")
 }

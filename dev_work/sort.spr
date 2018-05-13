@@ -9,15 +9,15 @@ def binarySort[T :: Comparable] = (set :: Indexable[T]) -> {
     if (set.size == 1) return set;
 
     # set(1..) is currently "new" syntax
-    let left = set(1..).filter(< set(0)).binarySort
-    let right = set(1..).filter(>= set(0)).binarySort
+    let left = set(Range(1)).filter(_ < set(0)).binarySort()
+    let right = set(Range(1)).filter(_ >= set(0)).binarySort()
 
     return left ++ set(0) ++ right
 }
 
 # Inplace definitions, require pointers to implement
 def binarySort[T :: Comparable] = (set :: mut Indexable[T]&, l = 0 :: Size)
-    -> binarySort(set, l, set.size)
+    -> binarySort(set, l, set.size())
 
 def binarySort[T :: Comparable] = (set :: mut Indexable[T]&, l = :: Size, r :: Size) -> {
     return.if r - l == 1
@@ -37,14 +37,14 @@ def binarySort[T :: Comparable] = (set :: mut Indexable[T]&, l = :: Size, r :: S
 
 def main = () -> {
     # Command line interaction is done through the 'env' module
-    let args = std:env:getArgs
-    "{}".println(args.map(_.toInt).sum)
+    let args = std:env:args()
+    "{}".println(args.map(_.toInt()).sum())
 
     let array = [3, 4, 1, 2, 9, 8]
-    "{}".println(array.binarySort)          # [1, 2, 3, 4, 8, 9]
+    "{}".println(array.binarySort())          # [1, 2, 3, 4, 8, 9]
     "{}".println(array)                     # [3, 4, 1, 2, 9, 8]
-    
+
     @safe
-    "{}".println(array.mut_ref.binarySort)  # ()
+    "{}".println(array.mut_ref.binarySort())# ()
     "{}".println(array)                     # [1, 2, 3, 4, 8, 9]
 }

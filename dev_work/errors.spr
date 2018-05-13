@@ -3,5 +3,5 @@ mod errors
 use std:_:_
 
 def main = () -> {
-    [2, 4, 6].map!(./ 2)            # error {}: member function 'map!' requires a mutable instance of Iterable[T]. instance '[2, 4, 6]' of Iterable[T] is not mutable
+    [2, 4, 6].map!(_ / 2)            # error {}: member function 'map!' requires a mutable instance of Iterable[T]. instance '[2, 4, 6]' of Iterable[T] is not mutable
 }
