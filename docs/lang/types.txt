@@ -1,9 +1,11 @@
 Types
-  Grammar:
-    type_body = list<adt_con, '|', 1>?(list<arg>)?<inherit>?{ <body> }
-    adt_con = <type>(list<type>)?
-    inherit = <type><gen>? ':: '
 
+
+  A type is considered to be a set of publically exposed interfaces.
+
+  TODO: Define `type` (in regards to Spero)
+
+Types
   Inheritance:
     Spero provides two basic syntaxes to specify inheritance
       Spero types can only inherit from one "complete" type but can inherit from multiple "abstract" types
@@ -36,10 +38,10 @@ Types
       An no-arg, primary constructor is implicitly generated if needed
     Secondary constructors are implemented by overloading the static "new" method
       There are 2 general ways of implementing a secondary constructor
-	Create and modify a mutable instance (uses another constructor)
-	"Complete" the type definition ala Anonymous Types
+	      Create and modify a mutable instance (uses another constructor)
+        "Complete" the type definition ala Anonymous Types
 	  This is needed in case the behavior of another "constructor" is not desired
-      Note: he primary constructor is implicitly implemented in these terms
+      Note: the primary constructor is implicitly implemented in these terms
     Named constructors are Spero's way of implementing Algebraic Data Types (ADTs)
       Type instances always remember which named constructor they were built with
         Note: This is to allow for pattern matching deconstruction
@@ -77,7 +79,7 @@ Types
 Anonymous Types
   Grammar:
     <type> <tuple>? :: <scope> <tuple>?
-  
+
   Anonymous types enable instantiating/extending types at the use site
     When bound to a type, this is the syntax for creating a child type
     When bound to any other name, this creates an instance of the type
@@ -86,7 +88,7 @@ Anonymous Types
         Experimental: Secondary constructors can be defined and used if desired
           The constructor is called by placing an argument tuple after the type body
     Note: Cannot declare primary or named constructors
-  
+
   The parent constructor can be called in one of two ways
     The standard way, a call to super within the body of the type
     Providing arguments to the parent name when specifying inheritance

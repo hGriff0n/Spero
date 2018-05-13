@@ -1,105 +1,23 @@
 Functions
 
-  A function is defined as a collected sequence of code with a defined entry point and set of exit points. Execution of the function starts off at the entry point and continues, following the otherwise defined semantics of the language, until it encounters one of the exit points, at which point control is returned to the calling code. These semantics allow for the repeated usage and modularization of algorithmic steps.
+  A procedure is defined as a sequence of instructions having a defined set of entry and exit points and the ability to be "called" by other instructions. When such a "call" occurs, the execution of the procedure beings at one of the defined entry points and continues, following the otherwise defined semantics of the language, until it reaches and executes one of the defined exit points. At this point control returns back to the instruction after the call which initiated procedure evaluation, in accordance with the semantics of the exit point (NOTE: This should be taken primarily to allow for tail recursion and other runtime optimizations).
 
-  Arguments may be passed to the function body if the definition declares them as supported. These arguments are bound to the scope of the function body before any other statements in the function are executed. If the function is defined entirely using dot-forwarding, it is not necessary for these arguments to have an associated name, rather an accepted type. These arguments are immediately forwarded on to the function body (without decomposing the tuple).
+  A function is considered as a specialization of a procedure having a single entry point and where every exit point takes the form of a return statement. Partly as a by-product, functions are not allowed to re-entrant (ie. it is not possible to evaluate half the function, return to the calling code for sometime, and then restart the function midway through with no issues). If a statement as written occupies an exit point (ie. is the last evaluated expression in a control path), it is automatically considered to also be a return statement, by dint of its logical position (NOTE: It is possible to explicitly mark a statement as a return statement).
 
-  NOTE: This isn't the correct description of how arguments are handled (binding removes elements from the tuple)
-  TODO: Improve the wording of this
-  TODO: Need to find a place to add in 'partial application' (before overloading)
+  A method may be considered as a specialization of a function for OOP contexts, indicating that the specific function is a "member" of the surrounding type. All methods, unless otherwise marked as "static", have an implicit "self" variable and "Self" types (NOTE: `self :: Self`) introduced into their context and scope, serving to unify the instance and type members with normal evaluation rules (NOTE: It is up to implementation to decide how the self data gets transfered over to function context).
 
-Syntax
-  type signature: (Params...) -> Ret		# NOTE: Shorthand for the alternate syntax
-    alternate: Function[(Params...), Ret]
-  calling: `see syntax.txt`
-  definition: `see syntax.txt`
+  A coroutine is considered as a specialization of a procedure where control can be explicitly yielded to (and re-acquired from) the calling code (ie. it is re-entrant). (TODO: Work on what coroutines mean)
+
+  TODO: Improve this definition
+  A lambda is a syntactical shortcut for producing a function, implicitly populating the argument tuple with types and variables as indicated through body usage. Lambdas are an extension of forwarding functions, with the ability to produce the forwarded argument(s) from anywhere within the function body. These "populating arguments" are indicated through the '_' symbol (NOTE: This does not apply in cases where '_' has an existing interpretation [ie. match, for, use, ...])
 
 Function Overloading
 
-  Spero as a language supports the capability for function definitions to be "overloaded", that is that multiple behaviors may be associated to the same logical 'name'. A new overload is created by assigning to a logical name a new function that differs either in the type of the return or in the product typing of the parameter tuple from a pre-existing definition that was previously bound to the assigned name.
+  Spero as a language supports the capability for function definitions to be "overloaded", wherein a single lexical name is bound to multiple possible functions. The correct function for any given call site is then determined by picking the best match of the given parameter types and return context to the defined function types, accounting for Subtyping relations and Generics (NOTE: Functions can be overloaded based on their return type). This process of overload resolution must be unambiguous in regards to the parameter types and the order of declaration (ie. resolution can find max 1 possible match). If more than one possible match is found, a compiler error must be produced.
 
-  Calls to an overloaded function are disambiguated through a strict algorithmic procedure that matches the calling arguments to the available parameter lists to pick out a "best" match.
+  Function overloads are produced by binding a function of any type to a name in the same lexical scope that was previously bound to a function, or to a set of functions. If this assignment occurs in a different lexical scope, then normal variable shadowing rules apply and the previous definition is non-accessible (NOTE: It is permissible for a compiler to produce an error/warning if a new overload would subsume (or be subsumed by) an existing overload. However, this is not required).
 
-  TODO: Define "best"
-
-  NOTE: This process must make an unambiguous decision (compiler error otherwise)
-  NOTE: Overloads are only created if the new assignment occurs in the same scope as the old assignment
-    Otherwise normal variable shadowing rules apply.
-  NOTE: It is allowable for any implementing compiler to produce an error if a new overload would subsume
-    (or be subsumed by) an existing overload. However, this is not required by the standard
-
-NOTE: Some of the assertions, especially in regard to overloading and inference, are entirely theoretical at this point. I have no idea how to implement them
-
-Operator Overloading
-
-  Operator overloading is a specialized form of function overloading that can change the behavior of binary/unary operators. Binary operators are defined generally as any series of non-alphanumeric characters (that otherwise hold no meaning to Spero). The behavior of these operations can be modified by assigning a function taking one argument to the operator (ala. "def <op> = (t) -> ...") within the lhs type body.
-
-The behavior of the specified unary opeators can be customized by assigning a no-arg function to the operator within the operand's type body. The "names" of unary operators is predefined within the standard and cannot be redefined or moved.
-
-  TODO: Improve the wording of this section
-  TODO: Figure out a way to add in order-insensitivity
-  NOTE: Compound assignment is not provided by Spero. It can be mimiced with mutable assignment
-
-Object interaction
-
-  Non-static member functions (ie. functions declared within the context of a type body) automatically have an implicit "self :: Self&" first parameter inserted into the body. If the function is marked as "mut" (through attaching `mut` before the argument tuple), then the typing of the `self` parameter changes to `mut Self&`, thereby allowing the oject to be mutably altered. An additional 'super' keyword is defined that serves to force selection of inherited definitions in the child type (especially when the child overrides the implementation).
-
-  Variable resolution will implicitly attempt to index into this parameter if lookup fails to find a definition in the immediate scope (but before the global/higher context). It is always possible to explicitly index into the 'self'/'super' keyword and access the variable definitions if needed, although it will be an indexing error if such a definition doesn't exist. Note that 'self' and 'super' are keywords and cannot be shadowed so there is no ambiguity about what the behavior of this statement should be.
-
-  TODO: Mention static member functions
-  TODO: Mention how to call member functions
-  NOTE: New variables cannot be defined on 'self'/'super'. Spero only allows old-variables to be modified
-
-Coroutines
-
-
-Functions
-  Dot-Forwarding
-    Dot-forwarding indicates that the function's arguments should be directly passed to the function body
-      Roughly analagous to an implicit cut-and-past with a dot-flipping call
-        NOTE: Actual implementation probably shouldn't follow this pattern
-
-    Any function body that begins with a '.' (or 'mut .') is subject to dot-forwarding
-      If no argument tuple for the function is provided, one is inferred from the body
-        An overload set may be created based on the body of the function
-	  The overload set is the maximal set of valid typings given for the body
-      If an argument tuple is provided, argument names may be dropped (ie. Types only)
-        This tuple mainly serves to restrict the overload set to "coherent" typings
-
-Function Calling
-  Grammar: See 'syntax.txt'
-
-  Function evaluation within Spero is an eager process
-    Lazy evaluation can be mimiced with streams/generators/captures/etc.
-    When the function is evaluated can be moved by the compiler
-
-  Dot-Flipping
-    Dot-flipping allows functions to be called in an "infix" fashion
-      The preceding atom is considered to be the first arguments to the function
-        Note: "n - 1.factorial" => "n - {1.factorial}", not "{n - 1}.factorial"
-      When invoked, the atom is inserted before the other arguments in the tuple
-        ie. "T.fn(...)" is equivalent to "fn(T, ...)
-        Experimental: If the "caller" is a n-ary tuple, tuple application applies
-      When used with operators, dot-flipping upgrades to the level of functions
-        Note: Dot-ops stil require parenthesis for the moment
-
-  Omitting Parentheses:
-    Parentheses can be omitted when a no-arg function is called
-      Except in the case of constructing types (due to metaprogramming considerations)
-      Renaming a no-arg function presents a bit of a syntactical challenge:
-	One option is to create a forwarding lambda, ala "let <name> = .<fn>"
-	Another option is to disable no-paren calling, ala "@disable(no_paren)let <name> = <fn>"
-        A third is to use "importing" to rebind the name, ala "use <fn> as <name"
-      NOTE: This may change in the future to simplify the process of renaming no-arg functions
-        In the meantime, 'use-as' rebinding allows for the same semantics
-    Parentheses cannot be ommitted to perform default type construction
-      This is to allow for nicer metaprogramming syntax
-        ie. "Int" refers to the `Int` type object and not a default `Int` value (ie. "Int() => 0")
-
-  Var-arg functions
-    If a function's final argument has a view typing, it is "var-arg" parameter
-      The function will accept 0+ T's being passed at the end
-        This T's will be grouped into a Sequence[T] container/view (ie. 'Array[T, n]')
+  TODO: The specific rules for deciding overload resolution are laid out as follows:
 
   Overload Resolution
     5 modes of overload matching: Exact, Polymorphic, Generic, Implicit, None
@@ -127,35 +45,65 @@ Function Calling
 	No function was selected by the overload process (no overload exists)
 	2 or more functions were selected by the overload process (multiple overloads exist)
 
-Partial Application
-  A partial application is a function with some arguments bound from a prior call site
-    Note: All unbound arguments are at the end of the parameter list
+  Spero provides the capability to "forward" arguments to function calls through the usage of "dot-forwarding" (NOTE: See 'Function Calling' for more info). It is of course possible to define a function by utilizing this dot-forwarding syntax without providing any "anchoring" arguments on the left hand of the '.'. The overload set of these forwarded functions shall be taken as the maximal overload set that makes the body of the function, typeable. It is possible to drop the argument tuple (and '->') from the function definition if the overload set does not needs further constraining (NOTE: Argument names may still be dropped in this case). Evalation of these functions shall proceed as if the parameter tuple was pasted into the code space directly before the forwarding dot and in accordance with normal dot-forwarding semantics (NOTE: The forwarded function must be a callable object).
 
-  A function call reduces to a partial application iff
-    Overload resolution fails because of too little arguments
-    A possibly valid overload may exist, given the current arguments
-    The resulting function is stored/used (variable/argument/return)
+Operator Overloading
 
-  The partial function maintains the same overload set as the parent function
-    Minus all overloads that would be invalid given the bound arguments
-    This inheritance is local to the time that the function was created
-      ie. Overloading the function afterward should not affect partial application
+  Operators in Spero are little more than a syntactical wrapping of functions, aimed at providing a degree of tranferrance onto program development. An operator is considered to be any function whose name is entirely comprised of symbols and is not a predefined language construct (NOTE: By symbols, we are referring to non-alphanumeric characters) (NOTE: The set of unary operators is finite and defined by this standard, the set of binary operators is not bound). When an operator is encountered, the Spero compiler searches for a matching definition according to the types of the two operands and rewrites the given program as if the operator was replaced with a call to the chosen function, using any operands as the arguments in a strict left->right odering (ie. <a> + <b> gets transformed into <?.>+(<a>, <b>)).
 
-  Positional Currying of Operators
-    Binary operators can have different semantics depending on if a value is bound to the left or the right
-    Binding a value to the lhs is trivial to perform ("<value> <op>")
-    Binding a value to the rhs requires a workaround with dot-forwarding (".<op> <value>")
-      Note: Currently, parenthesis are not needed for currying operators but are needed for indexing
-        Note: This contradicts earlier statements
+  An unary operator can be defined for a type `T` by providing a method of type `mut? () -> U` or a function of type `(T) -> U`, for any given type `U`. A binary operator can be defined for types `T` and `U` by providing a method of type `mut? (U) -> V` or a function of type `(T, U) -> V`, for any given type `V` and permutation of the types.
 
-  TODO: Need to add in language to enable partial-application resolution
+  TODO: Find a way of having order insensitivity to argument production
 
-  Experimental: Can be disabled through the '@disable(curry)' annotation 	# Change name?
+Function Calling
+
+  Arguments may be passed to the procedure body if the definition declares them as supported. These arguments are bound to the scope of the procedure body before any other statements in the procedure are executed. If the procedure is defined entirely using dot-forwarding, it is not necessary for these arguments to have an associated name, rather an accepted type. These arguments are immediately forwarded on to the procedure body (without decomposing the tuple). (TODO: This isn't the correct description of how arguments are handled (binding removes them from the tuple). (TODO: Improve this definition, better fits in calling, could incorporate partial app).
+
+  If a function is invoked with fewer than expected number of parameters, then a function "closure" is returned, accepting the remaining arguments and forwarding them on to the original call. A function creates this partial application closure iff; 1) overload resoltion fails due to running out of parameters, 2) a valid function could exist given the existing parameters, and 3) the resulting object is stored and used (ie. as a variable/argument/return value). The created closure shares the same overload set as the intial function, minus all overloads that are made invalid by the bound arguments (NOTE: Partial closures are themselves functions, and can thus create closures themselves). Since operators are themselves functions, they can also be partially applied to their arguments, albeit with different semantics depending on which "side" of the operator the bound argument lies at (NOTE: As a syntactical shortcoming, 'rhs' binding currently works through lambda declaration, ie. `.+ 2`).
+
+  A very particular point of Spero's syntax is the ability to invoke functions through the usage of "dot-flipping", calling them as-if they were a member of the "calling" type. Using dot-flipping implicitly inserts the immediately preceding atom as the first argument within the passed arg-tuple, calling the "flipped" function as-if the new tuple was passed as the arguments (ie. `t.fn(...)` === `fn(t, ...)`) (NOTE: `n - 1.factorial()` === `n - {1.factorial()}`, not `{n - 1}.factorial()`). Methods are implicitly impemented in terms of this facility (NOTE: One possible implementation is to follow the C++ model, where the `self` parameter is an implicit first argument to the function), so function lookup, by necessity, must prioritize methods over "free" functions. Dot-flipping also extends to operators (as they are just functions), serving to elevate the "priorty" to that of a function call.
+
+  Function are eagerly evaluated: that is all their arguments are evaluated before the function is called and the is called in it's entirety when invoked (NOTE: If a function is determined to have no effect on program evaluation, it is allowable for a compiler to eliminate the call). Spero supports the necessary semantics to mimic lazy evaluation (through streams/generators/captures/etc.).
+
+Object interaction
+
+  Non-static member functions (ie. functions declared within the context of a type body) automatically have an implicit "self :: Self&" first parameter inserted into the body. If the function is marked as "mut" (through attaching `mut` before the argument tuple), then the typing of the `self` parameter changes to `mut Self&`, thereby allowing the oject to be mutably altered. An additional 'super' keyword is defined that serves to force selection of inherited definitions in the child type (especially when the child overrides the implementation).
+
+  Member functions are generally called through indexing from an instance of the declaring type (TODO: Explain more about how member functions are invoked).
+
+  Static methods are all methods declared within a type body that have the '@static' annotation applied to them. These methods perform exactly like free functions except that they are implicitly "namespaced" into the context of the surrounding class, as if they were placed in a module of the same name. Static methods are called/accessed through their qualified name, as if the surrounding type was the declaring namespace (NOTE: It is possible to import static methods into the current scope through the 'use' statement).
+
+  Variable resolution will implicitly attempt to index into this parameter if lookup fails to find a definition in the immediate scope (but before the global/higher context). It is always possible to explicitly index into the 'self'/'super' keyword and access the variable definitions if needed, although it will be an indexing error if such a definition doesn't exist. Note that 'self' and 'super' are keywords and cannot be shadowed so there is no ambiguity about what the behavior of this statement should be (NOTE: It is not possible to declare and define new variables as "members" of `self` or `super`).
+
+Coroutines
+
+
+// End of narration, start of notes
+Function Calling
+  Omitting Parentheses: (Might have dropped this part)
+    Parentheses can be omitted when a no-arg function is called
+      Except in the case of constructing types (due to metaprogramming considerations)
+      Renaming a no-arg function presents a bit of a syntactical challenge:
+	One option is to create a forwarding lambda, ala "let <name> = .<fn>"
+	Another option is to disable no-paren calling, ala "@disable(no_paren)let <name> = <fn>"
+        A third is to use "importing" to rebind the name, ala "use <fn> as <name"
+      NOTE: This may change in the future to simplify the process of renaming no-arg functions
+        In the meantime, 'use-as' rebinding allows for the same semantics
+    Parentheses cannot be ommitted to perform default type construction
+      This is to allow for nicer metaprogramming syntax
+        ie. "Int" refers to the `Int` type object and not a default `Int` value (ie. "Int() => 0")
+
+  Var-arg functions
+    If a function's final argument has a view typing, it is "var-arg" parameter
+      The function will accept 0+ T's being passed at the end
+        This T's will be grouped into a Sequence[T] container/view (ie. 'Array[T, n]')
 
 Coroutines
 
 Experimental Ideas:
   Define '+' for functions, so "f + g" creates a function 'h', "h(...) = f(...) + g(...)"
+  If the "caller" is a n-ary tuple, tuple application applies (for dot-flipping)
+  Partial application can be disabled with the `@disable(curry)` annotation
 
 TODO:
   Add in better language for partial application resolution

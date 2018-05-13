@@ -2,3 +2,4 @@ removed 'range' function in favor of the 'Range' type constructor
 Compound operators are not an automatic language feature
   They can be implemented using operator overloading and mutable methods however
   Several default language types (ie. Int/etc.) will provide such operators
+add in language for references and pointer types

@@ -33,14 +33,14 @@ Keywords
       context - File   | Type          | scope
       ===========================================
       let     - module | protected     | local
-      def     - public | public        | local
-  
+      def     - export | public        | local
+
   Assignments can also be introduced in one of three storage contexts (local, global, static)
     Local assignments can only exist within the context of a scope, type/function body, or let-binding
     Static assignments are any assignments marked with the '@static' annotation
     Global assignments are any assignments not falling into either of the above categories
     TODO: Explain what these storage contexts "do"
-     
+
 
 Safety
   Spero aims to provide programmers with a usable language that prevents unsafe and dangerous practices
@@ -93,7 +93,7 @@ Generics
     gen_arg  -> <type_gen> | <var_gen>
     type_gen -> <type> (+|-)? (..)? ((::|!:|<|>) <type>)?
     var_gen  -> <var> ((:: <type>) | (= <val>))?
- 
+
   Generics are a way to write polymorphic code that type-checks at compile-time
     Spero allows values as well as types to be used within generics as arguments/parameters
       Note: This means Spero should support Pi-types
@@ -177,7 +177,7 @@ Generics
       contravaiance:    A :: B -> T[B] :: T[A]
       bivariance:       A :: B -> T[A] :: T[B] ^ T[B] :: T[A]
       invariance:       A :: B -> Nothing
-    
+
     These relationships in generic contexts are indicated with the '+'/'-' characters following the type name
       ie. "[T+, U-, V]" is covariant on T, contravariant on U, invariant on V
     Note: It is uncertain the exact usefulness of variance annotations in Spero. They are carried over from Scala
@@ -192,7 +192,7 @@ Modules
       Note: This is because there is no "end-module" signifier in the current spec
       Note: A single file may contain multiple modules
     Submodules must be declared using the complete qualified parent string
-  
+
   Modules consist of a public and a private interface (indicated through 'def'/'let')
     'static' marks the binding as "file-local" while 'let' marks it as "module-local"
       ie. let-bindings can be accessed from another file but only under the parent module
@@ -219,7 +219,7 @@ Sugaring Operations
     Pointer Dereference - 'deref :: Self | Self& | mut Self&'
     Function Calling 'a(..)' - 'call(...)'
     Indexing Setting 'a(..) = v' - 'set(.., V)'
-  
+
   Indexable[K, V] - the interface for all indexable types
     mutable 'get/set' methods must be predefined
     an immutable 'get' and 'call' overloads are defined by the trait
@@ -227,6 +227,6 @@ Sugaring Operations
         Involves the compiler casting 'self' to 'mut Self&' which is illegal
 
 TODO:
-  What should the behavior of 'static' be in local scopes 
+  What should the behavior of 'static' be in local scopes
   Find a way to make def/let meaningful in local contexts (ie. not types/modules)
   Explain variadics and covariance in generics

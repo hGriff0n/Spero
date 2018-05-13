@@ -1,7 +1,7 @@
 Bindings
   Types: [A-Z][A-Za-z_0-9]*
   Variables: [a-z][A-Za-z_0-9]*
-  Operators: 
+  Operators:
       TODO: Add in Operator grammar
 
 Function Definition
@@ -14,3 +14,15 @@ Function Calling
   <value><array>?<tuple>?<type_ext>?
   <value> <op> <value>?
   <value>.<fncall>
+
+Annotations
+  local: @<variable> <tuple>?
+  global: @!<variable> <tuple>?
+
+Type Signatures:
+  func: <tuple> -> <type>
+
+Types
+  type_body = list<adt_con, '|', 1>?(list<arg>)?<inherit>?{ <body> }
+  adt_con = <type>(list<type>)?
+  inherit = <type><gen>? ':: '

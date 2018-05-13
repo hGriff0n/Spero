@@ -2,6 +2,7 @@ Scrap sheet for tracking ideas for future versions of the language
 
 Allow for "def foo(...) :: T = ..." syntax for defining functions. Translates to "def foo = (...) -> T ...".
   Problem: Where to put "mut" for marking mutable methods
+  Possibly change syntax to "def foo(...) :: T -> ..."
 Allow for "def T(...) { ... }" syntax for defining types. Translates to "def T = (...) { ... }"
   Problem: I think ADTs would require the "= <ADT>" syntax to work [Might not though]
 Allow for the creation of custom annotations

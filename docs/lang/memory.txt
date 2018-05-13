@@ -25,6 +25,7 @@ References:
     Member methods take a 'T&' by default - Mutable members take a 'mut T&'
   References can also double as a way to reduce memory usage/copies
     One optimization is to change 'T' parameters to 'T&' if possible
+  NOTE: Reference and pointer styling must be appended to the type (no interleaving spaces)
 
 Current Framework Idea:
   TypeTraits - Provides memory/allocation information/methods for programmer use

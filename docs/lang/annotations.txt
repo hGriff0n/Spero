@@ -1,40 +1,39 @@
 Annotations
 
-  An annotation should be defined as a named expression which provides some hint to the compiler as to the intended usage of an expression. These hints can range from allowing conditional compilation to a simple 'todo' marker that allows for custom reporting of warning messages. These guarantees and hints can be used to provide tighter analysis and optimization on the generated code
+  An annotation is defined as a un-evaluated statement that provides some hint to the compiler as to the intended usage and properties of an associated expression or compilation scope. These "hints" can range from allowing conditional compilations (such as swapping out implementations to conform to different target architectures and operating systems) to simple "todo" markers which create custom warning messages. These hints are inteneded to allow the compiler and other tools to provide tighter analysis and optimization than the normal language semantics would otherwise allow with the express opt-in of the programmer. (NOTE: The compiler may reserve the right to ignore annotations if necessary)
 
-  NOTE: The compiler may reserve the right to ignore some annotations if necessary
-  NOTE: Annotations do not exist within the generated code or even during the analysis phases after they have been resolved
-  NOTE: Currently it isn't possible to produce custom annotations
+  Arguments may be passed to an annotation through a tuple immediately following the annotation (NOTE: In order to associated an annotation with a tuple expression, an empty argument tuple, `()`, must be explicitly given to the annotation). (TODO: Improve wording). (TODO: Look at changing bracket characters to "<>").
 
-Syntax
-  local annotation: @<variable> <tuple>?
-  global annotation: @!<variable> <tuple>?
+  Annotations are somewhat subdivided into two distinct "types": local and global. Global annotations operate on the concept of compilation focus while local annotations operate using associated expressions. (TODO: Improve wording). (NOTE: Not all annotations are available in both "varieties". In fact, most will probably only exist as one or the other).
 
-  Annotations are syntactically divided into two broad categories that determine what expressions their effects are applied to. Local annotations, indicated by the non-existance of a '!' character, always apply to the next expression that appears after it is encountered. Global annotaions, on the other hand, are an expression in and of themselves; their effects are rather applied to the surrounding compilation environment (the surrounding scope if used in a scope, type if in a type, and global if outside). Note that this means that local annotations can be applied to global annotations.
+  A compilation scope is defined as being any lexical scope in which, at the current moment, a subsection is the current analysis target of the compiler. (TODO: Improve wording). During annotation evaluation, any effects of an annotation are applied to the entirety of the innermost compilation scope and all expressions therewithin. (NOTE: It is currently undecided whether such application should proceed as-if the annotation was present at the scope's entrance or not).
 
-  All annotations can be combined with an optional tuple that provides various arguments to the internal machinery.
-    TODO: Explain this better
-    NOTE: This means annotations can't be applied to tuples
+  An associated expression is defined as being any expression that has been immediately preceeded by one or more local annotations. During annotation evaluation, any effects of an annotation are applied on its associated expression. (Example: So ```@hide_warning(all) foo + bar``` would remove all warnings that the compiler would produce in the case of analysing "foo + bar"). (NOTE: After evaluation, annotations do not exist as a "query-able" construct of the language. This is a side-effect of the current lack of reflection support, so this may change in the future).
 
-Compile-time Variables
-  In the specific case of compile-time generation, the compiler makes available several "state" variables that can be queried within annotations. These variables largely correlated directly to various system/target/contextual codegen controls, such as determining the operating system of the target machine. In this example case, the compiler variables allow for the generation of windows specific code iff the target machine has a windows os through the combined usage of the '@enable_if' annotation.
+  (NOTE: At the current moment, it is not possible to produce or define custom annotations without explicit modification of the compiler. Coming up with a usable syntax and semantics for such an addition as so far been out of reach [Mostly in regards to guarantees about compile-time evaluability]).
 
-  EXAMPLE: @enable_if(target.machine.os == os.windows) ...
-
-Current Annotations
+Standard Annotations
   Any compiler for the spero language must provide the following default annotations with the specified behaviors
-  
-  @immutable - Mark a type as immutable-only
-    Values of this type must produce a compiler error when held in a mutable context.
-  @safe      - Mark a block of unsafe code as "safe"
+
+  @immutable (local):
+    Mark the following type or produced value as "immutable-only", with the all the analysis context following from that distinction.
+  @safe      (local):
+    Stops propogation of "unsafety" up the lexical scope. (NOTE: `main` must be considered safe in final analysis)
     Takes an optional string literal to document why the specific segment is "safe"
-  @unsafe    - Mark a block of safe code as "unsafe"
-  @todo      - Produces a user-defined warning message
-  @asm       - Output assembly code for the target architecture
-    TODO: Define the semantics/syntax of this
-  @static    - Mark an assignment as having 'static' scope
-  @enable_if - Conditionally enable/disable the following code based on some compile-time condition
-    ALTERNATE: @if_cfg
+  @unsafe    (local):
+    This basically performs the opposite of '@safe' (NOTE: This is provided in case the language semantics doesn't properly match to the problem's safety domain)
+  @todo      (local, global):
+    Produce a warning filled with the provided warning message
+    TODO: Decide the type and number of the produced warning
+  @asm       (local, global):
+    Output assembly code for the current target architecture, with some minimal processing (such as insertion of compile time constants, etc.)
+    In global mode, a string argument must be provided defining the assembly to produce
+    In local mode, the associated expression must be a compile-time string
+    TODO: Better define the semantics/syntax of this
+  @static    (local):
+    Mark an assignment as having 'static' scope
+  @enable_if (local):
+    Conditionally remove the associated expression based on the result of some compile-time condition
 
 Possible Annotations
   The following annotations are currently being considered for standardization
@@ -47,7 +46,7 @@ Possible Annotations
   @mem_limit - restrict the amount of memory a type/module/etc can use
   @enable    - turn on language features that were disabled
   @assert    - raise an error (compiler/runtime) if a condition evaluates to false
-  @cassert   - raise a compiler error if a condition evaluates to false
+  @error_if  - raise a compiler error if a condition evaluates to false
   @force     - requires/disables language features to create environment
   @pure      - promise that the function is "pure" for optimization purposes. may allow use in generics
   @disable   - turn of a language feature for some time
@@ -59,12 +58,19 @@ Possible Annotations
   @intrinsic - compiler provided method/type definition. file only specifies interface
     Basically, Spero code defines an abstract type but you can still instantiate it
   @final     - mark methods/classes as unoverridable/un-subtypable
+  @if_cfg    - alias for @enable_if
+
+
+Compile-time Variables
+  Primarily for usage in conditional annotations, the compiler must provide several "state" variables for usage as compile-time literals. These variables largely correlate directly to various system, target, and other contextual information that may be useful for conditional codegen (Example: Determining the target operating system or instruction architecture).
+
+  Examples:
+    target.machine.os
+    target.machine.arch
 
 TODO:
   Find a way to enable custom annotations
   Annotations only applying to one-expression forces the usage of scopes to group statements
     Any variables declared in these scopes are unreachable from outside. Find out if that is onerous
   Look into extending safe with "assert", require compile-time code that can evaluate to true/false
-
-Ideas:
-  Expand annotations to be able to make macros with them
+  Look into extending annotations to sort of work like macros
