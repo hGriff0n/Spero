@@ -1,47 +1,30 @@
 
 Keywords
-  Keywords act largely the same as in many other languages, as reserved identifiers
-    However, Spero augments some keywords with a degree of compatibility with dot-flipping and other semantics
 
-  Grammar:
-    mod                           <- declare module name for the current context
-    use                           <- module importing and rebinding/aliasing
-    mut                           <- mark the next value/expression as mutable
-    impl                          <- type inheritance/extension/trait implementing
-    def | let | static            <- create a new binding with context-dependent visibility
-    match                         <- perform switch-style pattern matching. can be dot-flipped
-    case                          <- optional keyword to introduce a match case statement
-    if                            <- standard usage. can be dot-flipped
-    elsif | else                  <- standard usage
-    while                         <- standard usage. can be dot-flipped
-    loop                          <- loop infinitely ("while true"). can be dot-flipped
-    for                           <- for-each style looping with pattern matching. can be dot-flipped
-    break | continue | return     <- standard usage. can be dot-flipped
-    yield                         <- produce a value from a re-entrant function. can be dot-flipped
-    wait                          <- re-enter a re-entrant function and wait for a value. can be dot-flipped
+  Spero defines the following set of keywords, each having the specified semantics. Note that some keywords are able to interact with language systems, particularly dot-flipping.
+
+    mod: Declares the current module name for grouping declarations/etc.
+    use: Import or rebind/alias an expression/module into the current scope
+    mut: Mark the next value expression as being "mutable
+    impl: Mark and define a type to "implement" a declared interface
+    match: perform rust-style pattern matching (can be dot-flipped)
+    if: optionaly evaluate the following statement based on a condition expression (can be dot-flipped)
+      elsif | else:
+    while: constantly evaluate the following statement as long as the condition expression is true (can be dot-flipped)
+      loop: basically a shorthand for "while true" (can be dot-flipped)
+      break | continue: (can be dot-flipped)
+    for: Loop over a specified iterator/iterable with pattern-matching extraction (can be dot-flipped)
+    return: immediately return from the procedure to the calling code, passing any return values as required (can be dot-flipped)
+    yield: give up execution to the calling context, passing any return values as required (can be dot-flipped)
+    wait: re-enter a coroutine and suspend execution of the current context until a value is returned (can be dot-flipped)
+    let | def: specify visibility contexts of the following bindings
 
   Visibility Contexts
-    Spero relies on unique keywords to introduce bindings
-      The usage of these keywords allows for a tight control of the visibility of the created binding
+    Spero relies on two unique keywords to introduce bindings into the current scope. The usage of two keywords is specifically chosen to allow for the tight declaration of a binding's visibility at the declaration site. "let" bindings are declared in the "private" visibility setting for the current "binding context" whereas "def" bindings are declared in the "public" visibility (Note: public bindings are accessible outside of the current context usage whereas private bindigns aren't).
 
-    There are three unique contexts in which a binding can be created (File, Type, Scope)
-      File context is all declarations in the global scope of a file
-      Type context is all declarations declared within a type body definitions
-      Scope context is all declarations made with a block/function body
+    There are three kinds of "binding context" in which a binding may be introduced that each have their own representation of public and private visibility. The first context is that of the "module", the second "type" and the third "scope". Module context refers to all bindings that occur within the global scope, and are thus introduced into the module's "interface", with public visibility bindings exported (so that they may be used in outside code) while private visibility bindings remain "local" to the current file/module context. Type context refers to all bindings that occur within a type definition, where the usage of "public" and "private" should make the distinction clear (NOTE: Spero's concept of "private" in the context of types hews more closely to "protected" than to "private", though it is not certain yet if Spero will have direct inheritance. In the case of "scope" bindings (ie. all bindings made in the course of a function's definition), there's currently no difference between the two visibilities (as there is no way of "peering" into a scope).
 
-    The mapping of the visibility keywords to the declaration contexts is as follows:
-      context - File   | Type          | scope
-      ===========================================
-      let     - module | protected     | local
-      def     - export | public        | local
-
-  Assignments can also be introduced in one of three storage contexts (local, global, static)
-    Local assignments can only exist within the context of a scope, type/function body, or let-binding
-    Static assignments are any assignments marked with the '@static' annotation
-    Global assignments are any assignments not falling into either of the above categories
-    TODO: Explain what these storage contexts "do"
-
-
+TODO: The stuff after this is still to be changed
 Safety
   Spero aims to provide programmers with a usable language that prevents unsafe and dangerous practices
     The safety of some code, particularly low-level implementations, can't be verified by the compiler
@@ -105,7 +88,7 @@ Generics
       <    -> The argument must be a subtype of the following interface
       >    -> The argument must be a supertype of the following interface
         Note: The last two are a bit-iffy about acceptance
-        Note: Values have a default sub-typing of ':: Size'
+        Note: Values have a default sub-typing of ':: Int'
         Note: Junction types are allowed on the right hand of these restrictions
         Experimental: Types have a default sub-typing of ':: Type'
     Co-/contra-variance can also be indicated on type generics (co = +, contra = -)

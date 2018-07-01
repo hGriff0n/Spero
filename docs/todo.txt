@@ -29,4 +29,7 @@ Fix the coloring of 'rebind' statements in vs-spero
 
 Figure out a way to not require parentheses everywhere
   This is particularly egregious in the case of 'size' in some of the dev_work examples
+  For anonymous types, we could automatically instantiate the type if it isn't being used in a type context
+    If it's not being bound to a type name, or used as a type variable (ie. arg/metaprogramming), then the construction could be inferred
+    The only argument against is in defining the 'forward' function, which requires the constructor to be not called
 How does 'n' get introdued in 'impl Indexable[T] for Array[T, n]' ???

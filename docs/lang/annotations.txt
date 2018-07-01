@@ -62,7 +62,7 @@ Possible Annotations
 
 
 Compile-time Variables
-  Primarily for usage in conditional annotations, the compiler must provide several "state" variables for usage as compile-time literals. These variables largely correlate directly to various system, target, and other contextual information that may be useful for conditional codegen (Example: Determining the target operating system or instruction architecture).
+  For usage in conditional annotations, the compiler must provide several "state" variables and make them accessible at compile-time. These variables should largely correlate directly to various system, target, and other contextual information that may be useful for conditional codegen (Example: Determining the target operating system or instruction architecture).
 
   Examples:
     target.machine.os
