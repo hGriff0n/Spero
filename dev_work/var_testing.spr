@@ -32,7 +32,7 @@ def rev_gen[T] = (elems :: T*) -> {
         rev_stack.push(elem);
 
     while rev_stack.size > 0
-        yield rev_stack.pop;
+        yield rev_stack.pop();
 }
 
 def main = () -> {
@@ -50,45 +50,48 @@ def main = () -> {
         None -> 5
     }
 
-    let Some(bar) = foo                     # ADTs can be decomposed in bindings (Experimental)
+    @experimental("ADT decomposition in bindings")
+    let Some(bar) = foo                     # ADTs can be decomposed in bindings (Experimental, not supported in the grammar atm)
     let (foo, bar) = mut (3, 4)
 
     use std:io:{print, println}
 
     # Current syntax (& binds to the largest index sequence)
+    @deprecated("Pointer dereference is automatic")
     "{}".println(&foo.bar.val)
     "{}".println(&{ &foo.bar.baz }.val)
 
     ##
     Dereferencing Behavior in regards to functions and type constructors
     ##
+    @deprecated("I have no idea what this is doing")
     let i_ptr = mem:malloc((Int) -> "Hello".println)
     let i_ptr = mem:alloc((Int) -> "Hello".print)
     let v_ptr = mem:alloc(() -> " World".print)
     let p_ptr = mem:alloc((Int) -> mut .mem:alloc)          # You'd write 'mut i.mem:alloc'
 
 
-    @deprecated("Pointer dereference is automatic")
-    i_ptr(3)            # '&' binds to 'i_ptr(3)', which is a compiler error (can't call a pointer)
-    {&i_ptr}(3)         # '&' binds to 'i_ptr', producing a function that accepts a 3
+    @deprecated("Pointer dereference is automatic") {
+        i_ptr(3)            # '&' binds to 'i_ptr(3)', which is a compiler error (can't call a pointer)
+        {&i_ptr}(3)         # '&' binds to 'i_ptr', producing a function that accepts a 3
 
-    &v_ptr              # Dereferences the pointer
-    {&v_ptr}()          # Calls the function
+        &v_ptr              # Dereferences the pointer
+        {&v_ptr}()          # Calls the function
 
-    &new[String]        # '&' binds to 'new[String]', which gives a String&
-    {&new}[String]      # '&' binds to 'new', which is a compiler error (can't dereference a function)
+        &new[String]        # '&' binds to 'new[String]', which gives a String&
+        {&new}[String]      # '&' binds to 'new', which is a compiler error (can't dereference a function)
+    }
 
     # Create an array of 10 Ints and Floats
     let int_arr = mut mem:allocn(Int, 10)               # Allocate n with fill
-    let gen_arr = mut mem:allocg((Size) -> .Float, 10)  # Allocate n with generator "(idx :: Size) -> T"
+    let gen_arr = mut mem:allocg((Size) -> .Float, 10)  # Allocate n with generator "(idx :: Int) -> T"
 
-    let tst = { () -> 3 }       # tst :: () -> Size
-    let tst = { () -> 3 }()     # tst :: Size
+    let tst = () -> 3           # tst :: () -> Size
+    let tst = { () -> 3 }()     # tst :: Int
 
     ##
     ##
-    let val = forward[Int]          # Is val an Int or the Int constructor ???
-    #forward returns a function that evaluates 'Int'
+    let val = forward[Int]
 
     for elem in rev_gen(1, 2, 3, 4) do
         "{} ".print(elem)          # Prints "4 3 2 1 "

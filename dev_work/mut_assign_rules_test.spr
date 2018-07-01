@@ -32,7 +32,7 @@ Assignment checking (for normal, ie. non-pointer/reference, values):
 ##
 
 def ptrfoo = () -> {
-    let t = mem:malloc(5)       # :: Size* (use `ralloc` to get a reassignable pointer)
+    let t = mem:malloc(5)       # :: Int* (use `ralloc` to get a reassignable pointer)
     let r = t
     let z = mut t               # :: mut Size* (ie. memory is mutable), error
     let t = mut t

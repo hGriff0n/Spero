@@ -134,7 +134,7 @@ def BinaryHeap[T :: Comparable] = (comparator :: (T, T) -> Bool) {
     let store = mut util:Vector[T]
 
     let bubbleUp = mut () -> {
-        static parent = (i :: Size) -> i / 2
+        static parent = (i :: Int) -> i / 2
         let index = mut store.size()
 
         while index > 0 {
@@ -147,7 +147,7 @@ def BinaryHeap[T :: Comparable] = (comparator :: (T, T) -> Bool) {
     }
 
     let bubbleDown = mut () -> {
-        static left = (i :: Size) -> i * 2
+        static left = (i :: Int) -> i * 2
         let index = mut 0
 
         match (store.get(index.left), store.get(index.left + 1)) {
@@ -232,7 +232,7 @@ def heapSort[T :: Comparable] = (list :: T*) -> {
 def BTree[T] = Stub, Leaf(T), Branch(BTree, T, BTree) {
     # This doesn't look like it works to well
     def height = () -> self.match {
-        Branch(t1, _, t2) => max(t1.height, t2.height) + 1
+        Branch(t1, _, t2) => max(t1.height(), t2.height()) + 1
         _ => 0
     }
 

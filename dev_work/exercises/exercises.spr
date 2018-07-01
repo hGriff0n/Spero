@@ -10,7 +10,7 @@ Problems taken from https://adriann.github.io/programming_problems.html
 # How can I write generic lambdas ???
 
 def lcs = (s1 :: String, s2 :: String) -> {
-    let dyn = Matrix[Size](s1.size + 1, s2.size + 1)                    # Default initializes to 0
+    let dyn = Matrix[Size](s1.size() + 1, s2.size() + 1)                    # Default initializes to 0
 
     for (c, i) in s2.zipWithIndex {
         let j = i + 1
@@ -20,7 +20,7 @@ def lcs = (s1 :: String, s2 :: String) -> {
         dyn(j, j) = max(dyn(j, j), dyn(i, j), dyn(j, i))                # Not sure whether this is right
     }
 
-    return dyn(s1.size, s2.size)
+    return dyn(s1.size(), s2.size())
 }
 
 @todo("Given a list of numbers, write a program to efficiently answer 'What is the nearest larger value from the number at i?'")
@@ -31,7 +31,7 @@ def nearestLarger = (Int*, Int) -> {}
         "Needed to turn one string into the other")
 def minimalTransform = (String, String) -> {}
 
-def Matrix[T] = (n :: Size, m :: Size) {
+def Matrix[T] = (n :: Int, m :: Int) {
 
 }
 def Matrix[T, n, m] = :: Matrix[T] { super(n, m) }

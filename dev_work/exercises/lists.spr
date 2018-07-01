@@ -5,23 +5,21 @@ use std:{io, math, util}:_
 def max[T :: Comparable] = (T..) -> .reduce((l, r) -> if l < r do r else l)
 
 def reverse[T] = (list :: mut Indexable[T]&) -> {
-    for i in Range(0, list.size / 2)
+    for i in Range(0, list.size() / 2)
         list.swap(i, list.size() - i)
 
     list
 }
 
-def occurs[T :: Comparable] = (elem :: T, list :: T..) ->
-    list.reduce((b :: Boolean, p) -> b || p == elem, false)
+def occurs[T :: Comparable] = (elem :: T, list :: T..) -> list.reduce((b, p) -> b || p == elem, false)
 
-def oddIndices[T] = (T..) ->
-    .zipWithIndex.filter(_.1 % 2 == 1).map!(_.0)                        # I don't think the '_' syntax is settled
+def oddIndices[T] = (T..) -> .zipWithIndex().filter(_.1 % 2 == 1).map(_.0)
 
 def runningTotal[T] = (list :: T..) -> {
     let col = mut Vector[T]()                                           # Need to instantiate a type I know has `pushBack`
 
     for elem in list do
-        col.pushBack(col.back.or_else(T) + elem)
+        col.pushBack(col.back().or_else(T) + elem)
 
     col
 }
@@ -33,8 +31,7 @@ def isPalindrome = (s :: String) -> {
         halves(0).pushBack(halves(1)(0))                                # Put the middle character in both strings
                                                                         # I'm assuming split would leave the secon string bigger here
 
-    halves(1).reverse!()
-    halves(0).zipWith(halves(1)).reduce((b, a) -> b && a.0 == a.1, true)
+    halves(0) == halves(1).reverse()
 }
 
 def forSum[T] = (list :: T..) -> {
@@ -58,6 +55,7 @@ def recurSum[T] = (list :: Iterable[T]) -> {
     list(0) + list(Range(1)).recurSum()
 }
 
+@todo("This requires metaprogramming support to implement as designed")
 def handMap[T, V] = (list :: Iterable[T], fn :: (T) -> V) -> {
     let col = list.type.new()
     let pushBack = if !{col .? pushBack} () -> ()               # Goal: Return the same type that was passed in
@@ -115,21 +113,22 @@ def merge[T] = (l1 :: Iterable[T], l2 :: Iterable[T]) -> {
 def rotate[T] = (list :: Indexable[T], k :: Int) ->
     list(Range(k)).concat(list(Range(0, k)))
 
-def fibonacci = (n :: Size) -> {
-    static memoize = mut [1, 1].Vector[Size]
+def fibonacci = (n :: Int) -> {
+    @static
+    def memoize = mut [1, 1].Vector[Size]
 
-    for i in Range(memoize.size, n) do
+    for i in Range(memoize.size(), n) do
         memoize.pushBack(memoize(i - 1) + memoize(i - 2))
 
     return memoize(n - 1)
 }
 
-let DigitList = Deque[Char] :: {}
+use Deque[Char] as DigitList
 def toDigitList = (n :: mut Int) -> {
     let list = mut DigitList()
 
     let isneg = n < 0
-    n.abs!()
+    n = n.abs()
 
     while n != 0 {
         list.pushFront({ n % 10 }.Char:parseInt())
@@ -162,7 +161,7 @@ def selectionSort[T :: Comparable] = (list :: mut Indexable[T]&) ->
 
 def insertionSort[T :: Comparable] = (list :: mut Indexable[T]&) -> list.insertionSort(0, list.size())
 
-def insertionSort[T :: Comparable] = (list :: mut Indexable[T]&, l :: Size, r :: Size) ->
+def insertionSort[T :: Comparable] = (list :: mut Indexable[T]&, l :: Int, r :: Int) ->
     for i in 1..{r - 1} {
         let j = mut i
         while j > 0 && list(j - 1) > list(j) {
@@ -172,7 +171,7 @@ def insertionSort[T :: Comparable] = (list :: mut Indexable[T]&, l :: Size, r ::
     }
 
 def mergeSort[T :: Comparable] = (list :: mut Indexable[T]&) -> {
-    let mergeSort = (l :: Size, r :: Size) -> {                              # would 'static' work here?
+    let mergeSort = (l :: Int, r :: Int) -> {                              # would 'static' work here?
         return.if r - l == 1
 
         let mid = l + {r - l} / 2
@@ -190,7 +189,7 @@ def mergeSort[T :: Comparable] = (list :: mut Indexable[T]&) -> {
 }
 
 def quickSort[T :: Comparable] = (list :: mut Indexable[T]&) -> {
-    let quickSort = (l :: Size, r :: Size) -> {
+    let quickSort = (l :: Int, r :: Int) -> {
         return list.insertionSort(l, r) .if r - l < 40
         let mid = l + {r - l} / 2
 
@@ -203,7 +202,7 @@ def quickSort[T :: Comparable] = (list :: mut Indexable[T]&) -> {
     quickSort(0, list.size())
 }
 
-def stoogeSort[T :: Comparable] = (list :: mut Indexable[T]&, left :: Size, right :: Size) -> {
+def stoogeSort[T :: Comparable] = (list :: mut Indexable[T]&, left :: Int, right :: Int) -> {
     if list(right) < list(left) list.swap(left, right)
 
     if right - left >= 3 do {
@@ -215,11 +214,11 @@ def stoogeSort[T :: Comparable] = (list :: mut Indexable[T]&, left :: Size, righ
 
     list
 }
-def stoogeSort[T] = (list :: mut Indexable[T]&) ->
-    (list, 0).stoogeSort(list.size() - 1)
+def stoogeSort[T] = (list :: mut Indexable[T]&) -> (list, 0).stoogeSort(list.size() - 1)
 
-def binarySearch[T :: Comparable] = (list :: Indexable[T], elem :: T, left :: Size, right :: Size) -> {
-    static middle = (l, r) -> {{r - l} / 2} + 1
+def binarySearch[T :: Comparable] = (list :: Indexable[T], elem :: T, left :: Int, right :: Int) -> {
+    @static
+    def middle = (l, r) -> {{r - l} / 2} + 1
 
     middle(left, right).match {
         mid if mid == left      => return elem == list(left)                        # Be sure to add in conditional match syntax

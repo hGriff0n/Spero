@@ -17,17 +17,17 @@ def alibob = () -> match "Who are you? {}".getln() {
 }
 
 def sum = () -> {
-    let num :: Size = "Enter a number: {}".getln()      # Definitely need to restrict typing here
+    let num :: Int = "Enter a number: {}".getln()      # Definitely need to restrict typing here
     "Sum 1 to {}: {}".println(num, Range(1, num).reduce(+, 0))
 }
 
 def modsum = () -> {
-    let num = "Enter a number: {}".getln() :: Size      # Can restrict in multiple ways
+    let num = "Enter a number: {}".getln() :: Int      # Can restrict in multiple ways
     "Sum 1 to {}: {}".println(num, Range(1, num).filter((n) -> n % 3 == 0 || n % 5 == 0).reduce(+, 0))
 }
 
 def choice = () -> {
-    "Enter a number: {}".getln() :: Size                # What should getln return on multiple "{}"s (or should there be another function for that) ???
+    "Enter a number: {}".getln() :: Int                # What should getln return on multiple "{}"s (or should there be another function for that) ???
     getln("Do you want to calculate the product or the sum: ")
 }
 
@@ -38,7 +38,7 @@ def printTable = () -> for i in 0..12 do {
 
 @noexit                                                 # Annotation that the function never exits
 def allprimes = () -> {
-    static primes = mut [2 :: Size].Vector()
+    static primes = mut [2 :: Int].Vector()
     for elem in primes yield elem                       # Yield the known values first
 
     loop {

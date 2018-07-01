@@ -3,10 +3,10 @@ mod euler
 use std:io:println
 
 # Multiples of 3 and 5
-def prob1 = () -> Range(6,1000).filter((n) -> n % 3 == 0 || n % 5 == 0).reduce(+, 8)
+def prob1 = () -> Range(6, 1000).filter((n) -> n % 3 == 0 || n % 5 == 0).reduce(+, 8)
 
 # Even Fibonacci numbers
-def fib = (n :: Size) -> {
+def fib = (n :: Int) -> {
     static mem = [1, 1].Vector()
 
     if (n >= mem.size())
@@ -17,35 +17,36 @@ def fib = (n :: Size) -> {
 def prob2 = () -> Range(1).map(fib).takeWhile(_ < 4000000).filter(_ % 2 == 0).reduce(+, 0)
 
 # Largest prime factor
-let largestPrimeFactor = (n :: Size) -> {
+let largestPrimeFactor = (n :: Int) -> {
     let primes = [3, 5, 7, 11].Vector()
     let size = primes.size()
 
+    # NOTE: This is actually a wrong implementation
     for i in Range(13, n.sqrt().ceil()).filter(_ % 2 == 1) do
         # This is actually wrong
         if !primes.contains(i % _ == 0)
             primes.pushBack(i)
 
-    n.if primes.size() == size
+    n .if primes.size() == size
     else primes.back()
 }
 def prob3 = largestPrimeFactor(600851475143)
 
 # Largest palindrome product
-def palindrome? = (n :: Size) -> {
+def isPalindrome = (n :: Int) -> {
     let n = n.toStr()
     let n = mut n.split(n.len() / 2)
 
     if n(0).size() != n(1).size()
         n(0) += n(1)(0)
 
-    n(0).zipWith(n(1).reverse()).reduce((b, a) -> b && a.0 == a.1, true)
+    n(0) == n(1).reverse()
 }
 def prob4 = () -> {
     let max = 999 * 999
     let min = 111 * 111
 
-    Range(max, min).findIf(palindrome)
+    Range(max, min).findIf(isPalindrome)
 }
 
 # Smallest multiple (smallest multiple of 1..21)

@@ -9,21 +9,23 @@ def Option[T+ :: Copy] = None | Some(T) {
     static new = () -> None
     static new = (T) -> .Some()
 
-    impls std:util:Copy                 # Implements 'std:util:Copy'
-    def copy = () -> self.match {
-        None => None
-        Some(v) => v.copy().Some()
-    }
-
-    # Import everything from the std:io module into this class
-    use std:io:_
-
-    # implement the 'std:io:Printable' interface
-    impls Printable
     def toStr = () -> self.match {
         None => "None"
         Some(v) => "Some({})".std:lang:String:fmt(v)
     }
+}
+
+# I'm not sure about how generic type information will be introduced in impl statements
+impl[T :: Copy] std::util::Copy for Option[T] {
+    def copy = () -> self.match {
+        None => None,
+        Some(v) = v.copy().Some()
+    }
+}
+
+# There may be an argument that this aliasing is unnecessary, if I use the full duck-typing capabilities
+impl[T] std:io:Printable for Option[T] {
+    use Option:toStr as toStr
 }
 
 def HelloWorld = (lang :: String) {
@@ -31,10 +33,12 @@ def HelloWorld = (lang :: String) {
     def talk :: (String) -> ()
 
     static test = () -> "Hello, World!".puts()
+}
 
-    impls std:io:Printable
+impl std:io:Printable for HelloWorld {
     def toStr = .mut greet
 }
+
 def Num = {}
 
 ##
@@ -43,27 +47,28 @@ It makes no sense to use '::' after a type constructor (outside of generics)
   Or to give an unrelated type, which breaks program correctness (overload resolution fails)
 ##
 
-# def BigInt = Num :: {}        <- This is also valid, though it may be less readable with constructors
+# def BigInt = Num ::: {}       <- This is also valid, though it may be less readable with constructors
 def BigInt :: Num = {           # If you think about it, all types have an implicit ':: Type' here
     super()                     # Call the parent constructor (this call (with no args) is implicitly inserted if the first line is not 'super...')
                                 # The parent constructor must be the first line (or it will raise a compiler error, attempt to call parent constructor twice)
 }
 
 def main = () -> {
-    let french = mut HelloWorld :: {
+    let french = mut HelloWorld ::: {
         super("French")
+
         def greet = () -> "tout le monde".puts()
         def talk = (n :: String) -> "Salut, {}".puts(n);
         def name = mut ""
-    }
+    }()
     french.name = "Michael"
 
-    # Note that Anonymous Types still "devolve" to no-paren constructions
-    # It's only when binding to types that this behavior is avoided
-    converse(french, HelloWorld("Spanish") :: {
+    # The code would look so much better here if we didn't have to use parenthesis
+    # Maybe we could add in
+    converse(french, HelloWorld("Spanish") ::: {
             def greet = () -> "mundo".puts()
             def talk = (n :: String) -> "Hola, {}".puts(n)
-        })
+        }())
 
     # Experimenting with unifying access semantics
         # Thought: Good idea, needs work on the specifics of translation and extension (tuples need to be statically checked for one)
@@ -71,12 +76,7 @@ def main = () -> {
     vec.0       # translates to 'vec(0)'    <- Type has dynamic size
 
     let tup = (0, 1, 2)
-    tup.0       # translates to 'tup[0]'    <- Type has static size
-}
-
-@disable(no_parens)
-def fncall_problem[T] = (T) -> Type {
-    T()
+    tup.0       # translates to 'tup(0)'    <- Type has static size
 }
 
 # Look at 'http://docs.groovy-lang.org/latest/html/documentation/index.html' and 'https://doc.rust-lang.org/book/' for example documentation
@@ -111,7 +111,7 @@ Variable generics
 ##
 let pi[T] = T(3.14152759)
 def idi = (i :: Int) -> i            # (Int) -> .    Would this be usable ??
-#def id = (f :: Float) -> f         <- This would cause an error if uncommented (pi's type can't be determined)
+#def idi = (f :: Float) -> f         <- This would cause an error if uncommented (pi's type can't be determined)
 
 ##
 It is an error to use a variable generic where it's specific type can't be determined

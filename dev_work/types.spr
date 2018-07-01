@@ -1,19 +1,10 @@
 use std:{fs, sys}
 
 def Foo = {
-    let f ::= mut fs:File()
+    let f = mut fs:File()
 
-    static new = () -> "f.txt".Foo()
-
-    # This is actual a function that returns a Foo, but doesn't
-    static new = (file :: String) -> Foo {              # Completing the definition for Foo
-        f = mut file.fs:File()                          # 'f' must gain a value here (as it's `let` bound)
-        "Opened at {}".writeln(f, sys:now())            # immutable members must also recieve values here
-    }                                                   # mutable 'def'/'static' members don't require value assignment
-                                                        # Though that will make the resulting type abstract
-    static drop = (f :: mut Foo) -> {
-        "Closed at {}".writeln(f.f, sys:now())
-    }
+    @static
+    def new = () -> "f.txt".Foo()
 }
 
 # This is sugar for the Foo
@@ -21,7 +12,8 @@ def SugarFoo = (file :: String) {
     let f = mut file.fs:File()
     "Opened at {}".writeln(f, sys:now())
 
-    static new = () -> "f.txt".Foo()
+    @static
+    def new = () -> "f.txt".Foo()
 
     static drop = (f :: mut Foo) -> {
         "Closed at {}".writeln(f.f, sys:now)
@@ -31,15 +23,16 @@ def SugarFoo = (file :: String) {
 # The primary constructor is explicit (not available for overload resolution)
 @primary(explicit)
 def Bar = (n :: mut Int) {
-    static new = (min :: Int, max :: Int) -> new Bar(std:math:rand:Random(min, max))
+    @static
+    def new = (min :: Int, max :: Int) -> new Bar(std:math:rand:Random(min, max))
 
     # This constructor is only usable within this class
-    @private
-    static new = (r :: std:math:rand:Random) -> new Bar(r())
+    @static
+    let new = (r :: std:math:rand:Random) -> new Bar(r())
 }
 
 # How to return a function ???
-def create = (T: Type) -> T:new()
+def creator = (T :: Type) -> T:new
 
 def main = () -> {
     let f = new Foo()
@@ -54,7 +47,7 @@ def main = () -> {
     let r = f           # Copy 'f'
     Foo:drop(f)         # Drop 'f'
 
-    let f = create(Foo)
+    let f = creator(Foo)
     using r = f
     Foo:drop(f)         # Copy, drop, and invalidate 'f'. 'r' assumes ownership of Foo
 

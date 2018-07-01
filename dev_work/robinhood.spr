@@ -1,0 +1,34 @@
+mod robinhood
+
+use http
+use json
+use std:HashMap
+
+let api_url = "https://api.robinhood.com/"
+
+def Api = (username :: String, password :: String) {
+    let header = mut Map(("Accept", "*/*"), ("Connection", "keep-alive"))
+
+    let (user_id, acc_num) = init()
+
+    let init = () -> {
+        let res = http:post(api_url + "api-token-auth/", header, Map(("username", username), ("password", password))
+        header["Authorization"] = "Token " + json:parse(res.body)["token"] :: String
+
+        let acc_num = accounts()["account_number"] :: String
+        let user_id = user()["id"] :: String
+
+        (user_id, acc_num)
+    }
+
+    def accounts = () -> url(api_url + "accounts/")
+    def user = () -> url(api_url + "user/")
+    def canDowngradeToCash = () -> url(api_url + "midlands/accounts/cash_downgrade_info", Map(("account_number", acc_num)))
+
+}
+
+impl Drop for Api {
+    def drop = mut () -> {
+        http:post(api_url + "api-token-logout/", header)
+    }
+}

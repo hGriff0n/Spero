@@ -16,17 +16,17 @@ def binarySort[T :: Comparable] = (set :: Indexable[T]) -> {
 }
 
 # Inplace definitions, require pointers to implement
-def binarySort[T :: Comparable] = (set :: mut Indexable[T]&, l = 0 :: Size)
+def binarySort[T :: Comparable] = (set :: mut Indexable[T]&, l = 0 :: Int)
     -> binarySort(set, l, set.size())
 
-def binarySort[T :: Comparable] = (set :: mut Indexable[T]&, l = :: Size, r :: Size) -> {
+def binarySort[T :: Comparable] = (set :: mut Indexable[T]&, l = :: Int, r :: Int) -> {
     return.if r - l == 1
 
     # perform partitioning
     let j = mut l
-    if set(m) >= set(l) {                   # Testing out semantics idea for pointers
-        j += 1                              # The '&' indicates that the variable should follow "Java" style semantics
-        util:swap(set, j, m)                # So that modifications to the element can be propogated
+    if set(m) >= set(l) {
+        j += 1
+        util:swap(set, j, m)
     }.for m in {l + 1}..r
 
     # Reset the algorithm invariant and recurse
